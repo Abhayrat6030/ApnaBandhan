@@ -21,7 +21,9 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { submitOrder } from './actions';
 
-const allServices = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
+const allServicesAndPackages = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
+const uniqueServices = Array.from(new Map(allServicesAndPackages.map(item => [item.id, item])).values());
+
 
 const orderFormSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
@@ -160,7 +162,7 @@ export default function OrderPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {allServices.map(service => (
+                          {uniqueServices.map(service => (
                             <SelectItem key={service.id} value={service.id}>{service.name}</SelectItem>
                           ))}
                         </SelectContent>
