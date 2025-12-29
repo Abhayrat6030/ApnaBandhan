@@ -6,7 +6,7 @@ import { Menu, Phone, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { siteConfig, navItems } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import Logo from '../shared/Logo';
@@ -59,7 +59,10 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="pr-0">
-              <div className="flex items-center justify-between">
+               <SheetHeader className="p-4">
+                <SheetTitle className="sr-only">Main Menu</SheetTitle>
+              </SheetHeader>
+              <div className="flex items-center justify-between px-6">
                 <Link href="/" className="mr-6 flex items-center space-x-2">
                    <Logo className="h-8 w-auto text-primary" />
                   <span className="font-bold font-headline">{siteConfig.name}</span>
