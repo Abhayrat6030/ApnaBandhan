@@ -1,7 +1,12 @@
 
+'use client';
+
+import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Film, Mails, Album, Package as PackageIcon, Video } from 'lucide-react';
+import Autoplay from "embla-carousel-autoplay";
+
 
 import { Button } from '@/components/ui/button';
 import { services, serviceCategories } from '@/lib/data';
@@ -9,6 +14,9 @@ import { siteConfig } from '@/lib/constants';
 import placeholderImages from '@/lib/placeholder-images.json';
 import { ServiceCard } from '@/components/shared/ServiceCard';
 import { cn } from '@/lib/utils';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+
 
 const featuredServices = services.filter(s => s.isFeatured);
 
@@ -22,6 +30,10 @@ const categoryIcons = {
 
 
 export default function Home() {
+    const plugin = React.useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: true })
+  );
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -58,23 +70,33 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-2 bg-background">
+      <section className="py-8 bg-background">
         <div className="container mx-auto px-4">
-          <div className="flex flex-row justify-around items-center border-b">
-            {serviceCategories.map((category, index) => {
-              const Icon = categoryIcons[category.id as keyof typeof categoryIcons];
-              return (
-                <Link href={category.href} key={category.id} className="flex-1 group">
-                    <div className={cn(
-                        "flex flex-col items-center justify-center gap-2 py-4 text-center text-muted-foreground transition-colors group-hover:text-primary",
-                    )}>
-                        {Icon && <Icon className="h-7 w-7" />}
-                        <span className="text-sm font-medium">{category.name}</span>
-                    </div>
-                </Link>
-              )
-            })}
-          </div>
+          <Carousel
+            plugins={[plugin.current]}
+            className="w-full"
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.play}
+            opts={{
+                align: "start",
+                loop: true,
+            }}
+            >
+            <CarouselContent className="-ml-2 sm:-ml-4">
+                {serviceCategories.map((category) => {
+                const Icon = categoryIcons[category.id as keyof typeof categoryIcons];
+                return (
+                    <CarouselItem key={category.id} className="pl-2 sm:pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5">
+                        <Link href={category.href} className="group block">
+                            <div className="flex flex-col items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary">
+                                {Icon && <Icon className="h-7 w-7" />}
+                                <span className="text-xs sm:text-sm font-medium">{category.name}</span>
+                            </div>
+                        </Link>
+                    </CarouselItem>
+                )})}
+            </CarouselContent>
+            </Carousel>
         </div>
       </section>
 

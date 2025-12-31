@@ -3,8 +3,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Phone, X } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, Phone, X, Home, Package, Info, Mail, Gift } from 'lucide-react';
+import { useState, type FC } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -12,6 +12,16 @@ import { siteConfig, navItems } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import Logo from '../shared/Logo';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { type NavItem } from '@/lib/types';
+
+
+const iconMap: Record<string, FC<React.ComponentProps<'svg'>>> = {
+    '/': Home,
+    '/services': Gift,
+    '/packages': Package,
+    '/about': Info,
+    '/contact': Mail
+};
 
 export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -72,20 +82,24 @@ export default function Header() {
               </SheetHeader>
               <ScrollArea className="flex-1">
                 <div className="py-4 pl-6 pr-6">
-                  <div className="flex flex-col space-y-3">
-                    {navItems.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={() => setMenuOpen(false)}
-                        className={cn(
-                          'text-lg transition-colors hover:text-primary',
-                          pathname === item.href ? 'text-primary font-semibold' : 'text-foreground'
-                        )}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
+                  <div className="flex flex-col space-y-1">
+                    {navItems.map((item: NavItem) => {
+                      const Icon = iconMap[item.href];
+                      return (
+                        <Link
+                            key={item.label}
+                            href={item.href}
+                            onClick={() => setMenuOpen(false)}
+                            className={cn(
+                                'flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-muted',
+                                pathname === item.href ? 'bg-muted text-primary font-semibold' : 'text-foreground'
+                            )}
+                        >
+                            {Icon && <Icon className="h-4 w-4" />}
+                            <span className="text-base">{item.label}</span>
+                        </Link>
+                      )
+                    })}
                   </div>
                 </div>
               </ScrollArea>
