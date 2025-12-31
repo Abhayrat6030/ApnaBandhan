@@ -46,8 +46,7 @@ service cloud.firestore {
      * @principle   Public Read with Admin-Only Writes.
      */
     match /services/{serviceId} {
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
       allow write: if false;
     }
 
@@ -59,8 +58,7 @@ service cloud.firestore {
      * @principle   Public Read with Admin-Only Writes.
      */
     match /comboPackages/{comboPackageId} {
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
       allow write: if false;
     }
 
@@ -72,8 +70,7 @@ service cloud.firestore {
      * @principle   Public Read with Admin-Only Writes.
      */
     match /media/{mediaId} {
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
       allow write: if false;
     }
 
@@ -91,8 +88,7 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       allow get: if request.auth != null && resource.data.userId == request.auth.uid;
       allow list: if request.auth != null;
-      allow update: if false;
-      allow delete: if false;
+      allow update, delete: if false;
     }
 
     /**
