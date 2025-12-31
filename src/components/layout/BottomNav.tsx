@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils';
 import { navItems as mainNavItems } from '@/lib/constants';
 
 const navItems = [
-  { href: '/', label: 'Home', icon: Home },
   { href: '/order', label: 'Order', icon: ShoppingCart },
+  { href: '/', label: 'Home', icon: Home },
   { href: '/services', label: 'Category', icon: LayoutGrid },
   { href: '/profile', label: 'Profile', icon: User },
 ];
