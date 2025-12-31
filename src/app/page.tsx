@@ -70,7 +70,7 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-8 bg-background">
+      <section className="py-4 bg-background">
         <div className="container mx-auto px-4">
           <Carousel
             plugins={[plugin.current]}
