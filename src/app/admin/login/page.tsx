@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -31,7 +32,7 @@ export default function AdminLoginPage() {
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" placeholder="admin@example.com" required defaultValue="admin@apnabandhan.com" />
+                            <Input id="email" type="email" placeholder="admin@example.com" required defaultValue="abhayrat603@gmail.com" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="password">Password</Label>

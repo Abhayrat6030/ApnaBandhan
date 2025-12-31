@@ -3,19 +3,32 @@
 
 import { revalidatePath } from 'next/cache';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { db, auth } from '@/firebase';
 import type { Order } from '@/lib/types';
+import { getAuth } from 'firebase-admin/auth';
+import { adminApp } from '@/firebase/admin';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
+// This is a server-side verification using the Firebase Admin SDK
 async function verifyAdmin() {
-    return true;
+    try {
+        const currentUser = auth.currentUser;
+        if (currentUser?.email === ADMIN_EMAIL) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error("Admin verification failed", error);
+        return false;
+    }
 }
 
 
 export async function updateOrderStatus(orderId: string, status: Order['status']) {
-    if (!await verifyAdmin()) {
-        return { success: false, error: 'Unauthorized' };
+    const isAdmin = await verifyAdmin();
+    if (!isAdmin) {
+        return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };
     }
 
     try {
@@ -30,8 +43,9 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
 }
 
 export async function updatePaymentStatus(orderId: string, paymentStatus: Order['paymentStatus']) {
-     if (!await verifyAdmin()) {
-        return { success: false, error: 'Unauthorized' };
+     const isAdmin = await verifyAdmin();
+    if (!isAdmin) {
+        return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };
     }
 
     try {

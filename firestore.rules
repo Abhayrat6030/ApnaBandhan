@@ -14,9 +14,8 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // This is the single source of truth for admin access.
     function isAdmin() {
-      // In a production app, this should check a custom claim:
-      // return isSignedIn() && request.auth.token.admin == true;
       return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
@@ -25,16 +24,17 @@ service cloud.firestore {
        /users/{userId}
     =============================== */
     match /users/{userId} {
+      // Users can read and write their own data. Admins can too.
       allow read, write: if isOwner(userId) || isAdmin();
 
       match /notifications/{notificationId} {
         allow read: if isOwner(userId);
-        allow write: if isAdmin();
+        allow write: if isAdmin(); // Only admin can send notifications
       }
 
       match /downloadableProducts/{productId} {
         allow read: if isOwner(userId);
-        allow write: if isAdmin();
+        allow write: if isAdmin(); // Only admin can add downloadable products
       }
     }
 
@@ -56,37 +56,32 @@ service cloud.firestore {
     }
 
     /* ===============================
-       ORDERS (FIXED + SAFE)
+       ORDERS (SECURE)
     =============================== */
     
-    // This rule block for the collection is crucial for admin queries.
+    // Rule for accessing a SINGLE order document
     match /orders/{orderId} {
-      // Admins can perform any action on any specific order document.
-      allow get, update, delete: if isAdmin();
-
-      // Users can create orders for themselves.
-      // The `status` and `paymentStatus` must be "Pending" on creation.
+      // Admins can get any order. Users can only get their own.
+      allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
+      
+      // Admins can update any order.
+      allow update: if isAdmin();
+      
+      // Users can create orders for themselves with specific initial data.
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
         && request.resource.data.paymentStatus == "Pending";
       
-      // Users can read THEIR OWN specific order, but not others.
-      allow get: if isOwner(resource.data.userId);
-
+      // Deleting orders is disallowed for safety.
+      allow delete: if false;
     }
     
-    // IMPORTANT: This separate rule block for the collection is crucial for queries.
-    // It allows admins to perform a `list` query on the entire `orders` collection,
-    // which is required for the admin dashboard.
-    // It also allows users to query for their own orders.
+    // Rule for QUERYING the orders collection. Must be separate.
     match /orders {
-        // Admins can list all orders. Users can only list their own.
+        // Admins can LIST all orders. Users can LIST their own orders.
+        // This rule is critical for queries to work.
         allow list: if isAdmin() || (isSignedIn() && request.query.where.get("userId", "") == request.auth.uid);
-        
-        // This create rule is technically redundant because of the one above,
-        // but it can be useful to have it explicitly here for clarity.
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
     }
   }
 }
