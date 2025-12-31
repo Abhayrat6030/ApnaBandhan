@@ -5,9 +5,13 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarInset,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 import Logo from "@/components/shared/Logo";
 import { siteConfig } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { LogOut } from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -28,6 +32,14 @@ export default function AdminLayout({
         <SidebarContent>
           <AdminNav />
         </SidebarContent>
+        <SidebarFooter>
+            <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link href="/">
+                    <LogOut className="mr-2 h-4 w-4 transform rotate-180" />
+                    Back to Site
+                </Link>
+            </Button>
+        </SidebarFooter>
       </Sidebar>
       <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>

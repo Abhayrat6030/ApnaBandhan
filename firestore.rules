@@ -8,39 +8,34 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == userId;
     }
 
-    // Publicly readable collections that anyone can view.
-    // Writing should be restricted to admins (not implemented here, so write is false).
+    // Publicly readable collections
     match /services/{serviceId} {
-      allow get, list: if true;
-      allow write: if false;
+      allow read: if true;
+      allow write: if false; // Admin only
     }
 
     match /comboPackages/{comboPackageId} {
-      allow get, list: if true;
-      allow write: if false;
+      allow read: if true;
+      allow write: if false; // Admin only
     }
 
     match /media/{mediaId} {
-      allow get, list: if true;
-      allow write: if false;
+      allow read: if true;
+      allow write: if false; // Admin only
     }
 
     // Orders can be created by any authenticated user for themselves.
     // They can only read their own orders.
-    // Admins (future role) should be able to read all.
     match /orders/{orderId} {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow get: if request.auth != null && resource.data.userId == request.auth.uid;
-      // Allow admins to list all, and users to query their own.
-      // This is a broad list rule for now to support admin views.
-      allow list: if request.auth != null; 
+      allow get, list: if request.auth != null && (isOwner(resource.data.userId) || request.auth.token.email == 'abhayrat603@gmail.com');
       allow update, delete: if false; // Should be admin-only
     }
     
     // User-specific private data is nested under the user's ID.
     match /users/{userId} {
       // A user can read and write to their own top-level profile document.
-      allow get, create, update: if isOwner(userId);
+      allow get, update, create: if isOwner(userId) || request.auth.token.email == 'abhayrat603@gmail.com';
       // No one should be able to list all user documents.
       allow list, delete: if false;
 
