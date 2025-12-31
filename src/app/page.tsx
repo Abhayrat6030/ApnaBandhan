@@ -41,7 +41,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative h-[50vh] md:h-[60vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
+      <section className="relative h-[40vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
         <Image
           src={placeholderImages.hero.imageUrl}
           alt={placeholderImages.hero.description}
@@ -74,7 +74,7 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-4 bg-background border-b">
+      <section className="py-2 bg-background border-b">
         <div className="container mx-auto px-4">
           <Carousel
             plugins={[plugin.current]}
@@ -92,9 +92,9 @@ export default function Home() {
                 return (
                     <CarouselItem key={category.id} className="pl-2 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-[15%]">
                         <Link href={category.href} className="group block">
-                            <div className="flex flex-col items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary h-28">
-                                {Icon && <Icon className="h-8 w-8" />}
-                                <span className="text-sm font-medium leading-tight">{category.name}</span>
+                            <div className="flex flex-col items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary h-24">
+                                {Icon && <Icon className="h-6 w-6" />}
+                                <span className="text-xs font-medium leading-tight whitespace-nowrap">{category.name}</span>
                             </div>
                         </Link>
                     </CarouselItem>
