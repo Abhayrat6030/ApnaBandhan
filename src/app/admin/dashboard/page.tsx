@@ -12,14 +12,14 @@ import type { Order, Service } from '@/lib/types';
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const isAdmin = user?.email === 'abhayrat603@gmail.com';
 
-  // IMPORTANT FIX: Only create the query if the user is the authenticated admin.
   const recentOrdersQuery = useMemoFirebase(() => {
-    if (!firestore || !user || user.email !== 'abhayrat603@gmail.com') {
+    if (!firestore || !isAdmin) {
       return null;
     }
     return query(collection(firestore, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [firestore, user]);
+  }, [firestore, isAdmin]);
 
   const servicesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -50,7 +50,7 @@ export default function AdminDashboardPage() {
     { title: 'Total Revenue', value: 'N/A', icon: DollarSign },
     { title: 'Total Orders', value: 'N/A', icon: ShoppingBag },
     { title: 'Completed Orders', value: 'N/A', icon: CheckCircle },
-    { title: 'New Clients this month', value: '12', icon: Users }, // This remains mock for now
+    { title: 'New Clients this month', value: 'N/A', icon: Users }, 
   ];
   
   const recentOrdersWithServiceNames = useMemo(() => {
@@ -63,7 +63,7 @@ export default function AdminDashboardPage() {
   
   const isLoading = isUserLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
 
-  if (isLoading && !recentOrders) {
+  if (isLoading) {
     return (
        <div className="p-4 md:p-8">
         <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
@@ -94,7 +94,7 @@ export default function AdminDashboardPage() {
     )
   }
 
-  if (!user || user.email !== 'abhayrat603@gmail.com') {
+  if (!isAdmin) {
     return (
         <div className="p-4 md:p-8 text-center">
             <h1 className="font-headline text-2xl font-bold mb-4">Access Denied</h1>

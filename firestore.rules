@@ -15,7 +15,6 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // For this prototype, we'll check the admin email.
       // In a production app, this should check a custom claim:
       // return isSignedIn() && request.auth.token.admin == true;
       return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
@@ -58,31 +57,36 @@ service cloud.firestore {
 
     /* ===============================
        ORDERS (FIXED + SAFE)
-       /orders/{orderId}
     =============================== */
+    
+    // This rule block for the collection is crucial for admin queries.
     match /orders/{orderId} {
+      // Admins can perform any action on any specific order document.
+      allow get, update, delete: if isAdmin();
+
       // Users can create orders for themselves.
       // The `status` and `paymentStatus` must be "Pending" on creation.
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
         && request.resource.data.paymentStatus == "Pending";
+      
+      // Users can read THEIR OWN specific order, but not others.
+      allow get: if isOwner(resource.data.userId);
 
-      // Admins can get any order. Users can only get their own.
-      allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
-
-      // Only Admins can update an order.
-      allow update: if isAdmin();
-
-      // Deleting orders is blocked for data integrity.
-      allow delete: if false;
     }
     
-    // IMPORTANT: This separate rule block for the collection is crucial.
+    // IMPORTANT: This separate rule block for the collection is crucial for queries.
     // It allows admins to perform a `list` query on the entire `orders` collection,
     // which is required for the admin dashboard.
+    // It also allows users to query for their own orders.
     match /orders {
-        allow list: if isAdmin();
+        // Admins can list all orders. Users can only list their own.
+        allow list: if isAdmin() || (isSignedIn() && request.query.where.get("userId", "") == request.auth.uid);
+        
+        // This create rule is technically redundant because of the one above,
+        // but it can be useful to have it explicitly here for clarity.
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
     }
   }
 }
