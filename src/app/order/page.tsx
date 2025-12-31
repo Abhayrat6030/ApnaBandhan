@@ -25,6 +25,8 @@ import { useUser, db, errorEmitter } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 
+export const dynamic = 'force-dynamic';
+
 const allServicesAndPackages = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
 const uniqueServices = Array.from(new Map(allServicesAndPackages.map(item => [item.id, item])).values());
 
