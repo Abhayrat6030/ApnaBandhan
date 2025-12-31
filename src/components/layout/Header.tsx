@@ -68,14 +68,8 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
             <Link href="/order">Order Now</Link>
           </Button>
 
-          {/* Mobile Nav */}
+          {/* Mobile Nav Sheet */}
           <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Open Menu</span>
-              </Button>
-            </SheetTrigger>
             <SheetContent side="left" className="pr-0 flex flex-col">
                <SheetHeader className="p-4 border-b">
                  <Link href="/" className="mr-6 flex items-center space-x-2" onClick={() => setMenuOpen(false)}>
