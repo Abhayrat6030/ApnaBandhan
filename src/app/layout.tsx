@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Playfair_Display, Cormorant_Garamond } from 'next/font/google';
+import { Poppins, Cormorant_Garamond } from 'next/font/google';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -8,16 +8,16 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import FloatingWhatsApp from '@/components/shared/FloatingWhatsApp';
 
-const fontPlayfair = Playfair_Display({
+const fontPoppins = Poppins({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-headline',
+  variable: '--font-body',
 });
 
 const fontCormorant = Cormorant_Garamond({
   subsets: ['latin'],
   weight: ['400', '700'],
-  variable: '--font-body',
+  variable: '--font-headline',
 });
 
 export const metadata: Metadata = {
@@ -36,8 +36,8 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',
-          fontPlayfair.variable,
-          fontCormorant.variable
+          fontCormorant.variable,
+          fontPoppins.variable
         )}
       >
         <div className="relative flex min-h-dvh flex-col">
