@@ -58,30 +58,26 @@ service cloud.firestore {
     /* ===============================
        ORDERS (SECURE)
     =============================== */
-    
-    // Rule for accessing a SINGLE order document
-    match /orders/{orderId} {
+
+    // Rule for QUERYING the orders collection. Must be separate.
+     match /orders/{orderId} {
       // Admins can get any order. Users can only get their own.
       allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
-      
+
       // Admins can update any order.
       allow update: if isAdmin();
-      
+
       // Users can create orders for themselves with specific initial data.
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
         && request.resource.data.paymentStatus == "Pending";
-      
+
       // Deleting orders is disallowed for safety.
       allow delete: if false;
-    }
-    
-    // Rule for QUERYING the orders collection. Must be separate.
-    match /orders {
-        // Admins can LIST all orders. Users can LIST their own orders.
-        // This rule is critical for queries to work.
-        allow list: if isAdmin() || (isSignedIn() && request.query.where.get("userId", "") == request.auth.uid);
+
+      // Admins can LIST all orders. Users can LIST their own orders.
+      allow list: if isAdmin() || (isSignedIn() && request.query.where[0][2] == request.auth.uid);
     }
   }
 }
