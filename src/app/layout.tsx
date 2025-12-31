@@ -4,6 +4,7 @@
 import type { Metadata } from 'next';
 import { usePathname } from 'next/navigation';
 import { Inter } from 'next/font/google';
+import * as React from 'react';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -32,6 +33,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   const isAdminRoute = pathname.startsWith('/admin');
+  const [isMenuOpen, setMenuOpen] = React.useState(false);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -47,11 +49,11 @@ export default function RootLayout({
         )}
       >
         <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">
-          {!isAdminRoute && <Header />}
+          {!isAdminRoute && <Header isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />}
           <main className="flex-1">{children}</main>
           {!isAdminRoute && <Footer isHomePage={isHomePage} />}
         </div>
-        {!isAdminRoute && <BottomNav />}
+        {!isAdminRoute && <BottomNav setMenuOpen={setMenuOpen} />}
         <Toaster />
       </body>
     </html>

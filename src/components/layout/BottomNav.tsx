@@ -3,8 +3,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShoppingCart, LayoutGrid, User } from 'lucide-react';
-
+import { Home, ShoppingCart, LayoutGrid, User, Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -14,12 +14,25 @@ const navItems = [
   { href: '/#', label: 'Profile', icon: User }, // Placeholder link
 ];
 
-export default function BottomNav() {
+interface BottomNavProps {
+    setMenuOpen: (isOpen: boolean) => void;
+}
+
+export default function BottomNav({ setMenuOpen }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t md:hidden">
-      <div className="grid h-full max-w-lg grid-cols-4 mx-auto font-medium">
+      <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
+        <Button
+            variant="ghost"
+            onClick={() => setMenuOpen(true)}
+            className="inline-flex flex-col items-center justify-center px-5 text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-800 group rounded-none"
+        >
+          <Menu className="w-5 h-5 mb-1" />
+          <span className="text-xs">Menu</span>
+        </Button>
+
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (

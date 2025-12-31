@@ -23,8 +23,12 @@ const iconMap: Record<string, FC<React.ComponentProps<'svg'>>> = {
     '/contact': Mail
 };
 
-export default function Header() {
-  const [isMenuOpen, setMenuOpen] = useState(false);
+interface HeaderProps {
+    isMenuOpen: boolean;
+    setMenuOpen: (isOpen: boolean) => void;
+}
+
+export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
   const pathname = usePathname();
 
   return (
