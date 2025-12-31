@@ -20,6 +20,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 
 const topRatedVideos = services.filter(s => s.topRated && s.category === 'invitation-videos');
 const topRatedCards = services.filter(s => s.topRated && s.category === 'invitation-cards');
+const topRatedAlbums = services.filter(s => s.topRated && s.category === 'album-design');
+const topRatedVideoEditing = services.filter(s => s.topRated && s.category === 'video-editing');
 
 
 const categoryIcons = {
@@ -90,7 +92,7 @@ export default function Home() {
                 return (
                     <CarouselItem key={category.id} className="pl-1 basis-[28%] sm:basis-1/5 md:basis-[15%]">
                         <Link href={category.href} className="group block">
-                            <div className="flex flex-col items-center justify-center gap-1 p-1 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary h-20">
+                            <div className="flex flex-col items-center justify-center gap-1 p-1 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary h-24">
                                 {Icon && <Icon className="h-7 w-7" />}
                                 <span className="text-xs sm:text-sm font-medium leading-tight">{category.name}</span>
                             </div>
@@ -103,7 +105,7 @@ export default function Home() {
       </section>
 
       {/* Top Rated Videos Section */}
-      <section id="top-videos" className="py-8 md:py-12 bg-secondary/20">
+      {topRatedVideos.length > 0 && <section id="top-videos" className="py-8 md:py-12 bg-secondary/20">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
             <h2 className="font-bold text-2xl tracking-tight">
@@ -121,10 +123,10 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
       
       {/* Top Rated Cards Section */}
-      <section id="top-cards" className="py-8 md:py-12 bg-background">
+      {topRatedCards.length > 0 && <section id="top-cards" className="py-8 md:py-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
             <h2 className="font-bold text-2xl tracking-tight">
@@ -142,7 +144,50 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section>}
+
+       {/* Top Rated Album Designs Section */}
+      {topRatedAlbums.length > 0 && <section id="top-albums" className="py-8 md:py-12 bg-secondary/20">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-bold text-2xl tracking-tight">
+              Album Designs
+            </h2>
+             <Button asChild variant="outline" size="sm">
+              <Link href="/album-design">
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {topRatedAlbums.map((service) => (
+              <ProductCard key={service.id} service={service} />
+            ))}
+          </div>
+        </div>
+      </section>}
+
+       {/* Top Rated Video Editing Section */}
+      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="py-8 md:py-12 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-bold text-2xl tracking-tight">
+              Wedding Video Editing
+            </h2>
+             <Button asChild variant="outline" size="sm">
+              <Link href="/video-editing">
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {topRatedVideoEditing.map((service) => (
+              <ProductCard key={service.id} service={service} />
+            ))}
+          </div>
+        </div>
+      </section>}
+
 
     </div>
   );
