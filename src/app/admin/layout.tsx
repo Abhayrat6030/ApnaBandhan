@@ -24,8 +24,8 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <Sidebar>
+        <SheetTitle className="sr-only">Admin Menu</SheetTitle>
         <SidebarHeader>
-          <SheetTitle className="sr-only">Admin Menu</SheetTitle>
           <div className="flex items-center gap-2">
             <Logo className="w-8 h-8 text-primary" />
             <span className="text-xl font-headline font-semibold">
