@@ -5,7 +5,7 @@ import { services } from '@/lib/data';
 import { ServiceCard } from '@/components/shared/ServiceCard';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Star } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
