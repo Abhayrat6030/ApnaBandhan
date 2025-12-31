@@ -84,7 +84,7 @@ service cloud.firestore {
     match /comboPackages/{comboId} {
       // कोई भी कॉम्बो पैकेज देख सकता है।
       allow read: if true;
-      // केवल एडmin ही कॉम्बो पैकेज बना, अपडेट या हटा सकता है।
+      // केवल एडमिन ही कॉम्बो पैकेज बना, अपडेट या हटा सकता है।
       allow write: if isAdmin();
     }
 
