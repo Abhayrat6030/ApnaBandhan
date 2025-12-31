@@ -57,7 +57,7 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-16 bg-background">
+      <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex flex-row justify-around items-center border-b">
             {serviceCategories.map((category, index) => {
@@ -66,8 +66,6 @@ export default function Home() {
                 <Link href={category.href} key={category.id} className="flex-1 group">
                     <div className={cn(
                         "flex flex-col items-center justify-center gap-2 py-4 text-center text-muted-foreground transition-colors group-hover:text-primary",
-                        // Simple active state for demo - assuming 'all' or first one is active
-                        index === 0 ? "text-primary border-b-2 border-primary" : ""
                     )}>
                         {Icon && <Icon className="h-7 w-7" />}
                         <span className="text-sm font-medium">{category.name}</span>

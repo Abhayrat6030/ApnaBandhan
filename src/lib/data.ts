@@ -238,32 +238,32 @@ export const serviceCategories: ServiceCategoryInfo[] = [
       name: 'Invitation Videos', 
       description: 'Announce your special day with a stunning video that captures your love story.',
       href: '/invitation-videos',
-      imageUrl: 'https://picsum.photos/seed/cat-vid/600/400',
-      imageHint: 'wedding film'
+      imageUrl: 'https://picsum.photos/seed/wedding-film/600/400',
+      imageHint: 'wedding film reel'
     },
     { 
       id: 'invitation-cards', 
       name: 'Invitation Cards', 
       description: 'Elegant and modern digital & printable cards for every wedding style.',
       href: '/invitation-cards',
-      imageUrl: 'https://picsum.photos/seed/cat-card/600/400',
-      imageHint: 'invitation design'
+      imageUrl: 'https://picsum.photos/seed/invitation-stationery/600/400',
+      imageHint: 'invitation stationery'
     },
     { 
       id: 'album-design', 
       name: 'Album Designs', 
       description: 'Treasure your memories with a beautifully designed, professional wedding album.',
       href: '/album-design',
-      imageUrl: 'https://picsum.photos/seed/cat-album/600/400',
-      imageHint: 'photo album'
+      imageUrl: 'https://picsum.photos/seed/wedding-photobook/600/400',
+      imageHint: 'wedding photobook'
     },
     { 
       id: 'combo-packages', 
       name: 'Combo Packages',
       description: 'Get the best value with our curated packages combining our most popular services.',
       href: '/packages',
-      imageUrl: 'https://picsum.photos/seed/cat-combo/600/400',
-      imageHint: 'wedding gift'
+      imageUrl: 'https://picsum.photos/seed/wedding-gifts/600/400',
+      imageHint: 'wedding gifts'
     },
 ];
 
