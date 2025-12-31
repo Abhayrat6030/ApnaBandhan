@@ -18,7 +18,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 
-const topRatedServices = services.filter(s => s.topRated);
+const topRatedVideos = services.filter(s => s.topRated && s.category === 'invitation-videos');
+const topRatedCards = services.filter(s => s.topRated && s.category === 'invitation-cards');
+
 
 const categoryIcons = {
   'invitation-videos': Film,
@@ -100,31 +102,48 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Top Rated Section */}
-      <section id="services" className="py-8 md:py-12 bg-secondary/20">
+      {/* Top Rated Videos Section */}
+      <section id="top-videos" className="py-8 md:py-12 bg-secondary/20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
-              Top Rated on Our Store
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-bold text-2xl tracking-tight">
+              Invitation Videos
             </h2>
-            <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-              Discover our most popular and highly-rated services.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {topRatedServices.map((service) => (
-              <ProductCard key={service.id} service={service} />
-            ))}
-          </div>
-          <div className="text-center mt-12">
-            <Button asChild variant="outline">
-              <Link href="/services">
-                Explore All Services <ArrowRight className="ml-2 h-4 w-4" />
+             <Button asChild variant="outline" size="sm">
+              <Link href="/invitation-videos">
+                View All <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {topRatedVideos.map((service) => (
+              <ProductCard key={service.id} service={service} />
+            ))}
+          </div>
         </div>
       </section>
+      
+      {/* Top Rated Cards Section */}
+      <section id="top-cards" className="py-8 md:py-12 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-bold text-2xl tracking-tight">
+              Invitation Cards
+            </h2>
+             <Button asChild variant="outline" size="sm">
+              <Link href="/invitation-cards">
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {topRatedCards.map((service) => (
+              <ProductCard key={service.id} service={service} />
+            ))}
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }
