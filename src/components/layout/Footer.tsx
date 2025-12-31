@@ -12,7 +12,7 @@ export default function Footer({ isHomePage }: FooterProps) {
     <footer className="bg-card border-t">
       {isHomePage && (
         <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8">
             {/* Brand Info */}
             <div className="flex flex-col">
               <Link href="/" className="flex items-center space-x-2 mb-4">
@@ -50,24 +50,6 @@ export default function Footer({ isHomePage }: FooterProps) {
               </ul>
             </div>
 
-            {/* Contact Info */}
-            <div>
-              <h3 className="font-bold text-lg mb-4">Contact Us</h3>
-              <ul className="space-y-3 text-muted-foreground">
-                <li className="flex items-start">
-                  <Phone className="h-5 w-5 mr-3 mt-1 shrink-0 text-primary" />
-                  <a href={`tel:${siteConfig.phone}`} className="hover:text-primary">{siteConfig.phone}</a>
-                </li>
-                <li className="flex items-start">
-                  <Mail className="h-5 w-5 mr-3 mt-1 shrink-0 text-primary" />
-                  <a href={`mailto:${siteConfig.email}`} className="hover:text-primary">{siteConfig.email}</a>
-                </li>
-                <li className="flex items-start">
-                  <MapPin className="h-5 w-5 mr-3 mt-1 shrink-0 text-primary" />
-                  <span>{siteConfig.address}</span>
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
       )}

@@ -3,7 +3,7 @@ import type { NavItem } from './types';
 export const siteConfig = {
   name: 'ApnaBandhan',
   tagline: 'Wedding Invitations • Videos • Albums',
-  phone: 'AIzaSyBIAWez_BWA7tv9j5BG1wowTsb6sh3SnYE', // Add a real number here
+  phone: '9100000000', // Add a real number here
   email: 'contact@apnabandhan.com',
   address: 'New Delhi, India',
   workingHours: 'Mon-Sat: 10:00 AM - 7:00 PM',
