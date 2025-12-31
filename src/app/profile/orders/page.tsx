@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service } from '@/lib/types';
-import { services as staticServices } from '@/lib/data';
 
 const getStatusVariant = (status: Order['status']) => {
     switch (status) {
@@ -45,19 +44,24 @@ export default function OrderHistoryPage() {
       if (!firestore) return null;
       return collection(firestore, 'services');
     }, [firestore]);
+    
+    const packagesQuery = useMemoFirebase(() => {
+      if(!firestore) return null;
+      return collection(firestore, 'comboPackages');
+    }, [firestore]);
 
     const { data: userOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
     const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
+    const { data: packages, isLoading: arePackagesLoading } = useCollection<Service>(packagesQuery);
 
     const allServicesMap = useMemo(() => {
         const map = new Map<string, string>();
-        // Combine static and firestore services for full lookup capability
-        staticServices.forEach(s => map.set(s.id, s.name));
         services?.forEach(s => map.set(s.id, s.name));
+        packages?.forEach(p => map.set(p.id, p.name));
         return map;
-    }, [services]);
+    }, [services, packages]);
 
-    const isLoading = isUserLoading || areOrdersLoading || areServicesLoading;
+    const isLoading = isUserLoading || areOrdersLoading || areServicesLoading || arePackagesLoading;
 
     const renderSkeleton = () => (
         <Table>
