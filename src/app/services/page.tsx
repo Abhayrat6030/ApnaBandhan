@@ -1,3 +1,4 @@
+
 import { services, serviceCategories } from '@/lib/data';
 import { ServiceCard } from '@/components/shared/ServiceCard';
 import Link from 'next/link';
@@ -23,7 +24,7 @@ export default function ServicesPage() {
             <section key={category.id} className="mb-16">
                 <div className="flex justify-between items-center mb-8">
                     <h2 className="font-headline text-3xl font-bold tracking-tight capitalize">
-                        <Link href={`/${category.id.replace('_', '-')}`} className="hover:text-primary transition-colors">
+                        <Link href={`/${category.id.replace(/_/g, '-')}`} className="hover:text-primary transition-colors">
                             {category.name}
                         </Link>
                     </h2>
