@@ -12,9 +12,9 @@ import Autoplay from "embla-carousel-autoplay";
 
 
 export default function ServicesPage() {
-   const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
-  )
+  const plugin = React.useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: false })
+  );
 
   return (
     <div className="bg-background">
@@ -32,7 +32,7 @@ export default function ServicesPage() {
           plugins={[plugin.current]}
           className="w-full"
           onMouseEnter={plugin.current.stop}
-          onMouseLeave={plugin.current.reset}
+          onMouseLeave={plugin.current.play}
            opts={{
             align: "start",
             loop: true,
@@ -40,7 +40,7 @@ export default function ServicesPage() {
         >
           <CarouselContent className="-ml-4">
             {serviceCategories.map((category) => (
-              <CarouselItem key={category.id} className="pl-4 md:basis-1/2 lg:basis-1/4">
+              <CarouselItem key={category.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
                 <div className="p-1">
                   <Link href={category.href} className="group block h-full">
                     <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
