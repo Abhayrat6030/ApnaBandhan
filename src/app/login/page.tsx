@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,47 +37,38 @@ export default function LoginPage() {
     },
   });
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        toast({
+          title: 'Logged In Successfully!',
+          description: "Welcome back!",
+        });
+        setIsLoading(false);
+        router.push('/profile');
+      }
+    });
+    return () => unsubscribe();
+  }, [auth, router, toast]);
+
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    try {
-        initiateEmailSignIn(auth, values.email, values.password);
-
-        // Listen for the auth state change to confirm login
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                toast({
-                    title: 'Logged In Successfully!',
-                    description: "Welcome back!",
-                });
-                router.push('/profile');
-                unsubscribe(); // Cleanup the listener
-            }
-        });
-        
-        // Handle cases where login might fail silently (e.g., wrong password)
-        // Firebase's onAuthStateChanged won't fire an error for bad credentials,
-        // so we add a timeout to handle this.
-        setTimeout(() => {
-            if (auth.currentUser === null) {
-                toast({
-                    title: 'Login Failed',
-                    description: 'Incorrect email or password. Please try again.',
-                    variant: 'destructive',
-                });
-                setIsLoading(false);
-                unsubscribe();
-            }
-        }, 3000); // 3 second timeout
-
-    } catch (error: any) {
+    const handleError = (error: any) => {
+        setIsLoading(false);
+        let description = 'An unexpected error occurred.';
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            description = 'Incorrect email or password. Please try again.';
+        }
         toast({
             title: 'Login Failed',
-            description: error.message || 'An unexpected error occurred.',
+            description,
             variant: 'destructive',
         });
-        setIsLoading(false);
-    }
+    };
+
+    initiateEmailSignIn(auth, values.email, values.password, handleError);
   }
 
   return (
