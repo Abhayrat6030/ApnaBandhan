@@ -7,35 +7,29 @@ import { db } from '@/firebase';
 import type { Order } from '@/lib/types';
 import { getAuth } from 'firebase-admin/auth';
 import { adminApp } from '@/firebase/admin';
-import { headers } from 'next/headers';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 // This is a server-side verification using the Firebase Admin SDK
-async function verifyAdmin() {
-    // If adminApp is not initialized (because the service key is missing), we cannot verify.
-    if (!adminApp) {
-        console.warn("Cannot verify admin: Firebase Admin SDK not initialized.");
+async function verifyAdmin(idToken: string | undefined) {
+    // If adminApp is not initialized or no token is provided, deny access.
+    if (!adminApp || !idToken) {
+        console.warn("Cannot verify admin: Firebase Admin SDK not initialized or no token provided.");
         return false;
     }
 
-    const authorization = headers().get('Authorization');
-    if (authorization?.startsWith('Bearer ')) {
-        const idToken = authorization.split('Bearer ')[1];
-        try {
-            const decodedToken = await getAuth(adminApp).verifyIdToken(idToken);
-            return decodedToken.email === ADMIN_EMAIL;
-        } catch (error) {
-            console.error('Error verifying admin token:', error);
-            return false;
-        }
+    try {
+        const decodedToken = await getAuth(adminApp).verifyIdToken(idToken);
+        return decodedToken.email === ADMIN_EMAIL;
+    } catch (error) {
+        console.error('Error verifying admin token:', error);
+        return false;
     }
-    return false;
 }
 
 
-export async function updateOrderStatus(orderId: string, status: Order['status']) {
-    const isAdmin = await verifyAdmin();
+export async function updateOrderStatus(idToken: string | undefined, orderId: string, status: Order['status']) {
+    const isAdmin = await verifyAdmin(idToken);
 
     if (!isAdmin) {
         return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };
@@ -52,8 +46,8 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
     }
 }
 
-export async function updatePaymentStatus(orderId: string, paymentStatus: Order['paymentStatus']) {
-    const isAdmin = await verifyAdmin();
+export async function updatePaymentStatus(idToken: string | undefined, orderId: string, paymentStatus: Order['paymentStatus']) {
+    const isAdmin = await verifyAdmin(idToken);
 
     if (!isAdmin) {
         return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };

@@ -8,34 +8,29 @@ import type { Service, Package } from '@/lib/types';
 import { z } from 'zod';
 import { getAuth } from 'firebase-admin/auth';
 import { adminApp } from '@/firebase/admin';
-import { headers } from 'next/headers';
 
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 // This is a server-side verification using the Firebase Admin SDK
-async function verifyAdmin() {
-    // If adminApp is not initialized (because the service key is missing), we cannot verify.
-    if (!adminApp) {
-        console.warn("Cannot verify admin: Firebase Admin SDK not initialized.");
+async function verifyAdmin(idToken: string | undefined) {
+    // If adminApp is not initialized or no token is provided, deny access.
+    if (!adminApp || !idToken) {
+        console.warn("Cannot verify admin: Firebase Admin SDK not initialized or no token provided.");
         return false;
     }
 
-    const authorization = headers().get('Authorization');
-    if (authorization?.startsWith('Bearer ')) {
-        const idToken = authorization.split('Bearer ')[1];
-        try {
-            const decodedToken = await getAuth(adminApp).verifyIdToken(idToken);
-            return decodedToken.email === ADMIN_EMAIL;
-        } catch (error) {
-            console.error('Error verifying admin token:', error);
-            return false;
-        }
+    try {
+        const decodedToken = await getAuth(adminApp).verifyIdToken(idToken);
+        return decodedToken.email === ADMIN_EMAIL;
+    } catch (error) {
+        console.error('Error verifying admin token:', error);
+        return false;
     }
-    return false;
 }
 
 const formSchema = z.object({
+  idToken: z.string().optional(),
   itemType: z.enum(['service', 'package']),
   name: z.string().min(3),
   slug: z.string().optional(),
@@ -54,7 +49,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export async function addService(data: FormValues) {
-  const isAdmin = await verifyAdmin();
+  const isAdmin = await verifyAdmin(data.idToken);
   if (!isAdmin) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -101,7 +96,7 @@ export async function addService(data: FormValues) {
 }
 
 export async function updateService(id: string, data: FormValues) {
-  const isAdmin = await verifyAdmin();
+  const isAdmin = await verifyAdmin(data.idToken);
   if (!isAdmin) {
     return { success: false, error: 'Unauthorized' };
   }
@@ -147,8 +142,8 @@ export async function updateService(id: string, data: FormValues) {
 }
 
 
-export async function deleteItem(itemId: string, itemType: 'Service' | 'Package') {
-    const isAdmin = await verifyAdmin();
+export async function deleteItem(idToken: string | undefined, itemId: string, itemType: 'Service' | 'Package') {
+    const isAdmin = await verifyAdmin(idToken);
     if (!isAdmin) {
       return { success: false, error: 'Unauthorized' };
     }

@@ -16,12 +16,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { updateService } from '../../actions';
-import { useDoc, useMemoFirebase, db } from '@/firebase';
+import { useDoc, useMemoFirebase, db, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
+  idToken: z.string().optional(),
   itemType: z.enum(['service', 'package']),
   name: z.string().min(3, 'Name is required.'),
   slug: z.string().optional(),
@@ -55,6 +56,7 @@ export default function EditServicePage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [itemType, setItemType] = useState<'service' | 'package' | null>(null);
+  const { user } = useUser();
 
   // Try fetching as a service first
   const serviceRef = useMemoFirebase(() => slug ? doc(db, 'services', slug as string) : null, [slug]);
@@ -108,8 +110,13 @@ export default function EditServicePage() {
   }, [serviceData, packageData, form]);
 
   async function onSubmit(values: FormValues) {
+    if (!user) {
+        toast({ title: 'Authentication Error', description: 'You must be logged in.', variant: 'destructive' });
+        return;
+    }
     setIsLoading(true);
-    const result = await updateService(slug as string, values);
+    const token = await user.getIdToken();
+    const result = await updateService(slug as string, { ...values, idToken: token });
     
     if (result.success) {
       toast({

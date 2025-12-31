@@ -74,10 +74,14 @@ export default function AdminServicesPage() {
   };
   
   const confirmDelete = async () => {
-    if (!itemToDelete) return;
+    if (!itemToDelete || !user) {
+        toast({ title: "Error", description: "Could not delete item. User not found.", variant: 'destructive' });
+        return;
+    }
 
     setIsDeleting(itemToDelete.id);
-    const result = await deleteItem(itemToDelete.slug || itemToDelete.id, itemToDelete.type);
+    const token = await user.getIdToken();
+    const result = await deleteItem(token, itemToDelete.slug || itemToDelete.id, itemToDelete.type);
     
     if (result.success) {
       toast({ title: "Success", description: `${itemToDelete.name} has been deleted.` });

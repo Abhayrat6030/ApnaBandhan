@@ -28,37 +28,8 @@ function AuthHandler({ children }: { children: React.ReactNode }) {
   const { isUserLoading, user } = useUser();
 
   React.useEffect(() => {
-    const setAuthToken = async () => {
-        if (user) {
-            try {
-                const token = await user.getIdToken();
-                // This is a common pattern to make the token available for server actions
-                // by setting it in a custom header. A middleware could also be used.
-                // For simplicity, we are just logging it here.
-                // In a real app, you might set a cookie or use a state management solution.
-                
-                // This is a workaround to attach token to fetch requests for server actions
-                const originalFetch = window.fetch;
-                window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
-                    const initWithOptions = {
-                        ...init,
-                        headers: {
-                            ...init?.headers,
-                            Authorization: `Bearer ${token}`,
-                        },
-                    };
-                    return originalFetch(input, initWithOptions);
-                };
-            } catch (error) {
-                console.error('Error getting ID token:', error);
-            }
-        }
-    };
-    
     if (!isUserLoading && !user) {
       initiateAnonymousSignIn(auth);
-    } else if (user) {
-        setAuthToken();
     }
   }, [isUserLoading, user]);
 

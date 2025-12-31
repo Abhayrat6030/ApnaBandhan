@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -28,6 +29,8 @@ import type { Order } from '@/lib/types';
 import Link from 'next/link';
 import { updateOrderStatus, updatePaymentStatus } from '@/app/admin/orders/actions';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/firebase';
+
 
 interface OrderTableProps {
   orders: (Order & { serviceName?: string })[];
@@ -36,6 +39,8 @@ interface OrderTableProps {
 export default function OrderTable({ orders }: OrderTableProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState<string | null>(null);
+  const { user } = useUser();
+
 
   const getStatusVariant = (status: Order['status']) => {
     switch (status) {
@@ -57,23 +62,41 @@ export default function OrderTable({ orders }: OrderTableProps) {
   }
 
   const handleStatusUpdate = async (orderId: string, newStatus: Order['status']) => {
+    if (!user) {
+        toast({ title: 'Not Authenticated', description: 'Please login to perform this action.', variant: 'destructive'});
+        return;
+    }
     setIsSubmitting(`status-${orderId}`);
-    const result = await updateOrderStatus(orderId, newStatus);
-    if (result.success) {
-      toast({ title: "Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-    } else {
-      toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
+    try {
+        const idToken = await user.getIdToken();
+        const result = await updateOrderStatus(idToken, orderId, newStatus);
+        if (result.success) {
+          toast({ title: "Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
+        } else {
+          toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
+        }
+    } catch (e) {
+        toast({ title: "Update Failed", description: "Could not get authentication token.", variant: 'destructive'});
     }
     setIsSubmitting(null);
   }
 
   const handlePaymentUpdate = async (orderId: string, newStatus: Order['paymentStatus']) => {
+    if (!user) {
+        toast({ title: 'Not Authenticated', description: 'Please login to perform this action.', variant: 'destructive'});
+        return;
+    }
      setIsSubmitting(`payment-${orderId}`);
-    const result = await updatePaymentStatus(orderId, newStatus);
-     if (result.success) {
-      toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-    } else {
-      toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
+    try {
+        const idToken = await user.getIdToken();
+        const result = await updatePaymentStatus(idToken, orderId, newStatus);
+        if (result.success) {
+          toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
+        } else {
+          toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
+        }
+    } catch (e) {
+         toast({ title: "Update Failed", description: "Could not get authentication token.", variant: 'destructive'});
     }
     setIsSubmitting(null);
   }
