@@ -24,11 +24,11 @@ export default function BottomNav({ setMenuOpen }: BottomNavProps) {
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t md:hidden">
-      <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
+      <div className="flex h-full w-full justify-around items-center">
         <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            className="inline-flex flex-col items-center justify-center px-5 text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-800 group"
+            className="inline-flex flex-col items-center justify-center text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-800 group p-2 rounded-lg"
         >
           <Menu className="w-5 h-5 mb-1" />
           <span className="text-xs">Menu</span>
@@ -41,7 +41,7 @@ export default function BottomNav({ setMenuOpen }: BottomNavProps) {
               key={item.label}
               href={item.href}
               className={cn(
-                'inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 dark:hover:bg-gray-800 group',
+                'inline-flex flex-col items-center justify-center p-2 rounded-lg group',
                 isActive ? 'text-primary' : 'text-muted-foreground'
               )}
             >
