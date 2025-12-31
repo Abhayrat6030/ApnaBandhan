@@ -1,81 +1,136 @@
 
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /* ===============================
-       HELPER FUNCTIONS
-    =============================== */
+    // =====================================================================
+    // HELPER FUNCTIONS (सहायक फ़ंक्शंस)
+    // ये फ़ंक्शंस नियमों को पढ़ने में आसान बनाते हैं।
+    // =====================================================================
+
+    // जाँचता है कि उपयोगकर्ता लॉग-इन है या नहीं।
     function isSignedIn() {
       return request.auth != null;
     }
 
+    // जाँचता है कि अनुरोध करने वाला उपयोगकर्ता दस्तावेज़ का मालिक है या नहीं।
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // This is the single source of truth for admin access.
+    // एडमिन की पहचान करने का एकमात्र स्रोत।
+    // केवल यह ईमेल ही एडमिन के रूप में माना जाएगा।
     function isAdmin() {
       return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
     }
+    
+    // आने वाले डेटा में फ़ील्ड की उपस्थिति की जाँच करता है।
+    function hasFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    // आने वाले डेटा में केवल अनुमत फ़ील्ड्स की जाँच करता है।
+    function hasOnlyFields(fields) {
+      return request.resource.data.keys().removeAll(fields).size() == 0;
+    }
 
-    /* ===============================
-       USERS
-       /users/{userId}
-    =============================== */
+
+    // =====================================================================
+    // USERS COLLECTION (उपयोगकर्ता संग्रह)
+    // /users/{userId}
+    // =====================================================================
     match /users/{userId} {
-      // Users can read and write their own data. Admins can too.
-      allow read, write: if isOwner(userId) || isAdmin();
+      
+      // एक उपयोगकर्ता केवल अपने स्वयं के प्रोफ़ाइल दस्तावेज़ को पढ़ और लिख सकता है।
+      // एडमिन किसी भी उपयोगकर्ता के प्रोफ़ाइल को पढ़ और लिख सकता है।
+      allow read, update, delete: if isOwner(userId) || isAdmin();
 
+      // कोई भी साइन-इन किया हुआ उपयोगकर्ता अपना स्वयं का उपयोगकर्ता दस्तावेज़ बना सकता है।
+      allow create: if isOwner(userId);
+
+      // --- Users Sub-collections (उप-संग्रह) ---
+
+      // सूचनाएं (Notifications)
       match /notifications/{notificationId} {
+        // उपयोगकर्ता केवल अपनी सूचनाएं पढ़ सकते हैं।
         allow read: if isOwner(userId);
-        allow write: if isAdmin(); // Only admin can send notifications
+        // केवल एडमिन ही किसी उपयोगकर्ता के लिए सूचनाएं बना, अपडेट या हटा सकता है।
+        allow write: if isAdmin();
       }
 
+      // डाउनलोड करने योग्य उत्पाद (Downloadable Products)
       match /downloadableProducts/{productId} {
+        // उपयोगकर्ता केवल अपने डाउनलोड करने योग्य उत्पाद देख सकते हैं।
         allow read: if isOwner(userId);
-        allow write: if isAdmin(); // Only admin can add downloadable products
+        // केवल एडमिन ही किसी उपयोगकर्ता के लिए उत्पाद जोड़, अपडेट या हटा सकता है।
+        allow write: if isAdmin();
       }
     }
 
-    /* ===============================
-       PUBLIC COLLECTIONS
-    =============================== */
+
+    // =====================================================================
+    // PUBLIC COLLECTIONS (सार्वजनिक संग्रह)
+    // ये संग्रह सभी के लिए पठनीय (readable) हैं।
+    // =====================================================================
+
     match /services/{serviceId} {
+      // कोई भी सेवाओं को देख सकता है।
       allow read: if true;
+      // केवल एडमिन ही सेवाओं को बना, अपडेट या हटा सकता है।
       allow write: if isAdmin();
     }
 
     match /comboPackages/{comboId} {
+      // कोई भी कॉम्बो पैकेज देख सकता है।
       allow read: if true;
-      allow write: if isAdmin();
-    }
-     match /media/{mediaId} {
-      allow read: if true;
+      // केवल एडmin ही कॉम्बो पैकेज बना, अपडेट या हटा सकता है।
       allow write: if isAdmin();
     }
 
-    /* ===============================
-       ORDERS (SECURE)
-    =============================== */
-     match /orders/{orderId} {
-      // Admins can get any order. Users can only get their own.
+    match /media/{mediaId} {
+      // कोई भी मीडिया (फोटो/वीडियो) देख सकता है।
+      allow read: if true;
+      // केवल एडमिन ही मीडिया बना, अपडेट या हटा सकता है।
+      allow write: if isAdmin();
+    }
+
+    // =====================================================================
+    // ORDERS COLLECTION (ऑर्डर संग्रह)
+    // यह एक सुरक्षित संग्रह है।
+    // =====================================================================
+    match /orders/{orderId} {
+    
+      // एक ऑर्डर प्राप्त करना (Get an Order)
+      // एडमिन कोई भी ऑर्डर प्राप्त कर सकता है।
+      // उपयोगकर्ता केवल अपने स्वयं के ऑर्डर प्राप्त कर सकते हैं।
       allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
 
-      // Admins can update any order.
+      // सभी ऑर्डर सूचीबद्ध करना (List all Orders)
+      // एडमिन सभी ऑर्डर सूचीबद्ध कर सकता है।
+      // उपयोगकर्ता केवल अपने ऑर्डर सूचीबद्ध कर सकते हैं (क्वेरी के माध्यम से)।
+      allow list: if isAdmin() || (isSignedIn() && request.query.where[0] == "userId" && request.query.where[1] == "==" && request.query.where[2] == request.auth.uid);
+
+      // एक नया ऑर्डर बनाना (Create a new Order)
+      // कोई भी साइन-इन किया हुआ उपयोगकर्ता अपने लिए एक ऑर्डर बना सकता है।
+      allow create: if isSignedIn()
+                      // यह सुनिश्चित करता है कि उपयोगकर्ता अपने लिए ही ऑर्डर बना रहा है।
+                      && request.resource.data.userId == request.auth.uid
+                      // प्रारंभिक स्थिति 'Pending' होनी चाहिए।
+                      && request.resource.data.status == "Pending"
+                      // प्रारंभिक भुगतान स्थिति 'Pending' होनी चाहिए।
+                      && request.resource.data.paymentStatus == "Pending"
+                      // सुनिश्चित करता है कि केवल आवश्यक फ़ील्ड ही मौजूद हैं।
+                      && hasOnlyFields(['userId', 'fullName', 'phoneNumber', 'email', 'weddingDate', 'selectedServiceId', 'messageNotes', 'orderDate', 'status', 'paymentStatus']);
+                      
+      // एक ऑर्डर अपडेट करना (Update an Order)
+      // केवल एडमिन ही किसी भी ऑर्डर को अपडेट कर सकता है।
+      // उपयोगकर्ता अपने ऑर्डर की स्थिति नहीं बदल सकते।
       allow update: if isAdmin();
 
-      // Users can create orders for themselves with specific initial data.
-      allow create: if isSignedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == "Pending"
-        && request.resource.data.paymentStatus == "Pending";
-
-      // Deleting orders is disallowed for safety.
+      // एक ऑर्डर हटाना (Delete an Order)
+      // सुरक्षा कारणों से ऑर्डर हटाना प्रतिबंधित है।
       allow delete: if false;
-
-      // Admins can LIST all orders. Users can LIST only their own orders.
-      allow list: if isAdmin() || (isSignedIn() && request.query.where[0] == "userId" && request.query.where[1] == "==" && request.query.where[2] == request.auth.uid);
     }
   }
 }
