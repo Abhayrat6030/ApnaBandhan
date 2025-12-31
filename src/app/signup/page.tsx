@@ -46,26 +46,17 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
+    if (!auth) {
+        toast({ title: 'Auth service not available', variant: 'destructive'});
+        setIsLoading(false);
+        return;
+    }
 
     const handleSuccess = () => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                toast({
-                    title: 'Account Created!',
-                    description: 'You have been successfully signed up.',
-                });
-                router.push('/profile');
-                unsubscribe();
-            }
-        });
-
-        // Failsafe timeout
-        setTimeout(() => {
-            if (!auth.currentUser) {
-                handleError({ code: 'auth/unknown-error' });
-                unsubscribe();
-            }
-        }, 5000);
+        // This is now handled by the onAuthStateChanged in the layout/provider
+        // to avoid race conditions.
+        setIsLoading(false);
+        // The global listener will toast and redirect.
     };
 
     const handleError = (error: any) => {
@@ -80,7 +71,7 @@ export default function SignupPage() {
             variant: 'destructive',
         });
     };
-    
+
     initiateEmailSignUp(auth, values.email, values.password, values.name, handleSuccess, handleError);
   }
 
@@ -135,16 +126,16 @@ export default function SignupPage() {
                     <FormControl>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            type={showPassword ? "text" : "password"} 
+                        <Input
+                            type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            {...field} 
+                            {...field}
                             className="pl-10 pr-10"
                         />
-                        <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
                             className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                             onClick={() => setShowPassword(!showPassword)}
                         >

@@ -21,7 +21,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, errorEmitter } from '@/firebase';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 const allServicesAndPackages = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
@@ -51,17 +52,31 @@ export default function OrderPage() {
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
     defaultValues: {
-      fullName: user?.displayName || '',
+      fullName: '',
       phone: '',
-      email: user?.email || '',
+      email: '',
       selectedService: serviceId || '',
       message: '',
     },
   });
-  
+
+  // Set default values once user data is available
+  useState(() => {
+    if (user) {
+      form.reset({
+        fullName: user.displayName || '',
+        email: user.email || '',
+        selectedService: serviceId || '',
+        phone: user.phoneNumber || '',
+        message: '',
+      });
+    }
+  }, [user, form, serviceId]);
+
+
   async function onSubmit(data: OrderFormValues) {
     setIsSubmitting(true);
-    
+
     if (!user || !firestore) {
         toast({
             title: "Authentication Error",
@@ -72,42 +87,48 @@ export default function OrderPage() {
         return;
     }
 
-    try {
-        const ordersCollection = collection(firestore, 'orders');
-        
-        const newOrder = {
-            userId: user.uid,
-            fullName: data.fullName,
-            phoneNumber: data.phone,
-            email: data.email,
-            weddingDate: data.weddingDate.toISOString().split('T')[0], // format to YYYY-MM-DD
-            selectedServiceId: data.selectedService,
-            messageNotes: data.message || '',
-            orderDate: new Date().toISOString(),
-            status: 'Pending',
-            paymentStatus: 'Pending',
-        };
+    const ordersCollection = collection(firestore, 'orders');
 
-        await addDoc(ordersCollection, newOrder);
+    const newOrder = {
+        userId: user.uid,
+        fullName: data.fullName,
+        phoneNumber: data.phone,
+        email: data.email,
+        weddingDate: data.weddingDate.toISOString().split('T')[0], // format to YYYY-MM-DD
+        selectedServiceId: data.selectedService,
+        messageNotes: data.message || '',
+        orderDate: new Date().toISOString(),
+        status: 'Pending' as const,
+        paymentStatus: 'Pending' as const,
+    };
 
-        toast({
-            title: "Order Submitted Successfully!",
-            description: "We have received your details and will contact you shortly.",
-            variant: "default"
+    addDoc(ordersCollection, newOrder)
+        .then(() => {
+            toast({
+                title: "Order Submitted Successfully!",
+                description: "We have received your details and will contact you shortly.",
+                variant: "default"
+            });
+            form.reset();
+            setIsSubmitted(true);
+        })
+        .catch((error) => {
+            console.error("Order submission error:", error);
+            const contextualError = new FirestorePermissionError({
+              path: ordersCollection.path,
+              operation: 'create',
+              requestResourceData: newOrder
+            });
+            errorEmitter.emit('permission-error', contextualError);
+            toast({
+                title: "Submission Failed",
+                description: "Something went wrong. Please check your connection and try again.",
+                variant: "destructive",
+            });
+        })
+        .finally(() => {
+            setIsSubmitting(false);
         });
-        form.reset();
-        setIsSubmitted(true);
-
-    } catch (error: any) {
-         toast({
-            title: "Submission Failed",
-            description: "Something went wrong. Please check your connection and try again.",
-            variant: "destructive",
-          });
-          console.error("Order submission error:", error);
-    }
-
-    setIsSubmitting(false);
   }
 
   if (isSubmitted) {

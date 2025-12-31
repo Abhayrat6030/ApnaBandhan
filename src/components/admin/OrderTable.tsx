@@ -89,7 +89,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                   <DropdownMenuItem>View Details</DropdownMenuItem>
                    <DropdownMenuItem asChild>
-                    <Link href={`https://wa.me/${order.phoneNumber}`} target="_blank">
+                    <Link href={`https://wa.me/${order.phoneNumber.replace('+', '')}`} target="_blank">
                         <MessageSquare className="mr-2 h-4 w-4" />
                         Reply on WhatsApp
                     </Link>

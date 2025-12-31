@@ -51,6 +51,7 @@ export type WhyChooseUs = {
 
 export type Order = {
     id: string;
+    userId: string;
     fullName: string;
     phoneNumber: string;
     email: string;
@@ -60,5 +61,4 @@ export type Order = {
     status: 'Pending' | 'Paid' | 'In Progress' | 'Delivered';
     paymentStatus: 'Pending' | 'Advance' | 'Paid';
     orderDate: string | Date;
-    userId: string;
 }
