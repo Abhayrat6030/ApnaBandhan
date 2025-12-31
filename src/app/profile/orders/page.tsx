@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order, Service } from '@/lib/types';
+import type { Order } from '@/lib/types';
 import { packages, services as staticServices } from '@/lib/data';
 
 
