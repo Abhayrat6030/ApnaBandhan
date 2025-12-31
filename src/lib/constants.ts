@@ -3,8 +3,8 @@ import type { NavItem } from './types';
 export const siteConfig = {
   name: 'ApnaBandhan',
   tagline: 'Wedding Invitations • Videos • Albums',
-  phone: '9100000000', // Add a real number here
-  email: 'contact@apnabandhan.com',
+  phone: '918463062603', // Add a real number here
+  email: 'abhayrat600@gmail.com',
   address: 'New Delhi, India',
   workingHours: 'Mon-Sat: 10:00 AM - 7:00 PM',
 };
@@ -34,7 +34,7 @@ export const footerLinks = {
   ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy-policy' },
-    { label: 'Terms &amp; Conditions', href: '/terms-and-conditions' },
+    { label: 'Terms & Conditions', href: '/terms-and-conditions' },
     { label: 'Refund Policy', href: '/refund-policy' },
   ],
 };

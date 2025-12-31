@@ -1,22 +1,24 @@
 import Image from 'next/image';
-import { Heart, Film, Printer, Gift } from 'lucide-react';
+import { Heart, Film, Printer, Gift, Handshake, Users, Sparkles } from 'lucide-react';
 import { whyChooseUs } from '@/lib/data';
 import placeholderImages from '@/lib/placeholder-images.json';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function AboutUsPage() {
   return (
-    <div>
+    <div className="bg-background">
       <div className="container mx-auto px-4 py-16 md:py-24">
+        {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
+          <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-primary">
             About ApnaBandhan
           </h1>
           <p className="mt-4 max-w-3xl mx-auto text-muted-foreground text-lg">
-            Crafting memories, one wedding at a time.
+            We are storytellers at heart, dedicated to capturing the magic of your most cherished moments.
           </p>
         </div>
 
+        {/* Our Story Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-24">
           <div className="relative aspect-square w-full max-w-md mx-auto">
              <div className="absolute inset-0 bg-primary/10 rounded-full transform -rotate-12"></div>
@@ -26,7 +28,7 @@ export default function AboutUsPage() {
                 alt="ApnaBandhan Team"
                 width={600}
                 height={600}
-                className="relative z-10 rounded-full object-cover shadow-lg"
+                className="relative z-10 rounded-full object-cover shadow-2xl border-4 border-background"
                 data-ai-hint="team portrait"
              />
           </div>
@@ -35,13 +37,40 @@ export default function AboutUsPage() {
               Our Story
             </h2>
             <p className="text-muted-foreground text-lg mb-4">
-              ApnaBandhan was born from a simple idea: to make wedding preparations easier and more beautiful for every family. We saw couples and their families stressing over invitations and videos, and we wanted to offer a solution that was not only professional and high-quality but also affordable and personal.
+              ApnaBandhan was born from a simple yet powerful idea: to make wedding preparations beautiful, personal, and stress-free. We saw couples and their families navigating the complexities of creating invitations and preserving memories, and we knew we could offer a better way—a solution that blends professional quality with heartfelt, personal touches.
             </p>
             <p className="text-muted-foreground text-lg">
-              We are a small, passionate team of designers, editors, and storytellers who believe that every wedding is unique. We pour our hearts into every project, ensuring that what we create is a true reflection of your love story. For us, this isn't just a business; it's a privilege to be a small part of your big day.
+              We are a passionate team of designers, editors, and digital artists who believe that every love story is unique and deserves to be told in a way that is just as special. We pour our hearts into every project, ensuring that what we create is not just a product, but a true reflection of your journey. For us, it’s a privilege to be a small part of your big day.
             </p>
           </div>
         </div>
+
+        {/* Our Mission & Vision */}
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
+          <Card className="bg-secondary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Sparkles className="w-8 h-8 text-primary" />
+                <span className="font-headline text-2xl">Our Mission</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">To provide couples with high-quality, creative, and affordable digital wedding solutions that simplify their planning and beautifully announce their special day to the world.</p>
+            </CardContent>
+          </Card>
+           <Card className="bg-secondary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Users className="w-8 h-8 text-primary" />
+                <span className="font-headline text-2xl">Our Vision</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">To become the most trusted and beloved brand for wedding invitations and digital memories in India, known for our creativity, reliability, and exceptional customer care.</p>
+            </CardContent>
+          </Card>
+        </div>
+
 
         {/* Why Choose Us Section */}
         <div className="mb-24">
@@ -50,7 +79,7 @@ export default function AboutUsPage() {
               Why Choose ApnaBandhan?
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-              We are committed to providing exceptional quality and service.
+              We are committed to providing exceptional quality and service, making your experience seamless and memorable.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
@@ -81,10 +110,10 @@ export default function AboutUsPage() {
         <div>
           <div className="text-center mb-12">
             <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
-              Best Sample Showcase
+              A Glimpse of Our Work
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-              A glimpse of the beautiful memories we help create.
+              Here's a sample of the beautiful memories we've helped create.
             </p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -97,8 +126,8 @@ export default function AboutUsPage() {
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   data-ai-hint={item.imageHint}
                 />
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-white font-semibold text-lg text-center px-2">{item.description}</p>
+                <div className="absolute inset-0 bg-black/40 flex items-end justify-start p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p className="text-white font-semibold text-lg">{item.description}</p>
                 </div>
               </Card>
             ))}

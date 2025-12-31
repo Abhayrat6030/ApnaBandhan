@@ -1,5 +1,5 @@
 import { siteConfig } from '@/lib/constants';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import Link from 'next/link';
@@ -23,14 +23,14 @@ export default function ContactPage() {
     {
       icon: Phone,
       title: 'Call Us',
-      value: siteConfig.phone,
-      href: `tel:${siteConfig.phone}`,
+      value: `+${siteConfig.phone}`,
+      href: `tel:+${siteConfig.phone}`,
       cta: 'Call Now'
     },
     {
       icon: WhatsAppIcon,
       title: 'WhatsApp',
-      value: 'Chat with us',
+      value: 'Chat with us directly',
       href: `https://wa.me/${siteConfig.phone}`,
       cta: 'Start Chat'
     },
@@ -45,51 +45,60 @@ export default function ContactPage() {
       icon: MapPin,
       title: 'Our Location',
       value: siteConfig.address,
-      href: '#',
-      cta: 'View on Map'
+      href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteConfig.address)}`,
+      cta: 'Get Directions'
     },
   ];
 
   return (
-    <div className="container mx-auto px-4 py-16 md:py-24">
-      <div className="text-center mb-12">
-        <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
-          Get In Touch
-        </h1>
-        <p className="mt-4 max-w-3xl mx-auto text-muted-foreground text-lg">
-          We're here to help you with any questions. Reach out to us through any of the methods below.
-        </p>
-      </div>
+    <div className="bg-secondary/30">
+        <div className="container mx-auto px-4 py-16 md:py-24">
+        <div className="text-center mb-16">
+            <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-primary">
+            Get In Touch
+            </h1>
+            <p className="mt-4 max-w-3xl mx-auto text-muted-foreground text-lg">
+            We're excited to hear about your special day! Reach out to us with any questions or to start planning your perfect wedding invitations and videos.
+            </p>
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-        {contactMethods.map((method, index) => (
-          <Card key={index} className="text-center flex flex-col items-center p-6">
-            <div className="bg-primary/10 p-4 rounded-full mb-4">
-              <method.icon className="h-8 w-8 text-primary" />
-            </div>
-            <h3 className="font-headline text-xl font-semibold">{method.title}</h3>
-            <p className="text-muted-foreground mb-4 flex-grow">{method.value}</p>
-            <Button asChild variant="outline" className="w-full">
-              <Link href={method.href} target={method.href.startsWith('http') ? '_blank' : '_self'}>{method.cta}</Link>
-            </Button>
-          </Card>
-        ))}
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            {contactMethods.map((method, index) => (
+            <Card key={index} className="text-center flex flex-col items-center p-6 bg-card hover:shadow-lg transition-shadow duration-300">
+                <div className="bg-primary/10 p-4 rounded-full mb-4">
+                <method.icon className="h-8 w-8 text-primary" />
+                </div>
+                <CardHeader className="p-0 mb-2">
+                    <CardTitle className="font-headline text-xl">{method.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 flex-grow">
+                    <p className="text-muted-foreground">{method.value}</p>
+                </CardContent>
+                <Button asChild variant="secondary" className="w-full mt-4">
+                <Link href={method.href} target={method.href.startsWith('http') ? '_blank' : '_self'}>{method.cta}</Link>
+                </Button>
+            </Card>
+            ))}
+        </div>
 
-       <div className="max-w-4xl mx-auto">
-         <Card>
-            <CardHeader>
-                <CardTitle className="font-headline flex items-center">
-                    <Clock className="mr-3 h-6 w-6 text-primary" />
-                    Working Hours
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-lg text-muted-foreground">{siteConfig.workingHours}</p>
-                <p className="text-sm text-muted-foreground mt-2">We typically respond to emails and messages within a few hours during business hours.</p>
-            </CardContent>
-         </Card>
-      </div>
+        <div className="max-w-4xl mx-auto">
+            <Card className="bg-card">
+                <CardHeader>
+                    <CardTitle className="font-headline flex items-center gap-3">
+                        <Clock className="mr-3 h-6 w-6 text-primary" />
+                        <span>Our Working Hours</span>
+                    </CardTitle>
+                    <CardDescription>
+                        We are available to assist you during the following hours.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-lg font-semibold">{siteConfig.workingHours}</p>
+                    <p className="text-sm text-muted-foreground mt-2">We typically respond to emails and WhatsApp messages within a few hours during business hours. For urgent matters, please feel free to call us.</p>
+                </CardContent>
+            </Card>
+        </div>
+        </div>
     </div>
   );
 }
