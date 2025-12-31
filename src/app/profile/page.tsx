@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,13 +41,6 @@ export default function ProfilePage() {
         router.push('/login');
     };
 
-    const userDetails = {
-        name: user?.displayName || "Guest User",
-        email: user?.email || "guest@example.com",
-        initials: user?.displayName?.charAt(0) || "G",
-        avatarUrl: user?.photoURL || `https://picsum.photos/seed/${user?.uid || 'avatar'}/100/100`
-    }
-
     if (isUserLoading) {
         return (
              <div className="container mx-auto px-4 py-8 md:py-16">
@@ -68,7 +62,7 @@ export default function ProfilePage() {
         )
     }
 
-    if (!user) {
+    if (!user || user.isAnonymous) {
         return (
             <div className="container mx-auto px-4 py-8 md:py-16">
                 <Card className="max-w-md mx-auto text-center">
@@ -84,6 +78,13 @@ export default function ProfilePage() {
                 </Card>
             </div>
         )
+    }
+
+    const userDetails = {
+        name: user?.displayName || "Valued Customer",
+        email: user?.email || "No email provided",
+        initials: user?.displayName?.charAt(0) || "U",
+        avatarUrl: user?.photoURL || `https://picsum.photos/seed/${user?.uid || 'avatar'}/100/100`
     }
 
     return (
