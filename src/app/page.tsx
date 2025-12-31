@@ -82,13 +82,13 @@ export default function Home() {
                 loop: true,
             }}
             >
-            <CarouselContent className="-ml-2 sm:-ml-4">
+            <CarouselContent className="-ml-1 sm:-ml-2">
                 {serviceCategories.map((category) => {
                 const Icon = categoryIcons[category.id as keyof typeof categoryIcons];
                 return (
-                    <CarouselItem key={category.id} className="pl-2 sm:pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5">
+                    <CarouselItem key={category.id} className="pl-1 sm:pl-2 basis-1/3 sm:basis-1/4 md:basis-1/5">
                         <Link href={category.href} className="group block">
-                            <div className="flex flex-col items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary">
+                            <div className="flex flex-col items-center justify-center gap-2 p-1 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary">
                                 {Icon && <Icon className="h-7 w-7" />}
                                 <span className="text-xs sm:text-sm font-medium">{category.name}</span>
                             </div>
