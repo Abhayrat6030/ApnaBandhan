@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, ShoppingBag, Bell, Download, Gift, Award, Settings, LogOut, FileText, Smartphone, CreditCard } from "lucide-react";
+import { User, ShoppingBag, Bell, Download, Gift, Award, Settings, LogOut, FileText, Smartphone, CreditCard, Shield } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,8 @@ const tertiaryMenuItems = [
     { label: "Payments", icon: CreditCard, href: "/profile/payments" },
     { label: "Settings", icon: Settings, href: "/profile/settings" },
 ];
+
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 
 export default function ProfilePage() {
@@ -120,6 +122,21 @@ export default function ProfilePage() {
                     <CardDescription>{userDetails.email}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-2">
+
+                    {user.email === ADMIN_EMAIL && (
+                        <>
+                            <div className="space-y-1">
+                                <Button variant="ghost" className="w-full justify-start text-base py-6" asChild>
+                                    <Link href="/admin/dashboard">
+                                        <Shield className="mr-4 h-5 w-5 text-muted-foreground" />
+                                        <span className="flex-1 text-left">Admin Panel</span>
+                                    </Link>
+                                </Button>
+                            </div>
+                            <Separator className="my-2" />
+                        </>
+                    )}
+
                     <div className="space-y-1">
                         {primaryMenuItems.map(item => (
                             <Button key={item.label} variant="ghost" className="w-full justify-start text-base py-6" asChild>
