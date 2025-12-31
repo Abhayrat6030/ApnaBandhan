@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -12,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User, Mail, Lock, Phone, Gift, Eye, EyeOff } from 'lucide-react';
 import { useAuth, initiateEmailSignUp } from '@/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -21,12 +22,15 @@ const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  phone: z.string().optional(),
+  referralCode: z.string().optional(),
 });
 
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const auth = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -35,6 +39,8 @@ export default function SignupPage() {
       name: '',
       email: '',
       password: '',
+      phone: '',
+      referralCode: '',
     },
   });
 
@@ -80,8 +86,8 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign Up</CardTitle>
-          <CardDescription>Enter your information to create an account.</CardDescription>
+          <CardTitle className="text-2xl">Create an Account</CardTitle>
+          <CardDescription>Enter your details to get started.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <Form {...form}>
@@ -93,7 +99,10 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Name" {...field} />
+                        <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="Your Name" {...field} className="pl-10" />
+                        </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -106,7 +115,10 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="m@example.com" {...field} />
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="m@example.com" {...field} className="pl-10" />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -119,7 +131,56 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                            type={showPassword ? "text" : "password"} 
+                            placeholder="••••••••"
+                            {...field} 
+                            className="pl-10 pr-10"
+                        />
+                        <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number (Optional)</FormLabel>
+                    <FormControl>
+                        <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="+91 98765 43210" {...field} className="pl-10" />
+                        </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="referralCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Referral Code (Optional)</FormLabel>
+                    <FormControl>
+                        <div className="relative">
+                            <Gift className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="Enter referral code" {...field} className="pl-10" />
+                        </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -127,7 +188,7 @@ export default function SignupPage() {
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create account
+                Create Account
               </Button>
             </form>
           </Form>
