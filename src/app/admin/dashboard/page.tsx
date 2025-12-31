@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
@@ -10,17 +10,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service } from '@/lib/types';
 
 export default function AdminDashboardPage() {
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
   const ordersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !user) return null;
     return collection(firestore, 'orders');
-  }, [firestore]);
+  }, [firestore, user]);
   
   const recentOrdersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !user) return null;
     return query(collection(firestore, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [firestore]);
+  }, [firestore, user]);
 
   const servicesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -71,7 +72,7 @@ export default function AdminDashboardPage() {
     }));
   }, [recentOrders, serviceAndPackageMap]);
   
-  const isLoading = areOrdersLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
+  const isLoading = isUserLoading || areOrdersLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
 
   if (isLoading) {
     return (

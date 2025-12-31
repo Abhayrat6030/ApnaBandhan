@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { collection } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
@@ -12,12 +12,13 @@ import { Card, CardContent } from '@/components/ui/card';
 
 
 export default function AdminOrdersPage() {
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
   const ordersQuery = useMemoFirebase(() => {
-      if (!firestore) return null;
+      if (!firestore || !user) return null;
       return collection(firestore, 'orders');
-  }, [firestore]);
+  }, [firestore, user]);
 
   const servicesQuery = useMemoFirebase(() => {
       if (!firestore) return null;
@@ -52,7 +53,7 @@ export default function AdminOrdersPage() {
     }));
   }, [allOrders, allServicesMap]);
   
-  const isLoading = areOrdersLoading || areServicesLoading || arePackagesLoading;
+  const isLoading = isUserLoading || areOrdersLoading || areServicesLoading || arePackagesLoading;
 
   const renderSkeleton = () => (
     <div>
