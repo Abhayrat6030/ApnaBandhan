@@ -33,7 +33,8 @@ service cloud.firestore {
     // They can only read their own orders. Admins can read and update all orders.
     match /orders/{orderId} {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow get, list: if request.auth != null && (isOwner(resource.data.userId) || isAdmin());
+      allow get: if request.auth != null && (isOwner(resource.data.userId) || isAdmin());
+      allow list: if isAdmin();
       allow update: if isAdmin();
       allow delete: if false; 
     }
