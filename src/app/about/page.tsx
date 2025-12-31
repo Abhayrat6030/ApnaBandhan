@@ -1,5 +1,8 @@
 import Image from 'next/image';
-import { Heart, Users, Target } from 'lucide-react';
+import { Heart, Film, Printer, Gift } from 'lucide-react';
+import { whyChooseUs } from '@/lib/data';
+import placeholderImages from '@/lib/placeholder-images.json';
+import { Card } from '@/components/ui/card';
 
 export default function AboutUsPage() {
   return (
@@ -40,35 +43,64 @@ export default function AboutUsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div className="p-6">
-             <div className="flex justify-center items-center mb-4">
-                <div className="bg-primary/10 p-4 rounded-full">
-                    <Heart className="h-8 w-8 text-primary" />
-                </div>
-            </div>
-            <h3 className="font-headline text-2xl font-semibold mb-2">Our Passion</h3>
-            <p className="text-muted-foreground">We are driven by a love for storytelling and design. Capturing the emotion and joy of a wedding is at the heart of everything we do.</p>
+        {/* Why Choose Us Section */}
+        <div className="mb-24">
+          <div className="text-center mb-12">
+            <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
+              Why Choose ApnaBandhan?
+            </h2>
+            <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
+              We are committed to providing exceptional quality and service.
+            </p>
           </div>
-           <div className="p-6">
-             <div className="flex justify-center items-center mb-4">
-                <div className="bg-primary/10 p-4 rounded-full">
-                    <Users className="h-8 w-8 text-primary" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+            {whyChooseUs.map((item) => (
+              <div key={item.title} className="p-6">
+                <div className="flex justify-center items-center mb-4">
+                  <div className="bg-primary/10 p-4 rounded-full">
+                    <div className="bg-primary/20 p-3 rounded-full">
+                       {item.icon === 'Heart' && <Heart className="h-8 w-8 text-primary" />}
+                       {item.icon === 'Film' && <Film className="h-8 w-8 text-primary" />}
+                       {item.icon === 'Printer' && <Printer className="h-8 w-8 text-primary" />}
+                       {item.icon === 'Gift' && <Gift className="h-8 w-8 text-primary" />}
+                    </div>
+                  </div>
                 </div>
-            </div>
-            <h3 className="font-headline text-2xl font-semibold mb-2">Our Approach</h3>
-            <p className="text-muted-foreground">We believe in a collaborative process. We listen to your ideas and work with you to bring your vision to life, ensuring your complete satisfaction.</p>
-          </div>
-           <div className="p-6">
-             <div className="flex justify-center items-center mb-4">
-                <div className="bg-primary/10 p-4 rounded-full">
-                    <Target className="h-8 w-8 text-primary" />
-                </div>
-            </div>
-            <h3 className="font-headline text-2xl font-semibold mb-2">Our Mission</h3>
-            <p className="text-muted-foreground">To provide high-quality, accessible, and heartfelt wedding media services that celebrate love and create lasting memories for families.</p>
+                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                <p className="text-muted-foreground">{item.description}</p>
+              </div>
+            ))}
           </div>
         </div>
+
+        {/* Sample Showcase Section */}
+        <div>
+          <div className="text-center mb-12">
+            <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
+              Best Sample Showcase
+            </h2>
+            <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
+              A glimpse of the beautiful memories we help create.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {placeholderImages.showcase.map((item) => (
+              <Card key={item.id} className="overflow-hidden group relative aspect-w-1 aspect-h-1">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.description}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  data-ai-hint={item.imageHint}
+                />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p className="text-white font-semibold text-lg text-center px-2">{item.description}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
