@@ -37,7 +37,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Logo className="h-10 w-auto text-primary" />
-            <span className="font-bold hidden sm:inline-block text-xl">{siteConfig.name}</span>
+            <span className="font-bold sm:inline-block text-xl">{siteConfig.name}</span>
           </Link>
         </div>
 
