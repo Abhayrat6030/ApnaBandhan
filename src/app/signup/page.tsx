@@ -12,8 +12,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { handleSignUp } from './actions';
 import { Loader2 } from 'lucide-react';
+import { useAuth, initiateEmailSignUp } from '@/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -25,6 +27,7 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const auth = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,21 +40,40 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    const result = await handleSignUp(values);
-    if (result.success) {
-      toast({
-        title: 'Account Created!',
-        description: 'You have been successfully signed up and logged in.',
-      });
-      router.push('/profile');
-    } else {
-      toast({
-        title: 'Sign Up Failed',
-        description: result.error || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
+    try {
+        initiateEmailSignUp(auth, values.email, values.password, values.name);
+
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+             if (user) {
+                toast({
+                    title: 'Account Created!',
+                    description: 'You have been successfully signed up.',
+                });
+                router.push('/profile');
+                unsubscribe();
+            }
+        });
+
+         setTimeout(() => {
+            if (!auth.currentUser) {
+                toast({
+                    title: 'Sign Up Failed',
+                    description: 'Could not create account. The email may already be in use.',
+                    variant: 'destructive',
+                });
+                setIsLoading(false);
+                unsubscribe();
+            }
+        }, 3000);
+        
+    } catch (error: any) {
+        toast({
+            title: 'Sign Up Failed',
+            description: error.message || 'An unexpected error occurred.',
+            variant: 'destructive',
+        });
+        setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   return (

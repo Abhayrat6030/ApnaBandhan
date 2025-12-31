@@ -13,7 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { handleEmailSignIn } from './actions';
+import { useAuth, initiateEmailSignIn } from '@/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 
 const formSchema = z.object({
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const auth = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,21 +38,45 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    const result = await handleEmailSignIn(values);
-    if (result.success) {
-      toast({
-        title: 'Logged In Successfully!',
-        description: "Welcome back!",
-      });
-      router.push('/profile');
-    } else {
-      toast({
-        title: 'Login Failed',
-        description: result.error || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
+
+    try {
+        initiateEmailSignIn(auth, values.email, values.password);
+
+        // Listen for the auth state change to confirm login
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                toast({
+                    title: 'Logged In Successfully!',
+                    description: "Welcome back!",
+                });
+                router.push('/profile');
+                unsubscribe(); // Cleanup the listener
+            }
+        });
+        
+        // Handle cases where login might fail silently (e.g., wrong password)
+        // Firebase's onAuthStateChanged won't fire an error for bad credentials,
+        // so we add a timeout to handle this.
+        setTimeout(() => {
+            if (auth.currentUser === null) {
+                toast({
+                    title: 'Login Failed',
+                    description: 'Incorrect email or password. Please try again.',
+                    variant: 'destructive',
+                });
+                setIsLoading(false);
+                unsubscribe();
+            }
+        }, 3000); // 3 second timeout
+
+    } catch (error: any) {
+        toast({
+            title: 'Login Failed',
+            description: error.message || 'An unexpected error occurred.',
+            variant: 'destructive',
+        });
+        setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   return (

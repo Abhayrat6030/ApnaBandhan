@@ -11,8 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { handlePasswordReset } from './actions';
 import { Loader2 } from 'lucide-react';
+import { useAuth, initiatePasswordReset } from '@/firebase';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -22,6 +22,7 @@ export default function ForgotPasswordPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const auth = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,17 +33,17 @@ export default function ForgotPasswordPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    const result = await handlePasswordReset(values);
-    if (result.success) {
+    try {
+      initiatePasswordReset(auth, values.email);
       toast({
         title: 'Password Reset Email Sent',
-        description: 'Please check your inbox for instructions to reset your password.',
+        description: 'If an account exists for this email, you will receive reset instructions.',
       });
       setIsSubmitted(true);
-    } else {
-      toast({
+    } catch (error: any) {
+       toast({
         title: 'Error',
-        description: result.error || 'An unexpected error occurred.',
+        description: 'An unexpected error occurred.',
         variant: 'destructive',
       });
     }
