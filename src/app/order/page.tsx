@@ -20,8 +20,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { submitOrder } from './actions';
-import { useUser, useAuth } from '@/firebase';
+import { useAuth } from '@/firebase';
 
 const allServicesAndPackages = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
 const uniqueServices = Array.from(new Map(allServicesAndPackages.map(item => [item.id, item])).values());
