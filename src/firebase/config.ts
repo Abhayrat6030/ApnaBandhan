@@ -1,11 +1,12 @@
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 export const firebaseConfig = {
-  apiKey: "AIzaSyC4BycTKZDDjS2F1IJL2wVRawRtIrzpW4k",
-  authDomain: "studio-5455681471-6a9b7.firebaseapp.com",
-  projectId: "studio-5455681471-6a9b7",
-  storageBucket: "studio-5455681471-6a9b7.appspot.com",
-  messagingSenderId: "217556320126",
-  appId: "1:217556320126:web:5eb284890e155496807d2f",
-  measurementId: ""
+  apiKey: "AIzaSyCzHRrS_Bqu6Gb8OpZw7bm0mHG6_Rw_4Us",
+  authDomain: "apnabandhan.firebaseapp.com",
+  databaseURL: "https://apnabandhan-default-rtdb.firebaseio.com",
+  projectId: "apnabandhan",
+  storageBucket: "apnabandhan.appspot.com",
+  messagingSenderId: "589919440192",
+  appId: "1:589919440192:web:fac83b8d0df3bde6e03ea5",
+  measurementId: "G-BEXQ1TPXPK"
 };
