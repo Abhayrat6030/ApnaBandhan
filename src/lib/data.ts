@@ -277,40 +277,40 @@ export const serviceCategories: ServiceCategoryInfo[] = [
       name: 'Invitation Videos',
       description: 'Announce your special day with a stunning video that captures your love story.',
       href: '/invitation-videos',
-      imageUrl: 'https://picsum.photos/seed/wedding-film/600/400',
-      imageHint: 'wedding film reel'
+      imageUrl: 'https://picsum.photos/seed/invitation-video/600/400',
+      imageHint: 'invitation video'
     },
     {
       id: 'invitation-cards',
       name: 'Invitation Cards',
       description: 'Elegant and modern digital & printable cards for every wedding style.',
       href: '/invitation-cards',
-      imageUrl: 'https://picsum.photos/seed/invitation-stationery/600/400',
-      imageHint: 'invitation stationery'
+      imageUrl: 'https://picsum.photos/seed/invitation-card/600/400',
+      imageHint: 'invitation card'
     },
     {
         id: 'video-editing',
         name: 'Wedding Video',
         description: 'We edit your raw footage into a beautiful, cinematic wedding film.',
         href: '/video-editing',
-        imageUrl: 'https://picsum.photos/seed/video-edit/600/400',
-        imageHint: 'video editing'
+        imageUrl: 'https://picsum.photos/seed/wedding-video/600/400',
+        imageHint: 'wedding video'
     },
     {
       id: 'album-design',
       name: 'Album Designs',
       description: 'Treasure your memories with a beautifully designed, professional wedding album.',
       href: '/album-design',
-      imageUrl: 'https://picsum.photos/seed/wedding-photobook/600/400',
-      imageHint: 'wedding photobook'
+      imageUrl: 'https://picsum.photos/seed/album-design/600/400',
+      imageHint: 'album design'
     },
     {
       id: 'combo-packages',
       name: 'Combo Packages',
       description: 'Get the best value with our curated packages combining our most popular services.',
       href: '/packages',
-      imageUrl: 'https://picsum.photos/seed/wedding-gifts/600/400',
-      imageHint: 'wedding gifts'
+      imageUrl: 'https://picsum.photos/seed/combo-package/600/400',
+      imageHint: 'gift package'
     },
 ];
 
