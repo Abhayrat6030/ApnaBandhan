@@ -1,3 +1,4 @@
+
 export type NavItem = {
   label: string;
   href: string;
@@ -6,7 +7,7 @@ export type NavItem = {
 export type ServiceCategory = 'invitation-videos' | 'invitation-cards' | 'combo-packages' | 'video-editing' | 'album-design';
 
 export type ServiceCategoryInfo = {
-  id: ServiceCategory;
+  id: string; // Can be a category or a different ID for combos
   name: string;
   description: string;
   href: string;
@@ -40,7 +41,7 @@ export type Package = {
 };
 
 export type WhyChooseUs = {
-    icon: 'Heart' | 'Film' | 'Printer' | 'Gift';
+    icon: keyof typeof import('lucide-react');
     title: string;
     description: string;
 };

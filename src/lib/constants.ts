@@ -1,9 +1,10 @@
+
 import type { NavItem } from './types';
 
 export const siteConfig = {
   name: 'ApnaBandhan',
   tagline: 'Wedding Invitations • Videos • Albums',
-  phone: '918463062603', // Add a real number here
+  phone: '918463062603',
   email: 'abhayrat600@gmail.com',
   address: 'New Delhi, India',
   workingHours: 'Mon-Sat: 10:00 AM - 7:00 PM',
@@ -15,7 +16,6 @@ export const navItems: NavItem[] = [
   { label: 'Packages', href: '/packages' },
   { label: 'About Us', href: '/about' },
   { label: 'Contact', href: '/contact' },
-  { label: 'Profile', href: '/profile' },
 ];
 
 export const adminNavItems: NavItem[] = [
@@ -31,10 +31,12 @@ export const footerLinks = {
     { label: 'Services', href: '/services' },
     { label: 'About Us', href: '/about' },
     { label: 'Contact', href: '/contact' },
+    { label: 'Profile', href: '/profile' },
   ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy-policy' },
     { label: 'Terms & Conditions', href: '/terms-and-conditions' },
     { label: 'Refund Policy', href: '/refund-policy' },
+    { label: 'Shipping Policy', href: '/shipping-policy' },
   ],
 };

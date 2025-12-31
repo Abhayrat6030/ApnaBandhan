@@ -1,3 +1,4 @@
+
 import { Service, Package, Order, WhyChooseUs, ServiceCategoryInfo } from './types';
 
 export const services: Service[] = [
@@ -28,6 +29,7 @@ export const services: Service[] = [
     price: 2500,
     priceType: 'starting',
     isFeatured: false,
+    topRated: true,
     samples: [
       { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
        { type: 'image', url: 'https://picsum.photos/seed/wv1/600/400', imageHint: 'wedding ceremony' },
@@ -80,6 +82,7 @@ export const services: Service[] = [
     price: 1200,
     priceType: 'fixed',
     isFeatured: false,
+    topRated: false,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/cdr1/600/800', imageHint: 'elegant invitation' },
     ],
@@ -95,7 +98,8 @@ export const services: Service[] = [
     description: 'We edit your raw wedding footage into a beautiful, cinematic full-length movie.',
     price: 15000,
     priceType: 'starting',
-    isFeatured: false,
+    isFeatured: true,
+    topRated: true,
     samples: [
        { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
        { type: 'image', url: 'https://picsum.photos/seed/fve1/600/400', imageHint: 'wedding film' },
@@ -129,6 +133,7 @@ export const services: Service[] = [
     price: 6500,
     priceType: 'starting',
     isFeatured: false,
+    topRated: false,
     samples: [
        { type: 'image', url: 'https://picsum.photos/seed/ad3/800/600', imageHint: 'modern album' },
        { type: 'image', url: 'https://picsum.photos/seed/ad4/800/600', imageHint: 'clean album' },
@@ -145,6 +150,7 @@ export const services: Service[] = [
     price: 4999,
     priceType: 'fixed',
     isFeatured: false,
+    topRated: true,
     samples: [
        { type: 'image', url: 'https://picsum.photos/seed/cp1/600/400', imageHint: 'luxury wedding' },
     ],
@@ -160,7 +166,7 @@ export const services: Service[] = [
     price: 750,
     priceType: 'fixed',
     isFeatured: false,
-    topRated: true,
+    topRated: false,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/baby1/600/800', imageHint: 'baby shower' },
     ],
@@ -177,7 +183,6 @@ export const services: Service[] = [
     price: 750,
     priceType: 'fixed',
     isFeatured: false,
-    topRated: true,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/eng1/600/800', imageHint: 'engagement party' },
     ],
@@ -194,7 +199,6 @@ export const services: Service[] = [
     price: 650,
     priceType: 'fixed',
     isFeatured: false,
-    topRated: true,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/house1/600/800', imageHint: 'new home' },
     ],
@@ -250,7 +254,7 @@ export const packages: Package[] = [
 
 export const whyChooseUs: WhyChooseUs[] = [
   {
-    icon: 'Heart',
+    icon: 'Sparkles',
     title: 'Professional Work',
     description: 'Our experienced designers create stunning visuals that tell your story beautifully.'
   },
@@ -260,12 +264,12 @@ export const whyChooseUs: WhyChooseUs[] = [
     description: 'We understand the importance of deadlines and guarantee timely delivery of all projects.'
   },
   {
-    icon: 'Printer',
+    icon: 'Heart',
     title: 'Affordable Pricing',
     description: 'Get premium quality services at prices that won’t stretch your wedding budget.'
   },
   {
-    icon: 'Gift',
+    icon: 'Users',
     title: 'Real Human Support',
     description: 'Our team is always available on WhatsApp and phone to assist you at every step.'
   },

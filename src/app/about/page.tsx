@@ -1,10 +1,13 @@
+
 import Image from 'next/image';
-import { Heart, Film, Printer, Gift, Handshake, Users, Sparkles } from 'lucide-react';
+import { Heart, Film, Sparkles, Users, Target, Eye } from 'lucide-react';
 import { whyChooseUs } from '@/lib/data';
 import placeholderImages from '@/lib/placeholder-images.json';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export default function AboutUsPage() {
+  const iconMap = { Heart, Film, Sparkles, Users };
+
   return (
     <div className="bg-background">
       <div className="container mx-auto px-4 py-16 md:py-24">
@@ -50,7 +53,7 @@ export default function AboutUsPage() {
           <Card className="bg-secondary/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
-                <Sparkles className="w-8 h-8 text-primary" />
+                <Target className="w-8 h-8 text-primary" />
                 <span className="font-headline text-2xl">Our Mission</span>
               </CardTitle>
             </CardHeader>
@@ -61,7 +64,7 @@ export default function AboutUsPage() {
            <Card className="bg-secondary/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
-                <Users className="w-8 h-8 text-primary" />
+                <Eye className="w-8 h-8 text-primary" />
                 <span className="font-headline text-2xl">Our Vision</span>
               </CardTitle>
             </CardHeader>
@@ -82,20 +85,15 @@ export default function AboutUsPage() {
               We are committed to providing exceptional quality and service, making your experience seamless and memorable.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             {whyChooseUs.map((item) => {
-                const Icon = {
-                    Heart,
-                    Film,
-                    Printer,
-                    Gift,
-                }[item.icon];
+                const Icon = iconMap[item.icon as keyof typeof iconMap] || Heart;
               return (
               <div key={item.title} className="p-6">
                 <div className="flex justify-center items-center mb-4">
                   <div className="bg-primary/10 p-4 rounded-full">
                     <div className="bg-primary/20 p-3 rounded-full">
-                       {Icon && <Icon className="h-8 w-8 text-primary" />}
+                       <Icon className="h-8 w-8 text-primary" />
                     </div>
                   </div>
                 </div>
