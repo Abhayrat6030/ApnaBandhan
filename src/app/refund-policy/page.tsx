@@ -16,7 +16,7 @@ export default function RefundPolicyPage() {
                     <p className="mt-2 text-muted-foreground">Last updated: {new Date().toLocaleDateString('en-CA')}</p>
                 </div>
 
-                <div className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert space-y-8">
+                <div className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:font-bold prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert space-y-8">
 
                     <div>
                       <p>Thank you for choosing ApnaBandhan. We are committed to delivering high-quality, custom digital products tailored to your special day. Our Refund and Cancellation Policy is designed to be transparent and fair. Due to the personalized and digital nature of our services, our ability to offer refunds is limited.</p>

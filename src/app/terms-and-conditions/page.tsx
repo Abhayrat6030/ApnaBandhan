@@ -16,7 +16,7 @@ export default function TermsAndConditionsPage() {
                     <p className="mt-2 text-muted-foreground">Last updated: {new Date().toLocaleDateString('en-CA')}</p>
                 </div>
 
-                <div className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert space-y-8">
+                <div className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:font-bold prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert space-y-8">
                     
                     <div>
                       <p>Welcome to ApnaBandhan! Please read these Terms and Conditions ("Terms") carefully before using our website and services (the "Service") operated by ApnaBandhan ("us", "we", or "our"). Your access to and use of the Service is conditioned on your acceptance of and compliance with these Terms. These Terms apply to all visitors, users, and clients.</p>

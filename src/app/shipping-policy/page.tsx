@@ -16,7 +16,7 @@ export default function ShippingPolicyPage() {
                     <p className="mt-2 text-muted-foreground">Last updated: {new Date().toLocaleDateString('en-CA')}</p>
                 </div>
 
-                <div className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert space-y-8">
+                <div className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:font-bold prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert space-y-8">
 
                     <div>
                       <p>This policy outlines how ApnaBandhan handles the delivery of our digital products and services. As we exclusively provide digital goods, no physical items will be shipped.</p>
