@@ -105,10 +105,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
-              Our Core Services
+              Featured Services
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-              Everything you need to make your wedding announcements special and memorable.
+              Discover our most popular and highly-rated services.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

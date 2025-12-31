@@ -28,51 +28,34 @@ export default function ServicesPage() {
           </p>
         </div>
 
-        <Carousel
-          plugins={[plugin.current]}
-          className="w-full"
-          onMouseEnter={plugin.current.stop}
-          onMouseLeave={plugin.current.play}
-           opts={{
-            align: "start",
-            loop: true,
-          }}
-        >
-          <CarouselContent className="-ml-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {serviceCategories.map((category) => (
-              <CarouselItem key={category.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                <div className="p-1">
-                  <Link href={category.href} className="group block h-full">
-                    <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
-                      <div className="relative aspect-[4/3] w-full">
-                        <Image
-                          src={category.imageUrl}
-                          alt={category.name}
-                          fill
-                          className="object-cover"
-                          data-ai-hint={category.imageHint}
-                        />
-                      </div>
-                      <CardHeader>
-                        <CardTitle className="font-bold text-xl">{category.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex-grow">
-                        <CardDescription className="line-clamp-2">{category.description}</CardDescription>
-                      </CardContent>
-                      <CardFooter>
-                        <div className="text-sm font-semibold text-primary group-hover:underline">
-                          View All <ArrowRight className="inline-block ml-1 h-4 w-4" />
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  </Link>
-                </div>
-              </CarouselItem>
+              <Link key={category.id} href={category.href} className="group block h-full">
+                <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
+                  <div className="relative aspect-[4/3] w-full">
+                    <Image
+                      src={category.imageUrl}
+                      alt={category.name}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={category.imageHint}
+                    />
+                  </div>
+                  <CardHeader>
+                    <CardTitle className="font-bold text-xl">{category.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <CardDescription className="line-clamp-2">{category.description}</CardDescription>
+                  </CardContent>
+                  <CardFooter>
+                    <div className="text-sm font-semibold text-primary group-hover:underline">
+                      View All <ArrowRight className="inline-block ml-1 h-4 w-4" />
+                    </div>
+                  </CardFooter>
+                </Card>
+              </Link>
             ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex" />
-          <CarouselNext className="hidden sm:flex" />
-        </Carousel>
+        </div>
       </div>
     </div>
   );
