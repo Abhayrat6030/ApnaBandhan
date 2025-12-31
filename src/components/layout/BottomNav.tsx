@@ -6,12 +6,13 @@ import { usePathname } from 'next/navigation';
 import { Home, ShoppingCart, LayoutGrid, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { navItems as mainNavItems } from '@/lib/constants';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/order', label: 'Order', icon: ShoppingCart },
   { href: '/services', label: 'Category', icon: LayoutGrid },
-  { href: '/#', label: 'Profile', icon: User }, // Placeholder link
+  { href: '/profile', label: 'Profile', icon: User },
 ];
 
 interface BottomNavProps {
@@ -24,14 +25,14 @@ export default function BottomNav({ setMenuOpen }: BottomNavProps) {
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t md:hidden">
       <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
-        <Button
-            variant="ghost"
+        <button
+            type="button"
             onClick={() => setMenuOpen(true)}
-            className="inline-flex flex-col items-center justify-center px-5 text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-800 group rounded-none"
+            className="inline-flex flex-col items-center justify-center px-5 text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-800 group"
         >
           <Menu className="w-5 h-5 mb-1" />
           <span className="text-xs">Menu</span>
-        </Button>
+        </button>
 
         {navItems.map((item) => {
           const isActive = pathname === item.href;

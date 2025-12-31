@@ -15,6 +15,7 @@ export const navItems: NavItem[] = [
   { label: 'Packages', href: '/packages' },
   { label: 'About Us', href: '/about' },
   { label: 'Contact', href: '/contact' },
+  { label: 'Profile', href: '/profile' },
 ];
 
 export const adminNavItems: NavItem[] = [
