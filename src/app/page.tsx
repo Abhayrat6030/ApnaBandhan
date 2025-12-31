@@ -57,7 +57,7 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-6 bg-background">
+      <section className="py-2 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex flex-row justify-around items-center border-b">
             {serviceCategories.map((category, index) => {
@@ -78,7 +78,7 @@ export default function Home() {
       </section>
 
       {/* Featured Services Section */}
-      <section id="services" className="py-16 md:py-24 bg-secondary/20">
+      <section id="services" className="py-12 md:py-16 bg-secondary/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
