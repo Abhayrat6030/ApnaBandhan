@@ -70,7 +70,7 @@ export default function AiEnhancerPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <h1 className="font-headline text-3xl font-bold mb-6">AI Photo Enhancer</h1>
+      <h1 className="font-headline text-2xl md:text-3xl font-bold mb-6">AI Photo Enhancer</h1>
       <Card>
         <CardHeader>
           <CardTitle>Enhance Wedding Photos</CardTitle>

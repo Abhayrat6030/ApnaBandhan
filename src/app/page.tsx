@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle, Heart, Film, Printer, Gift } from 'lucide-react';
@@ -15,7 +16,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative h-[60vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white overflow-hidden">
+      <section className="relative h-[70vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white overflow-hidden">
         <Image
           src={placeholderImages.hero.imageUrl}
           alt={placeholderImages.hero.description}
@@ -26,7 +27,7 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 p-4 flex flex-col items-center" data-aos="fade-up">
-          <h1 className="font-headline text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+          <h1 className="font-headline text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
             ApnaBandhan
           </h1>
           <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90">
@@ -95,7 +96,7 @@ export default function Home() {
                   data-ai-hint={item.imageHint}
                 />
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-white font-headline text-lg">{item.description}</p>
+                  <p className="text-white font-headline text-lg text-center px-2">{item.description}</p>
                 </div>
               </Card>
             ))}
