@@ -6,6 +6,7 @@ import {
   SidebarContent,
   SidebarInset,
   SidebarFooter,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import Logo from "@/components/shared/Logo";
 import { siteConfig } from "@/lib/constants";
@@ -41,7 +42,13 @@ export default function AdminLayout({
             </Button>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset>
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+            <SidebarTrigger className="md:hidden" />
+            {/* Add other header elements like search bar or user menu here if needed */}
+        </header>
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   );
 }

@@ -69,7 +69,7 @@ export default function AdminDashboardPage() {
   
   const isLoading = isUserLoading || areAllOrdersLoading || areRecentOrdersLoading;
 
-  if (isUserLoading) {
+  if (isUserLoading && !user) {
     return (
       <div className="p-4 md:p-8">
         <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
@@ -114,10 +114,10 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
+    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+      <h1 className="font-headline text-3xl font-bold">Dashboard</h1>
 
-      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-8">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
         {stats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -143,6 +143,6 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </main>
   );
 }

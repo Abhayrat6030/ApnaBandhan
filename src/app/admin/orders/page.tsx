@@ -9,7 +9,7 @@ import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { packages, services as staticServices } from '@/lib/data';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
@@ -53,16 +53,24 @@ export default function AdminOrdersPage() {
   );
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="font-headline text-3xl font-bold">All Orders</h1>
-        <Button>
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
+    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+      <div className="flex items-center">
+        <h1 className="font-headline text-lg font-semibold md:text-2xl">All Orders</h1>
+        <div className="ml-auto flex items-center gap-2">
+            <Button size="sm" variant="outline" className="h-8 gap-1">
+                <Download className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Export
+                </span>
+            </Button>
+        </div>
       </div>
 
       <Card>
+        <CardHeader>
+          <CardTitle>Orders</CardTitle>
+          <CardDescription>A list of all the orders from your customers.</CardDescription>
+        </CardHeader>
         <CardContent className="p-0">
           {isLoading && !allOrders ? (
             renderSkeleton()
@@ -79,6 +87,6 @@ export default function AdminOrdersPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }

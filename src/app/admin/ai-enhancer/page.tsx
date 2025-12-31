@@ -69,8 +69,8 @@ export default function AiEnhancerPage() {
   };
 
   return (
-    <div className="p-4 md:p-8">
-      <h1 className="font-headline text-2xl md:text-3xl font-bold mb-6">AI Photo Enhancer</h1>
+    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+      <h1 className="font-headline text-2xl md:text-3xl font-bold">AI Photo Enhancer</h1>
       <Card>
         <CardHeader>
           <CardTitle>Enhance Wedding Photos</CardTitle>
@@ -79,7 +79,7 @@ export default function AiEnhancerPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="max-w-md">
+          <div>
             <label htmlFor="photo-upload" className="block text-sm font-medium text-gray-700 mb-2">Upload Photo</label>
             <Input id="photo-upload" type="file" accept="image/*" onChange={handleFileChange} />
              <p className="text-xs text-muted-foreground mt-1">Max file size: 4MB.</p>
@@ -138,6 +138,6 @@ export default function AiEnhancerPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }

@@ -10,6 +10,7 @@ import {
 import { adminNavItems } from '@/lib/constants';
 import { LayoutDashboard, ShoppingCart, List, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const icons = {
   '/admin/dashboard': LayoutDashboard,
@@ -20,21 +21,18 @@ const icons = {
 
 export default function AdminNav() {
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
 
   return (
     <SidebarMenu>
       {adminNavItems.map((item) => {
         const Icon = icons[item.href as keyof typeof icons] || LayoutDashboard;
+        const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
         return (
           <SidebarMenuItem key={item.label} asChild>
-            <Link href={item.href} className="w-full">
+            <Link href={item.href} className="w-full" onClick={() => setOpenMobile(false)}>
               <SidebarMenuButton
-                className={cn(
-                  pathname.startsWith(item.href) && item.href !== '/admin'
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : '',
-                   pathname === item.href ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
-                )}
+                isActive={isActive}
               >
                 <Icon className="h-4 w-4" />
                 {item.label}
