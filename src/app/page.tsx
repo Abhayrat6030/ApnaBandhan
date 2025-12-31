@@ -12,13 +12,13 @@ import { Button } from '@/components/ui/button';
 import { services, serviceCategories } from '@/lib/data';
 import { siteConfig } from '@/lib/constants';
 import placeholderImages from '@/lib/placeholder-images.json';
-import { ServiceCard } from '@/components/shared/ServiceCard';
+import { ProductCard } from '@/components/shared/ProductCard';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 
-const featuredServices = services.filter(s => s.isFeatured);
+const topRatedServices = services.filter(s => s.topRated);
 
 const categoryIcons = {
   'invitation-videos': Film,
@@ -100,20 +100,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Services Section */}
+      {/* Top Rated Section */}
       <section id="services" className="py-8 md:py-12 bg-secondary/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
-              Featured Services
+              Top Rated on Our Store
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
               Discover our most popular and highly-rated services.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredServices.map((service) => (
-              <ServiceCard key={service.id} service={service} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {topRatedServices.map((service) => (
+              <ProductCard key={service.id} service={service} />
             ))}
           </div>
           <div className="text-center mt-12">

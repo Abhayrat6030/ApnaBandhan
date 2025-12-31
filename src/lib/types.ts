@@ -23,6 +23,7 @@ export type Service = {
   price: number;
   priceType: 'starting' | 'fixed';
   isFeatured: boolean;
+  topRated?: boolean;
   samples: { type: 'image' | 'video'; url: string, imageHint?: string }[];
   inclusions: string[];
   deliveryTime: string;

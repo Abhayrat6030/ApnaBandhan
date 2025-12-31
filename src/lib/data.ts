@@ -10,6 +10,7 @@ export const services: Service[] = [
     price: 1500,
     priceType: 'starting',
     isFeatured: true,
+    topRated: true,
     samples: [
       { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
       { type: 'image', url: 'https://picsum.photos/seed/sv1/600/400', imageHint: 'wedding couple' },
@@ -44,6 +45,7 @@ export const services: Service[] = [
     price: 800,
     priceType: 'fixed',
     isFeatured: true,
+    topRated: true,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/dc1/600/800', imageHint: 'invitation card' },
       { type: 'image', url: 'https://picsum.photos/seed/dc2/600/800', imageHint: 'floral invitation' },
@@ -61,6 +63,7 @@ export const services: Service[] = [
     price: 700,
     priceType: 'fixed',
     isFeatured: false,
+    topRated: true,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/bday1/600/800', imageHint: 'birthday invitation' },
     ],
@@ -109,6 +112,7 @@ export const services: Service[] = [
     price: 5000,
     priceType: 'starting',
     isFeatured: true,
+    topRated: true,
     samples: [
        { type: 'image', url: 'https://picsum.photos/seed/ad1/800/600', imageHint: 'wedding album' },
        { type: 'image', url: 'https://picsum.photos/seed/ad2/800/600', imageHint: 'photo album' },
@@ -156,12 +160,47 @@ export const services: Service[] = [
     price: 750,
     priceType: 'fixed',
     isFeatured: false,
+    topRated: true,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/baby1/600/800', imageHint: 'baby shower' },
     ],
     inclusions: ['High-Resolution JPEG/PNG', '2 Design Revisions'],
     deliveryTime: '1 Business Day',
     tags: ['babyshower'],
+  },
+  {
+    id: 'digital-cards-engagement',
+    name: 'Engagement Party E-Invite',
+    slug: 'digital-cards-engagement',
+    category: 'invitation-cards',
+    description: 'A stylish e-invite to announce your engagement.',
+    price: 750,
+    priceType: 'fixed',
+    isFeatured: false,
+    topRated: true,
+    samples: [
+      { type: 'image', url: 'https://picsum.photos/seed/eng1/600/800', imageHint: 'engagement party' },
+    ],
+    inclusions: ['High-Resolution JPEG/PNG', '2 Design Revisions'],
+    deliveryTime: '1 Business Day',
+    tags: ['engagement'],
+  },
+    {
+    id: 'digital-cards-housewarming',
+    name: 'Housewarming Party Invite',
+    slug: 'digital-cards-housewarming',
+    category: 'invitation-cards',
+    description: 'Invite friends and family to your new home with a warm invitation.',
+    price: 650,
+    priceType: 'fixed',
+    isFeatured: false,
+    topRated: true,
+    samples: [
+      { type: 'image', url: 'https://picsum.photos/seed/house1/600/800', imageHint: 'new home' },
+    ],
+    inclusions: ['High-Resolution JPEG/PNG', '2 Design Revisions'],
+    deliveryTime: '1 Business Day',
+    tags: ['housewarming'],
   },
 ];
 
