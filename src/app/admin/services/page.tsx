@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 type CombinedService = (Service | Partial<Package>) & { type: 'Service' | 'Package' };
 
@@ -69,9 +70,11 @@ export default function AdminServicesPage() {
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-headline text-3xl font-bold">Manage Services</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add New
+        <Button asChild>
+          <Link href="/admin/services/new">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add New
+          </Link>
         </Button>
       </div>
 
