@@ -1,8 +1,8 @@
+
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Service } from '@/lib/types';
 import Image from 'next/image';
-import { Badge } from '../ui/badge';
 
 interface ProductCardProps {
   service: Service;
@@ -10,6 +10,12 @@ interface ProductCardProps {
 
 export function ProductCard({ service }: ProductCardProps) {
   const primaryImage = service.samples.find(s => s.type === 'image');
+
+  const formattedCategory = service.category
+    .replace('-', ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 
   return (
     <Link href={`/services/${service.slug}`} className="group block">
@@ -28,6 +34,7 @@ export function ProductCard({ service }: ProductCardProps) {
             )}
             <div className="p-3">
                 <h3 className="font-semibold text-sm truncate group-hover:text-primary">{service.name}</h3>
+                <p className="text-xs text-muted-foreground capitalize mt-1">{formattedCategory}</p>
                 <p className="font-bold text-base mt-1">₹{service.price.toLocaleString('en-IN')}</p>
             </div>
             </CardContent>
