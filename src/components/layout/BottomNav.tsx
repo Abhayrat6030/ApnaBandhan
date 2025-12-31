@@ -3,15 +3,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, LayoutGrid, Package, Phone } from 'lucide-react';
+import { Home, ShoppingCart, LayoutGrid, User } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/services', label: 'Services', icon: LayoutGrid },
-  { href: '/packages', label: 'Packages', icon: Package },
-  { href: '/contact', label: 'Contact', icon: Phone },
+  { href: '/order', label: 'Order', icon: ShoppingCart },
+  { href: '/services', label: 'Category', icon: LayoutGrid },
+  { href: '/#', label: 'Profile', icon: User }, // Placeholder link
 ];
 
 export default function BottomNav() {
