@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,8 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useAuth, initiateEmailSignIn } from '@/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useAuth } from '@/firebase';
 
 
 const formSchema = z.object({
@@ -37,22 +37,6 @@ export default function LoginPage() {
     },
   });
 
-  useEffect(() => {
-    if (!auth) return;
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        toast({
-          title: 'Logged In Successfully!',
-          description: "Welcome back!",
-        });
-        setIsLoading(false);
-        router.push('/profile');
-      }
-    });
-    return () => unsubscribe();
-  }, [auth, router, toast]);
-
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     if (!auth) {
@@ -61,7 +45,15 @@ export default function LoginPage() {
         return;
     }
 
-    const handleError = (error: any) => {
+    try {
+        await signInWithEmailAndPassword(auth, values.email, values.password);
+        toast({
+          title: 'Logged In Successfully!',
+          description: "Welcome back!",
+        });
+        setIsLoading(false);
+        router.push('/profile');
+    } catch (error: any) {
         setIsLoading(false);
         let description = 'An unexpected error occurred.';
         if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -72,9 +64,7 @@ export default function LoginPage() {
             description,
             variant: 'destructive',
         });
-    };
-
-    initiateEmailSignIn(auth, values.email, values.password, handleError);
+    }
   }
 
   return (
