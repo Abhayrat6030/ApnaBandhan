@@ -86,11 +86,11 @@ export default function Home() {
                 {serviceCategories.map((category) => {
                 const Icon = categoryIcons[category.id as keyof typeof categoryIcons];
                 return (
-                    <CarouselItem key={category.id} className="pl-1 basis-1/4 sm:basis-1/5 md:basis-[15%]">
+                    <CarouselItem key={category.id} className="pl-1 basis-[28%] sm:basis-1/5 md:basis-[15%]">
                         <Link href={category.href} className="group block">
-                            <div className="flex flex-col items-center justify-center gap-1 p-1 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary">
+                            <div className="flex flex-col items-center justify-center gap-1 p-1 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary h-20">
                                 {Icon && <Icon className="h-7 w-7" />}
-                                <span className="text-xs sm:text-sm font-medium">{category.name}</span>
+                                <span className="text-xs sm:text-sm font-medium leading-tight">{category.name}</span>
                             </div>
                         </Link>
                     </CarouselItem>
