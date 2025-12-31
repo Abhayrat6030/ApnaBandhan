@@ -96,15 +96,15 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows any user to submit an order, but locks the order from being read or modified afterwards.
+     * @description Allows any user to submit an order, but locks the order from being read or modified afterwards by clients.
      * @path        /orders/{orderId}
      * @allow       Any user, including anonymous users, can submit a new order. (create)
-     * @deny        Any user attempting to read, list, update, or delete an order after it has been created.
+     * @deny        Any client attempting to read, list, update, or delete an order after it has been created.
      * @principle   Enforces a "write-once, read-never" pattern for public submissions to protect sensitive customer data.
      */
     match /orders/{orderId} {
       allow create: if true;
-      allow get: if false;
+      allow get: if request.auth != null && request.auth.uid == resource.data.userId;
       allow list: if false;
       allow update: if false;
       allow delete: if false;
