@@ -185,7 +185,7 @@ export default function Home() {
             </h2>
             <p className="mt-2 text-lg text-muted-foreground">Cinematic edits of your precious moments.</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md-grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedVideoEditing.map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
