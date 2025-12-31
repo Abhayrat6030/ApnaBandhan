@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useUser, db } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
@@ -11,14 +11,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export default function AdminOrdersPage() {
   const { user, isUserLoading } = useUser();
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   const ordersQuery = useMemoFirebase(() => {
-      if (!user || user.email !== 'abhayrat603@gmail.com') return null;
-      return collection(db, 'orders');
-  }, [user]);
+      if (!isAdmin) return null;
+      return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
+  }, [isAdmin]);
 
   const servicesQuery = useMemoFirebase(() => {
       return collection(db, 'services');
@@ -77,11 +79,11 @@ export default function AdminOrdersPage() {
         <CardContent className="p-0">
           {isLoading && !allOrders ? (
             renderSkeleton()
-          ) : !user || user.email !== 'abhayrat603@gmail.com' ? (
+          ) : !isAdmin ? (
             <div className="p-6 text-center text-muted-foreground">
               <p>You do not have permission to view this page.</p>
             </div>
-          ) : allOrders ? (
+          ) : allOrders && allOrders.length > 0 ? (
             <OrderTable orders={ordersWithServiceNames} />
           ) : (
              <div className="p-6 text-center text-muted-foreground">

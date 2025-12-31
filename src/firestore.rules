@@ -1,83 +1,81 @@
 
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if the user is signed in.
+    /* ===============================
+       HELPER FUNCTIONS
+    =============================== */
     function isSignedIn() {
       return request.auth != null;
     }
-    
-    // Helper function to check if the user is the owner of a document.
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Helper function to check if the user is an admin.
     // This is the single source of truth for admin access.
     function isAdmin() {
       return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
-    // --- Rules for public collections ---
+    /* ===============================
+       USERS
+       /users/{userId}
+    =============================== */
+    match /users/{userId} {
+      // Users can read and write their own data. Admins can too.
+      allow read, write: if isOwner(userId) || isAdmin();
+
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId);
+        allow write: if isAdmin(); // Only admin can send notifications
+      }
+
+      match /downloadableProducts/{productId} {
+        allow read: if isOwner(userId);
+        allow write: if isAdmin(); // Only admin can add downloadable products
+      }
+    }
+
+    /* ===============================
+       PUBLIC COLLECTIONS
+    =============================== */
     match /services/{serviceId} {
       allow read: if true;
       allow write: if isAdmin();
     }
+
     match /comboPackages/{comboId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    match /media/{mediaId} {
+     match /media/{mediaId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // --- Rules for the 'orders' collection ---
-    match /orders/{orderId} {
-      // Admins can GET any order. Users can only GET their own.
+    /* ===============================
+       ORDERS (SECURE)
+    =============================== */
+     match /orders/{orderId} {
+      // Admins can get any order. Users can only get their own.
       allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
-      
-      // Admins can LIST all orders. This is crucial for the admin panel.
-      allow list: if isAdmin();
-      
-      // Users can CREATE orders for themselves with specific initial data.
-      allow create: if isSignedIn() 
+
+      // Admins can update any order.
+      allow update: if isAdmin();
+
+      // Users can create orders for themselves with specific initial data.
+      allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
         && request.resource.data.paymentStatus == "Pending";
-        
-      // Admins can UPDATE any order.
-      allow update: if isAdmin();
-      
+
       // Deleting orders is disallowed for safety.
       allow delete: if false;
-    }
 
-    // --- Rules for the 'users' collection and subcollections ---
-    match /users/{userId} {
-      // A user can read/write their own profile data. Admin can too.
-      allow read, write: if isOwner(userId) || isAdmin();
-      
-      // Nobody can list all user documents to protect privacy.
-      allow list: if false;
-
-      // Notifications subcollection
-      match /notifications/{notificationId} {
-        // Users can read their own notifications.
-        allow read: if isOwner(userId);
-        // Only the admin can create/update/delete notifications.
-        allow write: if isAdmin();
-      }
-
-      // Downloadable products subcollection
-      match /downloadableProducts/{productId} {
-        // Users can read their own downloadable products.
-        allow read: if isOwner(userId);
-        // Only the admin can create/update/delete products.
-        allow write: if isAdmin();
-      }
+      // Admins can LIST all orders. Users can LIST their own orders.
+      allow list: if isAdmin() || (isSignedIn() && request.query.where[0][2] == request.auth.uid);
     }
   }
 }
