@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import {
   Table,
   TableBody,
@@ -15,24 +16,32 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
+    DropdownMenuSubContent,
+    DropdownMenuPortal
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, MessageSquare } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import Link from 'next/link';
+import { updateOrderStatus, updatePaymentStatus } from '@/app/admin/orders/actions';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrderTableProps {
   orders: (Order & { serviceName?: string })[];
 }
 
 export default function OrderTable({ orders }: OrderTableProps) {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = React.useState<string | null>(null);
+
   const getStatusVariant = (status: Order['status']) => {
     switch (status) {
       case 'Pending': return 'secondary';
       case 'In Progress': return 'default';
       case 'Delivered': return 'outline';
-      case 'Paid': return 'default';
       default: return 'secondary';
     }
   };
@@ -46,13 +55,40 @@ export default function OrderTable({ orders }: OrderTableProps) {
     }
   }
 
+  const handleStatusUpdate = async (orderId: string, newStatus: Order['status']) => {
+    setIsSubmitting(`status-${orderId}`);
+    const result = await updateOrderStatus(orderId, newStatus);
+    if (result.success) {
+      toast({ title: "Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
+    } else {
+      toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
+    }
+    setIsSubmitting(null);
+  }
+
+  const handlePaymentUpdate = async (orderId: string, newStatus: Order['paymentStatus']) => {
+     setIsSubmitting(`payment-${orderId}`);
+    const result = await updatePaymentStatus(orderId, newStatus);
+     if (result.success) {
+      toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
+    } else {
+      toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
+    }
+    setIsSubmitting(null);
+  }
+  
+  const isUpdating = (type: 'status' | 'payment', orderId: string) => {
+      return isSubmitting === `${type}-${orderId}`;
+  }
+
+
   return (
     <div className="relative w-full overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Client</TableHead>
-              <TableHead>Service</TableHead>
+              <TableHead className="min-w-[150px]">Client</TableHead>
+              <TableHead className="min-w-[200px]">Service</TableHead>
               <TableHead>Order Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Payment</TableHead>
@@ -65,10 +101,10 @@ export default function OrderTable({ orders }: OrderTableProps) {
             {orders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">
-                  <div className="min-w-[150px]">{order.fullName}</div>
+                  <div>{order.fullName}</div>
                   <div className="text-sm text-muted-foreground">{order.phoneNumber}</div>
                 </TableCell>
-                <TableCell className="min-w-[200px]">{order.serviceName || order.selectedServiceId}</TableCell>
+                <TableCell>{order.serviceName || order.selectedServiceId}</TableCell>
                 <TableCell>{new Date(order.orderDate).toLocaleDateString('en-CA')}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
@@ -79,7 +115,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                      <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isSubmitting}>
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Toggle menu</span>
                       </Button>
@@ -94,10 +130,33 @@ export default function OrderTable({ orders }: OrderTableProps) {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                      <DropdownMenuItem>Mark as Paid</DropdownMenuItem>
-                      <DropdownMenuItem>Mark In Progress</DropdownMenuItem>
-                      <DropdownMenuItem>Mark Delivered</DropdownMenuItem>
+                      
+                       <DropdownMenuSub>
+                        <DropdownMenuSubTrigger disabled={isUpdating('status', order.id)}>
+                          <span>Change Status</span>
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                                <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Pending')} disabled={order.status === 'Pending'}>Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'In Progress')} disabled={order.status === 'In Progress'}>In Progress</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Delivered')} disabled={order.status === 'Delivered'}>Delivered</DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+
+                      <DropdownMenuSub>
+                         <DropdownMenuSubTrigger disabled={isUpdating('payment', order.id)}>
+                            <span>Update Payment</span>
+                        </DropdownMenuSubTrigger>
+                         <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                                <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Pending')} disabled={order.paymentStatus === 'Pending'}>Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Advance')} disabled={order.paymentStatus === 'Advance'}>Advance</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Paid')} disabled={order.paymentStatus === 'Paid'}>Paid</DropdownMenuItem>
+                           </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
