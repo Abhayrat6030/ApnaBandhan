@@ -16,11 +16,11 @@ export default function AdminOrdersPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
-  // THIS IS THE PROBLEMATIC QUERY. REMOVING IT.
-  // const ordersQuery = useMemoFirebase(() => {
-  //     if (!firestore || !user) return null;
-  //     return collection(firestore, 'orders');
-  // }, [firestore, user]);
+  const ordersQuery = useMemoFirebase(() => {
+      // CRITICAL: Only create the query if the user is an admin and firestore is ready.
+      if (!firestore || !user || user.email !== 'abhayrat603@gmail.com') return null;
+      return collection(firestore, 'orders');
+  }, [firestore, user]);
 
   const servicesQuery = useMemoFirebase(() => {
       if (!firestore) return null;
@@ -32,8 +32,7 @@ export default function AdminOrdersPage() {
       return collection(firestore, 'comboPackages');
   }, [firestore]);
 
-  // Pass an empty array to `useCollection` for orders to prevent the query
-  const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(null);
+  const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Service>(packagesQuery);
   
@@ -59,14 +58,10 @@ export default function AdminOrdersPage() {
   const isLoading = isUserLoading || areOrdersLoading || areServicesLoading || arePackagesLoading;
 
   const renderSkeleton = () => (
-    <div>
+    <div className="p-4">
         {[...Array(5)].map((_, i) => (
             <div key={i} className="flex items-center space-x-4 p-4">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-[250px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                </div>
+                <Skeleton className="h-10 w-full" />
             </div>
         ))}
     </div>
@@ -84,10 +79,17 @@ export default function AdminOrdersPage() {
 
       <Card>
         <CardContent className="p-0">
-          {isLoading && !allOrders ? renderSkeleton() : (
+          {isLoading ? (
+            renderSkeleton()
+          ) : !user || user.email !== 'abhayrat603@gmail.com' ? (
+            <div className="p-6 text-center text-muted-foreground">
+              <p>You do not have permission to view this page.</p>
+            </div>
+          ) : allOrders ? (
+            <OrderTable orders={ordersWithServiceNames} />
+          ) : (
              <div className="p-6 text-center text-muted-foreground">
-               <p>Loading orders is temporarily disabled to resolve a permission error.</p>
-               <p>The feature to view all orders will be re-enabled correctly in a future update.</p>
+               <p>No orders found.</p>
              </div>
           )}
         </CardContent>
