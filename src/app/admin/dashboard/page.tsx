@@ -1,3 +1,4 @@
+
 import { mockOrders } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
@@ -7,8 +8,8 @@ export default function AdminDashboardPage() {
   const recentOrders = mockOrders.slice(0, 5);
   const totalRevenue = mockOrders.filter(o => o.paymentStatus === 'Paid').reduce((sum, order) => {
       // Dummy price logic for dashboard
-      if (order.service.includes('Combo')) return sum + 5000;
-      if (order.service.includes('Video')) return sum + 2500;
+      if (order.selectedServiceId.includes('combo')) return sum + 5000;
+      if (order.selectedServiceId.includes('video')) return sum + 2500;
       return sum + 1000;
   }, 0);
 
@@ -39,7 +40,7 @@ export default function AdminDashboardPage() {
 
       <div>
         <h2 className="font-headline text-2xl font-bold mb-4">Recent Orders</h2>
-        <OrderTable orders={recentOrders} />
+        <OrderTable orders={recentOrders.map(o => ({...o, serviceName: o.selectedServiceId}))} />
       </div>
     </div>
   );
