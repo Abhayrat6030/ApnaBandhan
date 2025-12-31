@@ -2,73 +2,29 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection, query, orderBy, limit, where } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
+import { useUser } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order, Service } from '@/lib/types';
+import type { Order } from '@/lib/types';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const isAdmin = user?.email === ADMIN_EMAIL;
-
-  const recentOrdersQuery = useMemoFirebase(() => {
-    if (!firestore || !isAdmin) {
-      return null;
-    }
-    return query(collection(firestore, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [firestore, isAdmin]);
-
-  const servicesQuery = useMemoFirebase(() => {
-    if (!firestore || !isAdmin) return null;
-    return collection(firestore, 'services');
-  }, [firestore, isAdmin]);
-
-  const packagesQuery = useMemoFirebase(() => {
-    if (!firestore || !isAdmin) return null;
-    return collection(firestore, 'comboPackages');
-  }, [firestore, isAdmin]);
-
-  const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
-  const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
-  const { data: packages, isLoading: arePackagesLoading } = useCollection<any>(packagesQuery);
-  
-  const serviceAndPackageMap = useMemo(() => {
-    const map = new Map<string, { name: string; price: number }>();
-    if (services) {
-      services.forEach(s => map.set(s.id, { name: s.name, price: s.price }));
-    }
-    if (packages) {
-      packages.forEach(p => map.set(p.id, { name: p.name, price: Number(p.price.toString().replace(/[^0-9.-]+/g,"")) }));
-    }
-    return map;
-  }, [services, packages]);
 
   const stats = [
     { title: 'Total Revenue', value: 'N/A', icon: DollarSign },
     { title: 'Total Orders', value: 'N/A', icon: ShoppingBag },
     { title: 'Completed Orders', value: 'N/A', icon: CheckCircle },
-    { title: 'New Clients this month', value: 'N/A', icon: Users }, 
+    { title: 'New Clients this month', value: 'N/A', icon: Users },
   ];
-  
-  const recentOrdersWithServiceNames = useMemo(() => {
-    if (!recentOrders) return [];
-    return recentOrders.map(order => ({
-      ...order,
-      serviceName: serviceAndPackageMap.get(order.selectedServiceId)?.name || order.selectedServiceId,
-    }));
-  }, [recentOrders, serviceAndPackageMap]);
-  
-  const isLoading = isUserLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
 
-  if (isLoading && isAdmin) {
+  if (isUserLoading) {
     return (
-       <div className="p-4 md:p-8">
+      <div className="p-4 md:p-8">
         <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           {[...Array(4)].map((_, i) => (
@@ -87,31 +43,35 @@ export default function AdminDashboardPage() {
           <h2 className="font-headline text-2xl font-bold mb-4">Recent Orders</h2>
           <Card>
             <CardContent className="p-0">
-               <div className="space-y-4 p-4">
-                  {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-               </div>
+              <div className="space-y-4 p-4">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
-    )
+    );
   }
 
   if (!isAdmin) {
     return (
-        <div className="p-4 md:p-8 text-center">
-            <h1 className="font-headline text-2xl font-bold mb-4">Access Denied</h1>
-            <p className="text-muted-foreground">You do not have permission to view this page.</p>
-        </div>
-    )
+      <div className="p-4 md:p-8 text-center">
+        <h1 className="font-headline text-2xl font-bold mb-4">Access Denied</h1>
+        <p className="text-muted-foreground">
+          You do not have permission to view this page.
+        </p>
+      </div>
+    );
   }
 
   return (
     <div className="p-4 md:p-8">
       <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        {stats.map(stat => (
+        {stats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
@@ -125,8 +85,15 @@ export default function AdminDashboardPage() {
       </div>
 
       <div>
-        <h2 className="font-headline text-2xl font-bold mb-4">Recent Orders</h2>
-        <OrderTable orders={recentOrdersWithServiceNames} />
+        <h2 className="font-headline text-2xl font-bold mb-4">
+          Recent Orders
+        </h2>
+        <Card>
+          <CardContent className="p-6 text-center text-muted-foreground">
+            <p>Recent orders are temporarily disabled to ensure stability.</p>
+            <p>Please use the 'Orders' page to view all orders.</p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
