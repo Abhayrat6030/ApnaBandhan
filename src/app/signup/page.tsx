@@ -14,8 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Lock, Phone, Gift, Eye, EyeOff } from 'lucide-react';
-import { useAuth, initiateEmailSignUp } from '@/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { initiateEmailSignUp, auth } from '@/firebase';
 
 
 const formSchema = z.object({
@@ -31,7 +30,6 @@ export default function SignupPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const auth = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,17 +44,14 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    if (!auth) {
-        toast({ title: 'Auth service not available', variant: 'destructive'});
-        setIsLoading(false);
-        return;
-    }
-
+    
     const handleSuccess = () => {
-        // This is now handled by the onAuthStateChanged in the layout/provider
-        // to avoid race conditions.
         setIsLoading(false);
-        // The global listener will toast and redirect.
+        toast({
+          title: "Account Created!",
+          description: "Welcome to ApnaBandhan. You're now logged in.",
+        });
+        router.push('/profile');
     };
 
     const handleError = (error: any) => {

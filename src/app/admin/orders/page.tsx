@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react';
 import { collection } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useCollection, useMemoFirebase, useUser, db } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
@@ -14,23 +14,19 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function AdminOrdersPage() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
 
   const ordersQuery = useMemoFirebase(() => {
-      // CRITICAL: Only create the query if the user is an admin and firestore is ready.
-      if (!firestore || !user || user.email !== 'abhayrat603@gmail.com') return null;
-      return collection(firestore, 'orders');
-  }, [firestore, user]);
+      if (!user || user.email !== 'abhayrat603@gmail.com') return null;
+      return collection(db, 'orders');
+  }, [user]);
 
   const servicesQuery = useMemoFirebase(() => {
-      if (!firestore) return null;
-      return collection(firestore, 'services');
-  }, [firestore]);
+      return collection(db, 'services');
+  }, []);
 
   const packagesQuery = useMemoFirebase(() => {
-      if(!firestore) return null;
-      return collection(firestore, 'comboPackages');
-  }, [firestore]);
+      return collection(db, 'comboPackages');
+  }, []);
 
   const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
@@ -79,7 +75,7 @@ export default function AdminOrdersPage() {
 
       <Card>
         <CardContent className="p-0">
-          {isLoading ? (
+          {isLoading && !allOrders ? (
             renderSkeleton()
           ) : !user || user.email !== 'abhayrat603@gmail.com' ? (
             <div className="p-6 text-center text-muted-foreground">

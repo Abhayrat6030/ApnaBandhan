@@ -21,7 +21,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, errorEmitter } from '@/firebase';
+import { useUser, db, errorEmitter } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 
@@ -47,7 +47,6 @@ export default function OrderPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { user } = useUser();
-  const firestore = useFirestore();
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -77,7 +76,7 @@ export default function OrderPage() {
   async function onSubmit(data: OrderFormValues) {
     setIsSubmitting(true);
 
-    if (!user || !firestore) {
+    if (!user) {
         toast({
             title: "Authentication Error",
             description: "You must be logged in to place an order.",
@@ -87,7 +86,7 @@ export default function OrderPage() {
         return;
     }
 
-    const ordersCollection = collection(firestore, 'orders');
+    const ordersCollection = collection(db, 'orders');
 
     const newOrder = {
         userId: user.uid,

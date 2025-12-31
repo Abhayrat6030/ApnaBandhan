@@ -1,55 +1,94 @@
-rules_version = '2';
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if the user is the owner of the document.
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+    /* ===============================
+       HELPER FUNCTIONS
+    =============================== */
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // Publicly readable collections
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // In a real app, this would check a custom claim:
+      // return isSignedIn() && request.auth.token.admin == true;
+      // For this prototype, we'll check the admin email.
+      return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
+    }
+
+    /* ===============================
+       USERS
+       /users/{userId}
+    =============================== */
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId);
+        allow write: if isAdmin();
+      }
+
+      match /downloadableProducts/{productId} {
+        allow read: if isOwner(userId);
+        allow write: if isAdmin();
+      }
+    }
+
+    /* ===============================
+       PUBLIC COLLECTIONS
+    =============================== */
     match /services/{serviceId} {
       allow read: if true;
-      allow write: if false; // Admin only
+      allow write: if isAdmin();
     }
 
-    match /comboPackages/{comboPackageId} {
+    match /comboPackages/{comboId} {
       allow read: if true;
-      allow write: if false; // Admin only
+      allow write: if isAdmin();
     }
-
-    match /media/{mediaId} {
+     match /media/{mediaId} {
       allow read: if true;
-      allow write: if false; // Admin only
+      allow write: if isAdmin();
     }
 
-    // Orders can be created by any authenticated user for themselves.
-    // They can only read their own orders.
+    /* ===============================
+       ORDERS (FIXED + SAFE)
+       /orders/{orderId}
+    =============================== */
     match /orders/{orderId} {
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow get, list: if request.auth != null && (isOwner(resource.data.userId) || request.auth.token.email == 'abhayrat603@gmail.com');
-      allow update, delete: if false; // Should be admin-only
+      // Create order (user only)
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "Pending"
+        && request.resource.data.paymentStatus == "Pending";
+
+      // Read single document (Admin OR User's own order)
+      allow get: if isAdmin() || isOwner(resource.data.userId);
+
+      // Update (Admin only)
+      allow update: if isAdmin();
+
+      // Delete blocked
+      allow delete: if false;
     }
     
-    // User-specific private data is nested under the user's ID.
-    match /users/{userId} {
-      // A user can read and write to their own top-level profile document.
-      allow get, update, create: if isOwner(userId) || request.auth.token.email == 'abhayrat603@gmail.com';
-      // No one should be able to list all user documents.
-      allow list, delete: if false;
-
-      // Users can list and read their own notifications.
-      match /notifications/{notificationId} {
-        allow get, list: if isOwner(userId);
-        allow create, update, delete: if false; // Server/admin only
-      }
-
-      // Users can list and read their own downloadable products.
-      match /downloadableProducts/{productId} {
-        allow get, list: if isOwner(userId);
-        allow create, update, delete: if false; // Server/admin only
-      }
+    // IMPORTANT: Collection-level list query rule
+    match /orders {
+        allow list: if isAdmin();
     }
+
+    /* ===============================
+       DEFAULT DENY (SECURITY)
+    =============================== */
+    // This rule is commented out because it's too restrictive for nested collections
+    // and the default behavior is to deny all access unless explicitly allowed.
+    // match /{document=**} {
+    //   allow read, write: if false;
+    // }
   }
 }

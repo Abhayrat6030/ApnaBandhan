@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { collection, query, where } from 'firebase/firestore';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useCollection, useMemoFirebase, db } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -35,17 +35,13 @@ const getPaymentStatusVariant = (status: Order['paymentStatus']) => {
 
 export default function OrderHistoryPage() {
     const { user, isUserLoading } = useUser();
-    const firestore = useFirestore();
 
     const ordersQuery = useMemoFirebase(() => {
-        // CRITICAL: Only create the query if the user is loaded and logged in.
-        // If user or firestore is not available, return null to prevent the query from running.
-        if (!user || !firestore) {
+        if (!user) {
           return null;
         }
-        // This query is user-specific and secure.
-        return query(collection(firestore, 'orders'), where('userId', '==', user.uid));
-    }, [user, firestore]);
+        return query(collection(db, 'orders'), where('userId', '==', user.uid));
+    }, [user]);
 
     const { data: userOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
 
@@ -56,7 +52,6 @@ export default function OrderHistoryPage() {
         return map;
     }, []);
 
-    // The combined loading state now correctly waits for both user authentication and data fetching.
     const isLoading = isUserLoading || areOrdersLoading;
 
     const renderSkeleton = () => (

@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useMemo } from 'react';
 import { collection } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useCollection, useMemoFirebase, db } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,25 +20,21 @@ import type { Service } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminServicesPage() {
-  const firestore = useFirestore();
-
   const servicesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'services');
-  }, [firestore]);
+    return collection(db, 'services');
+  }, []);
 
   const packagesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'comboPackages');
-  }, [firestore]);
+    return collection(db, 'comboPackages');
+  }, []);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Service>(packagesQuery);
   
   const allItems = useMemo(() => {
-      const items: Service[] = [];
-      if(services) items.push(...services);
-      if(packages) items.push(...packages);
+      const items: (Service & {isFeatured?: boolean})[] = [];
+      if(services) items.push(...services.map(s => ({...s, isFeatured: s.isFeatured ?? false})));
+      if(packages) items.push(...packages.map(p => ({...p, isFeatured: p.isFeatured ?? false})));
       return items;
   }, [services, packages]);
   
@@ -99,7 +96,7 @@ export default function AdminServicesPage() {
                   {allItems.map(item => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell className="capitalize">{item.category.replace('-', ' ')}</TableCell>
+                      <TableCell className="capitalize">{item.category?.replace('-', ' ') || 'Package'}</TableCell>
                       <TableCell>₹{item.price.toLocaleString('en-IN')}</TableCell>
                       <TableCell>
                         <Badge variant={item.isFeatured ? 'default' : 'secondary'}>

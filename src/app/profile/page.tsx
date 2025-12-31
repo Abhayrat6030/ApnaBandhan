@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
+import { useUser, useDoc, useCollection, useMemoFirebase, auth, db } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { collection, query, where, doc } from "firebase/firestore";
@@ -38,27 +38,23 @@ const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export default function ProfilePage() {
     const { user, isUserLoading } = useUser();
-    const auth = useAuth();
-    const firestore = useFirestore();
     const router = useRouter();
 
     const userProfileQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
-        return doc(firestore, 'users', user.uid);
-    }, [user, firestore]);
+        if (!user) return null;
+        return doc(db, 'users', user.uid);
+    }, [user]);
 
     const notificationsQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
-        return query(collection(firestore, 'users', user.uid, 'notifications'), where('read', '==', false));
-    }, [user, firestore]);
+        if (!user) return null;
+        return query(collection(db, 'users', user.uid, 'notifications'), where('read', '==', false));
+    }, [user]);
     
     const { data: userProfile, isLoading: isProfileLoading } = useDoc(userProfileQuery);
     const { data: unreadNotifications, isLoading: areNotificationsLoading } = useCollection<Notification>(notificationsQuery);
 
     const handleLogout = async () => {
-        if(auth) {
-            await auth.signOut();
-        }
+        await auth.signOut();
         router.push('/login');
     };
     

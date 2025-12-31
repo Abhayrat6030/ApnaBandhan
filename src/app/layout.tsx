@@ -12,7 +12,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BottomNav from '@/components/layout/BottomNav';
-import { FirebaseClientProvider, useAuth, initiateAnonymousSignIn, useUser } from '@/firebase';
+import { FirebaseClientProvider, initiateAnonymousSignIn, useUser, auth } from '@/firebase';
 
 const fontInter = Inter({
   subsets: ['latin'],
@@ -25,14 +25,13 @@ const fontPlayfair = Playfair_Display({
 });
 
 function AuthHandler({ children }: { children: React.ReactNode }) {
-  const auth = useAuth();
   const { isUserLoading, user } = useUser();
 
   React.useEffect(() => {
     if (!isUserLoading && !user) {
       initiateAnonymousSignIn(auth);
     }
-  }, [isUserLoading, user, auth]);
+  }, [isUserLoading, user]);
 
   return <>{children}</>;
 }
@@ -51,7 +50,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith('/admin');
-  const isAuthRoute = pathname.startsWith('/admin/login');
+  const isAuthRoute = ['/admin/login', '/login', '/signup', '/forgot-password'].includes(pathname);
   const [isMenuOpen, setMenuOpen] = React.useState(false);
 
   const AppContent = () => (
@@ -64,7 +63,7 @@ export default function RootLayout({
     </>
   );
 
-  if (isAuthRoute) {
+  if (isAuthRoute && !isAdminRoute) {
     return (
       <html lang="en" suppressHydrationWarning>
         <body
@@ -74,8 +73,10 @@ export default function RootLayout({
             fontPlayfair.variable
           )}
         >
-          {children}
-          <Toaster />
+          <FirebaseClientProvider>
+            {children}
+            <Toaster />
+          </FirebaseClientProvider>
         </body>
       </html>
     );

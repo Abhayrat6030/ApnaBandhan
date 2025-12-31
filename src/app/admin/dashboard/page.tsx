@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useCollection, useMemoFirebase, useUser, db } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
@@ -12,23 +12,19 @@ import type { Order, Service } from '@/lib/types';
 
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
 
-  // Query for recent orders, which is allowed for admins.
   const recentOrdersQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return query(collection(firestore, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [firestore, user]);
+    if (!user || user.email !== 'abhayrat603@gmail.com') return null;
+    return query(collection(db, 'orders'), orderBy('orderDate', 'desc'), limit(5));
+  }, [user]);
 
   const servicesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'services');
-  }, [firestore]);
+    return collection(db, 'services');
+  }, []);
 
   const packagesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'comboPackages');
-  }, [firestore]);
+    return collection(db, 'comboPackages');
+  }, []);
 
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
@@ -45,7 +41,6 @@ export default function AdminDashboardPage() {
     return map;
   }, [services, packages]);
 
-  // Temporarily removing stats that require querying all orders to fix permission error.
   const stats = [
     { title: 'Total Revenue', value: 'N/A', icon: DollarSign },
     { title: 'Total Orders', value: 'N/A', icon: ShoppingBag },
