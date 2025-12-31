@@ -4,7 +4,11 @@
 import { z } from 'zod';
 import { siteConfig } from '@/lib/constants';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { initializeFirebase } from '@/firebase';
+import { headers } from 'next/headers';
+
 
 const orderFormSchema = z.object({
   fullName: z.string().min(2),
@@ -13,7 +17,6 @@ const orderFormSchema = z.object({
   weddingDate: z.date(),
   selectedService: z.string().min(1),
   message: z.string().max(500).optional(),
-  userId: z.string().optional(),
 });
 
 export async function submitOrder(data: z.infer<typeof orderFormSchema>) {
@@ -25,6 +28,21 @@ export async function submitOrder(data: z.infer<typeof orderFormSchema>) {
   }
 
   try {
+    const headersList = headers();
+    const idToken = headersList.get('Authorization')?.split('Bearer ')[1];
+
+    if (!idToken) {
+        return { success: false, message: 'You must be logged in to place an order.' };
+    }
+
+    const decodedToken = await getAuth(getApp()).verifyIdToken(idToken);
+    const user = { uid: decodedToken.uid };
+
+
+    if (!user) {
+        return { success: false, message: 'You must be logged in to place an order.' };
+    }
+
     const { firestore } = initializeFirebase();
     const ordersCollection = collection(firestore, 'orders');
 
@@ -40,7 +58,7 @@ export async function submitOrder(data: z.infer<typeof orderFormSchema>) {
         orderDate: new Date().toISOString(),
         status: 'Pending',
         paymentStatus: 'Pending',
-        userId: validation.data.userId || null,
+        userId: user.uid,
     };
 
     await addDoc(ordersCollection, newOrder);

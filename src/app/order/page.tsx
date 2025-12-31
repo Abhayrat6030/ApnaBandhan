@@ -21,7 +21,7 @@ import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { submitOrder } from './actions';
-import { useUser } from '@/firebase';
+import { useUser, useAuth } from '@/firebase';
 
 const allServicesAndPackages = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
 const uniqueServices = Array.from(new Map(allServicesAndPackages.map(item => [item.id, item])).values());
@@ -34,7 +34,6 @@ const orderFormSchema = z.object({
   weddingDate: z.date({ required_error: 'Wedding date is required.' }),
   selectedService: z.string().min(1, { message: 'Please select a service.' }),
   message: z.string().max(500, { message: 'Message must be less than 500 characters.' }).optional(),
-  userId: z.string().optional(),
 });
 
 type OrderFormValues = z.infer<typeof orderFormSchema>;
@@ -45,7 +44,7 @@ export default function OrderPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const { user } = useUser();
+  const auth = useAuth();
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -60,24 +59,41 @@ export default function OrderPage() {
 
   async function onSubmit(data: OrderFormValues) {
     setIsSubmitting(true);
-    const result = await submitOrder({ ...data, userId: user?.uid });
-    setIsSubmitting(false);
+    
+    try {
+        const idToken = await auth.currentUser?.getIdToken();
+        const result = await fetch('/api/submit-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify(data),
+        });
 
-    if (result.success) {
-      toast({
-        title: "Order Submitted Successfully!",
-        description: "We have received your details and will contact you shortly.",
-        variant: "default"
-      });
-      form.reset();
-      setIsSubmitted(true);
-    } else {
-      toast({
-        title: "Submission Failed",
-        description: result.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+        const response = await result.json();
+
+        if (response.success) {
+          toast({
+            title: "Order Submitted Successfully!",
+            description: "We have received your details and will contact you shortly.",
+            variant: "default"
+          });
+          form.reset();
+          setIsSubmitted(true);
+        } else {
+          throw new Error(response.message || 'Failed to submit order.');
+        }
+    } catch (error: any) {
+         toast({
+            title: "Submission Failed",
+            description: error.message || "Something went wrong. Please try again.",
+            variant: "destructive",
+          });
     }
+
+
+    setIsSubmitting(false);
   }
 
   if (isSubmitted) {
