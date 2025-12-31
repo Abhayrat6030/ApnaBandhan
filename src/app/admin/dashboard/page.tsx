@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useMemo } from 'react';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit, where } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
