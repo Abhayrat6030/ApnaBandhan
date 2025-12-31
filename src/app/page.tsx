@@ -1,10 +1,10 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Film, Mails, Album, Package as PackageIcon, Video, Heart, Printer, Gift } from 'lucide-react';
+import { ArrowRight, Film, Mails, Album, Package as PackageIcon, Video } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { services, serviceCategories, whyChooseUs } from '@/lib/data';
+import { services, serviceCategories } from '@/lib/data';
 import { siteConfig } from '@/lib/constants';
 import placeholderImages from '@/lib/placeholder-images.json';
 import { ServiceCard } from '@/components/shared/ServiceCard';
@@ -101,43 +101,6 @@ export default function Home() {
               </Link>
             </Button>
           </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us Section */}
-      <section className="py-12 md:py-16 bg-background">
-        <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-                <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
-                    Why Choose ApnaBandhan?
-                </h2>
-                <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-                    We are committed to providing exceptional quality and service.
-                </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-                {whyChooseUs.map((item) => {
-                  const Icon = {
-                    Heart,
-                    Film,
-                    Printer,
-                    Gift,
-                  }[item.icon];
-
-                  return (
-                    <div key={item.title} className="p-6">
-                        <div className="flex justify-center items-center mb-4">
-                            <div className="bg-primary/10 p-4 rounded-full">
-                                <div className="bg-primary/20 p-3 rounded-full">
-                                    {Icon && <Icon className="h-8 w-8 text-primary" />}
-                                </div>
-                            </div>
-                        </div>
-                        <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                        <p className="text-muted-foreground">{item.description}</p>
-                    </div>
-                );})}
-            </div>
         </div>
       </section>
     </div>
