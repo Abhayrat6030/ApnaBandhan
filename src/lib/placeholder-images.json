@@ -1,9 +1,9 @@
 {
   "hero": {
     "id": "hero-1",
-    "description": "An emotional Indian wedding moment",
-    "imageUrl": "https://picsum.photos/seed/hero1/1920/1080",
-    "imageHint": "indian wedding couple"
+    "description": "An elegant Indian wedding ceremony",
+    "imageUrl": "https://picsum.photos/seed/wedding-hero/1920/1080",
+    "imageHint": "indian wedding"
   },
   "showcase": [
     {
