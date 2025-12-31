@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { siteConfig } from '@/lib/constants';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeFirebase } from '@/firebase';
@@ -11,16 +11,21 @@ import { headers } from 'next/headers';
 
 
 const orderFormSchema = z.object({
-  fullName: z.string().min(2),
-  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/),
-  email: z.string().email(),
-  weddingDate: z.date(),
-  selectedService: z.string().min(1),
-  message: z.string().max(500).optional(),
+  fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: 'Please enter a valid phone number.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  weddingDate: z.string().min(1, { message: 'Wedding date is required.' }), // Expect a string
+  selectedService: z.string().min(1, { message: 'Please select a service.' }),
+  message: z.string().max(500, { message: 'Message must be less than 500 characters.' }).optional(),
 });
 
-export async function submitOrder(data: z.infer<typeof orderFormSchema>) {
-  const validation = orderFormSchema.safeParse(data);
+export async function submitOrder(data: any) { // Use any to handle incoming JSON
+  const validation = orderFormSchema.safeParse({
+      ...data,
+      // The weddingDate comes in as a string from the fetch body
+      weddingDate: data.weddingDate ? new Date(data.weddingDate).toISOString() : undefined,
+  });
+
 
   if (!validation.success) {
     console.error('Order validation failed:', validation.error.flatten());
@@ -52,7 +57,7 @@ export async function submitOrder(data: z.infer<typeof orderFormSchema>) {
         fullName: validation.data.fullName,
         phoneNumber: validation.data.phone,
         email: validation.data.email,
-        weddingDate: validation.data.weddingDate.toISOString().split('T')[0],
+        weddingDate: validation.data.weddingDate.split('T')[0],
         selectedServiceId: serviceName,
         messageNotes: validation.data.message || '',
         orderDate: new Date().toISOString(),
@@ -61,11 +66,11 @@ export async function submitOrder(data: z.infer<typeof orderFormSchema>) {
         userId: user.uid,
     };
 
-    await addDoc(ordersCollection, newOrder);
+    const docRef = await addDoc(ordersCollection, newOrder);
 
-    console.log('New Order successfully saved to Firestore:', newOrder);
+    console.log('New Order successfully saved to Firestore:', docRef.id);
 
-    const whatsappMessage = `New Order from ${validation.data.fullName}!\n\nService ID: ${serviceName}\nPhone: ${validation.data.phone}\nWedding Date: ${validation.data.weddingDate.toLocaleDateString()}\n\nMessage: ${validation.data.message || 'None'}`;
+    const whatsappMessage = `New Order from ${validation.data.fullName}!\n\nService ID: ${serviceName}\nPhone: ${validation.data.phone}\nWedding Date: ${new Date(validation.data.weddingDate).toLocaleDateString()}\n\nMessage: ${validation.data.message || 'None'}`;
     const whatsappUrl = `https://wa.me/${siteConfig.phone}?text=${encodeURIComponent(whatsappMessage)}`;
     console.log('Admin WhatsApp URL:', whatsappUrl);
 

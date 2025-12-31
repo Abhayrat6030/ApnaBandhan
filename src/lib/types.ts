@@ -51,8 +51,8 @@ export type WhyChooseUs = {
 
 export type Order = {
     id: string;
-    clientName: string;
-    phone: string;
+    clientName?: string; // Made optional as it's not on the order doc
+    phone?: string; // Made optional
     email: string;
     weddingDate: string | Date;
     service: string;
@@ -61,4 +61,8 @@ export type Order = {
     paymentStatus: 'Pending' | 'Advance' | 'Paid';
     orderDate: string | Date;
     userId?: string;
+    fullName: string;
+    phoneNumber: string;
+    selectedServiceId: string;
+    messageNotes: string;
 }
