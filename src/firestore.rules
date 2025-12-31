@@ -30,16 +30,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Orders collection
+    // --- Orders Collection Rules ---
+    // Rules for the entire collection (listing, creating)
     match /orders/{orderId} {
-      // Users can create orders for themselves
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      
+        
       // Admins can read all orders, users can read their own.
       allow get: if isOwner(resource.data.userId) || isAdmin();
-      
-      // Only Admins can list all orders. This is a collection-level query.
-      allow list: if isAdmin();
       
       // Only Admins can update an order's status.
       allow update: if isAdmin();
@@ -47,6 +43,15 @@ service cloud.firestore {
       // Deleting orders is not allowed from the client.
       allow delete: if false;
     }
+    
+    match /orders {
+        // Only Admins can list all orders. This is a collection-level query.
+        allow list: if isAdmin();
+        
+        // Users can create orders for themselves
+        allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
 
     // User-specific data is nested under the user's ID.
     match /users/{userId} {
