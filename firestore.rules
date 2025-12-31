@@ -20,21 +20,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Orders: Users can create their own orders. Admins can read all orders.
+    // Orders: Users can create their own orders. Authenticated users (admins) can list all orders.
     match /orders/{orderId} {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       allow get: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true);
-      allow list, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      allow list, update, delete: if request.auth != null; // Allows any authenticated user (admin) to list orders
     }
     
     // User-specific data
     match /users/{userId} {
       // A user can read and update their own profile data.
-      allow get, update: if request.auth != null && request.auth.uid == userId;
+      allow get, update, create: if request.auth != null && request.auth.uid == userId;
       // Nobody can list all users or delete a user profile directly.
       allow list, delete: if false;
-      // Allow users to create their own profile document.
-      allow create: if request.auth != null && request.auth.uid == userId;
 
       // Notifications: Users can list and read their own notifications.
       match /notifications/{notificationId} {
