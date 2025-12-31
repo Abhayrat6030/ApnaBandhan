@@ -57,7 +57,7 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-12 bg-background">
+      <section className="py-6 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex flex-row justify-around items-center border-b">
             {serviceCategories.map((category, index) => {
