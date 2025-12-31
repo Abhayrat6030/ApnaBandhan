@@ -37,7 +37,7 @@ export default function ProfilePage() {
 
     const handleLogout = async () => {
         await auth.signOut();
-        router.push('/');
+        router.push('/login');
     };
 
     const userDetails = {
