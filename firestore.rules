@@ -93,5 +93,19 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if false;
     }
+
+    /**
+     * @description User profile data. Users can create, read, and update their own profile.
+     * @path /users/{userId}
+     * @allow_create  A user can create their own profile document.
+     * @allow_read    A user can read their own profile.
+     * @allow_update  A user can update their own profile.
+     * @deny_delete   Users cannot delete their profiles from the client.
+     * @deny_list     Listing all users is not allowed.
+     */
+    match /users/{userId} {
+      allow create, update, read: if request.auth != null && request.auth.uid == userId;
+      allow list, delete: if false;
+    }
   }
 }

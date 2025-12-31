@@ -8,6 +8,9 @@ import {
   updateProfile,
   // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
+
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
@@ -31,9 +34,26 @@ export function initiateEmailSignUp(
         if (userCredential.user) {
             // After creating the user, update their profile with the display name
             updateProfile(userCredential.user, { displayName }).then(() => {
-                onSuccess();
-            }).catch(error => {
-                onError(error);
+                // Now, save user info to Firestore
+                const { firestore } = initializeFirebase();
+                const userDocRef = doc(firestore, 'users', userCredential.user.uid);
+                
+                const userProfile = {
+                    uid: userCredential.user.uid,
+                    displayName: displayName,
+                    email: email,
+                    createdAt: new Date().toISOString(),
+                };
+
+                // Set the document in Firestore
+                setDoc(userDocRef, userProfile).then(() => {
+                    onSuccess(); // Call success callback only after both are done
+                }).catch(dbError => {
+                    onError(dbError); // Handle Firestore error
+                });
+                
+            }).catch(profileError => {
+                onError(profileError); // Handle profile update error
             });
         }
     })
