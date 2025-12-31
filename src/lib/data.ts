@@ -201,25 +201,33 @@ export const serviceCategories: ServiceCategoryInfo[] = [
       id: 'invitation-videos', 
       name: 'Invitation Videos', 
       description: 'Announce your special day with a stunning video that captures your love story.',
-      href: '/invitation-videos' 
+      href: '/invitation-videos',
+      imageUrl: 'https://picsum.photos/seed/cat-vid/600/400',
+      imageHint: 'wedding film'
     },
     { 
       id: 'invitation-cards', 
       name: 'Invitation Cards', 
       description: 'Elegant and modern digital & printable cards for every wedding style.',
-      href: '/invitation-cards'
+      href: '/invitation-cards',
+      imageUrl: 'https://picsum.photos/seed/cat-card/600/400',
+      imageHint: 'invitation design'
     },
     { 
       id: 'album-design', 
       name: 'Album Designs', 
       description: 'Treasure your memories with a beautifully designed, professional wedding album.',
-      href: '/album-design'
+      href: '/album-design',
+      imageUrl: 'https://picsum.photos/seed/cat-album/600/400',
+      imageHint: 'photo album'
     },
     { 
       id: 'combo-packages', 
       name: 'Combo Packages',
       description: 'Get the best value with our curated packages combining our most popular services.',
-      href: '/packages'
+      href: '/packages',
+      imageUrl: 'https://picsum.photos/seed/cat-combo/600/400',
+      imageHint: 'wedding gift'
     },
 ];
 

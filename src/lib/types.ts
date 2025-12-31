@@ -10,6 +10,8 @@ export type ServiceCategoryInfo = {
   name: string;
   description: string;
   href: string;
+  imageUrl: string;
+  imageHint: string;
 };
 
 export type Service = {
