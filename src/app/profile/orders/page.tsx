@@ -51,6 +51,7 @@ export default function OrderHistoryPage() {
 
     const allServicesMap = useMemo(() => {
         const map = new Map<string, string>();
+        // Combine static and firestore services for full lookup capability
         staticServices.forEach(s => map.set(s.id, s.name));
         services?.forEach(s => map.set(s.id, s.name));
         return map;
