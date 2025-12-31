@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Order": {
@@ -189,6 +190,34 @@
         "type",
         "uploadDate"
       ]
+    },
+    "Notification": {
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a notification for a user.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" },
+        "type": { "type": "string", "enum": ["order", "offer", "general"] }
+      },
+      "required": ["id", "title", "description", "date", "read", "type"]
+    },
+    "DownloadableProduct": {
+      "title": "DownloadableProduct",
+      "type": "object",
+      "description": "Represents a final product ready for download by the user.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["Image", "Video"] },
+        "deliveryDate": { "type": "string", "format": "date-time" },
+        "downloadUrl": { "type": "string", "format": "uri" },
+        "orderId": { "type": "string" }
+      },
+      "required": ["id", "name", "type", "deliveryDate", "downloadUrl", "orderId"]
     }
   },
   "auth": {
@@ -203,67 +232,50 @@
         "path": "/services/{serviceId}",
         "definition": {
           "entityName": "Service",
-          "schema": {
-            "$ref": "#/backend/entities/Service"
-          },
-          "description": "Stores wedding services offered by ApnaBandhan.",
-          "params": [
-            {
-              "name": "serviceId",
-              "description": "Unique identifier for the service."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/Service" },
+          "description": "Stores wedding services offered by ApnaBandhan."
         }
       },
       {
         "path": "/comboPackages/{comboPackageId}",
         "definition": {
           "entityName": "ComboPackage",
-          "schema": {
-            "$ref": "#/backend/entities/ComboPackage"
-          },
-          "description": "Stores combo packages that combine multiple services.",
-          "params": [
-            {
-              "name": "comboPackageId",
-              "description": "Unique identifier for the combo package."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/ComboPackage" },
+          "description": "Stores combo packages that combine multiple services."
         }
       },
       {
         "path": "/media/{mediaId}",
         "definition": {
           "entityName": "Media",
-          "schema": {
-            "$ref": "#/backend/entities/Media"
-          },
-          "description": "Stores media files (images or videos) used for samples, albums, or other purposes.",
-          "params": [
-            {
-              "name": "mediaId",
-              "description": "Unique identifier for the media file."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/Media" },
+          "description": "Stores media files used for samples."
         }
       },
       {
         "path": "/orders/{orderId}",
         "definition": {
           "entityName": "Order",
-          "schema": {
-            "$ref": "#/backend/entities/Order"
-          },
-          "description": "Stores customer orders for wedding services.",
-          "params": [
-            {
-              "name": "orderId",
-              "description": "Unique identifier for the order."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/Order" },
+          "description": "Stores customer orders for wedding services."
         }
+      },
+      {
+          "path": "/users/{userId}/notifications/{notificationId}",
+          "definition": {
+              "entityName": "Notification",
+              "schema": { "$ref": "#/backend/entities/Notification"},
+              "description": "Stores notifications for a specific user."
+          }
+      },
+      {
+          "path": "/users/{userId}/downloadableProducts/{productId}",
+          "definition": {
+              "entityName": "DownloadableProduct",
+              "schema": {"$ref": "#/backend/entities/DownloadableProduct"},
+              "description": "Stores products available for download for a specific user."
+          }
       }
-    ],
-    "reasoning": "The Firestore data structure is designed to support ApnaBandhan's wedding services website, focusing on authorization independence, clarity, and scalability. It leverages denormalization to avoid complex security rules and ensures data integrity.  The structure is segregated into collections based on entity type to maintain a homogeneous security posture.\n\n**Authorization Independence:**\n*   No `get()` calls in security rules. While there are no user-specific collections in the current schema, if user-specific data were to be added, ownership would be ensured via path-based rules (e.g., `/users/{userId}/orders/{orderId}`).\n\n**Structural Segregation (Homogeneous Security Posture):**\n*   Each top-level collection (`services`, `comboPackages`, `media`, and `orders`) contains documents of the same type, simplifying security rules.\n\n**QAPs Support:**\n*   The structure enables secure `list` operations by segregating data based on entity type.  This prevents the need for complex filtering in rules.\n\n**Invariants:**\n*   Timestamps (`orderDate`, `uploadDate`) can be enforced via rules.  Ownership (if applicable in the future) would be enforced via path-based rules or membership maps.\n\n**Justification:**\n*   `/services`: Stores wedding services. The schema includes fields like `name`, `description`, `price`, and `category`.\n*   `/comboPackages`: Stores combo packages composed of services. The `serviceIds` array represents the relationship between combo packages and services.\n*   `/media`: Stores media files (images/videos) used for service samples or albums. The `serviceId` field links media to specific services.\n*   `/orders`: Stores customer orders. The `selectedServiceId` field links orders to specific services. The `status` and `paymentStatus` fields track the order's progress."
+    ]
   }
 }

@@ -1,43 +1,47 @@
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Bell, CheckCircle, Gift } from 'lucide-react';
+'use client';
 
-const notifications = [
-    {
-        id: 1,
-        icon: CheckCircle,
-        title: "Order ORD001 Delivered!",
-        description: "Your 'Premium Cinematic Combo' order has been successfully delivered. Check your downloads!",
-        date: "2 days ago",
-        read: false,
-    },
-    {
-        id: 2,
-        icon: Gift,
-        title: "You've earned a reward!",
-        description: "You received a 10% discount coupon for your next order. Check 'My Rewards'.",
-        date: "3 days ago",
-        read: false,
-    },
-    {
-        id: 3,
-        icon: Bell,
-        title: "New Service Added",
-        description: "Check out our new 'Photo Booth GIF' service for your events.",
-        date: "1 week ago",
-        read: true,
-    },
-    {
-        id: 4,
-        icon: CheckCircle,
-        title: "Order ORD003 In Progress",
-        description: "We have started working on your 'Classic Wedding Album' design.",
-        date: "2 weeks ago",
-        read: true,
-    },
-]
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Bell, CheckCircle, Gift, Loader2 } from 'lucide-react';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { Notification } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const iconMap = {
+    order: CheckCircle,
+    offer: Gift,
+    general: Bell,
+};
 
 export default function NotificationsPage() {
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    const notificationsQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return query(collection(firestore, 'users', user.uid, 'notifications'), orderBy('date', 'desc'));
+    }, [user, firestore]);
+
+    const { data: notifications, isLoading: areNotificationsLoading } = useCollection<Notification>(notificationsQuery);
+    
+    const isLoading = isUserLoading || areNotificationsLoading;
+
+    const renderSkeleton = () => (
+        <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-start gap-4 p-4 rounded-lg">
+                    <Skeleton className="h-5 w-5 rounded-full mt-1" />
+                    <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-3 w-1/4" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+
     return (
         <div className="container mx-auto px-4 py-8 md:py-16">
             <Card className="max-w-2xl mx-auto">
@@ -46,26 +50,33 @@ export default function NotificationsPage() {
                     <CardDescription>Stay updated with your orders and special offers.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <div className="space-y-4">
-                       {notifications.map(notification => (
-                           <div key={notification.id} className={`flex items-start gap-4 p-4 rounded-lg ${!notification.read ? 'bg-secondary/50' : 'bg-transparent'}`}>
-                               <div className={`mt-1 ${!notification.read ? 'text-primary' : 'text-muted-foreground'}`}>
-                                   <notification.icon className="h-5 w-5" />
-                               </div>
-                               <div className="flex-1">
-                                   <p className={`font-semibold ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>{notification.title}</p>
-                                   <p className="text-sm text-muted-foreground">{notification.description}</p>
-                                   <p className="text-xs text-muted-foreground mt-1">{notification.date}</p>
-                               </div>
-                                {!notification.read && <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>}
-                           </div>
-                       ))}
-                   </div>
-                   {notifications.length === 0 && (
-                        <div className="text-center py-12">
-                            <p className="text-muted-foreground">You have no new notifications.</p>
-                        </div>
-                   )}
+                    {isLoading ? renderSkeleton() : (
+                        notifications && notifications.length > 0 ? (
+                            <div className="space-y-4">
+                                {notifications.map(notification => {
+                                    const Icon = iconMap[notification.type as keyof typeof iconMap] || Bell;
+                                    return (
+                                        <div key={notification.id} className={`flex items-start gap-4 p-4 rounded-lg ${!notification.read ? 'bg-secondary/50' : 'bg-transparent'}`}>
+                                            <div className={`mt-1 ${!notification.read ? 'text-primary' : 'text-muted-foreground'}`}>
+                                                <Icon className="h-5 w-5" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className={`font-semibold ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>{notification.title}</p>
+                                                <p className="text-sm text-muted-foreground">{notification.description}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">{new Date(notification.date).toLocaleDateString()}</p>
+                                            </div>
+                                            {!notification.read && <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12">
+                                <Bell className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                                <p className="text-muted-foreground">You have no new notifications.</p>
+                            </div>
+                        )
+                    )}
                 </CardContent>
             </Card>
         </div>

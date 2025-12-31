@@ -1,3 +1,4 @@
+
 /**
  * Core Philosophy:
  * This ruleset is designed for a public-facing wedding services website. The core security
@@ -95,17 +96,34 @@ service cloud.firestore {
     }
 
     /**
-     * @description User profile data. Users can create, read, and update their own profile.
+     * @description User-specific subcollections for notifications and downloadable products.
      * @path /users/{userId}
-     * @allow_create  A user can create their own profile document.
-     * @allow_read    A user can read their own profile.
-     * @allow_update  A user can update their own profile.
-     * @deny_delete   Users cannot delete their profiles from the client.
-     * @deny_list     Listing all users is not allowed.
      */
     match /users/{userId} {
-      allow create, update, read: if request.auth != null && request.auth.uid == userId;
-      allow list, delete: if false;
+        /**
+         * @description User profile data. Users can create, read, and update their own profile.
+         * @path /users/{userId}
+         */
+        allow create, update, read: if request.auth != null && request.auth.uid == userId;
+        allow list, delete: if false;
+
+        /**
+         * @description Notifications for a user. Only the user can read their own notifications.
+         * @path /users/{userId}/notifications/{notificationId}
+         */
+        match /notifications/{notificationId} {
+            allow read: if request.auth != null && request.auth.uid == userId;
+            allow write: if false; // Only trusted server/admin should write notifications
+        }
+
+        /**
+         * @description Downloadable products for a user. Only the user can read their own products.
+         * @path /users/{userId}/downloadableProducts/{productId}
+         */
+        match /downloadableProducts/{productId} {
+            allow read: if request.auth != null && request.auth.uid == userId;
+            allow write: if false; // Only trusted server/admin should write products
+        }
     }
   }
 }

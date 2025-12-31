@@ -62,3 +62,21 @@ export type Order = {
     paymentStatus: 'Pending' | 'Advance' | 'Paid';
     orderDate: string | Date;
 }
+
+export type Notification = {
+    id: string;
+    title: string;
+    description: string;
+    date: string;
+    read: boolean;
+    type: 'order' | 'offer' | 'general';
+};
+
+export type DownloadableProduct = {
+    id: string;
+    name: string;
+    type: 'Image' | 'Video';
+    deliveryDate: string;
+    downloadUrl: string;
+    orderId: string;
+};

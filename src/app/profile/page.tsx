@@ -3,17 +3,20 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, ShoppingBag, Bell, Heart, Download, Gift, Award, Settings, LogOut, FileText, Smartphone, CreditCard } from "lucide-react";
+import { User, ShoppingBag, Bell, Download, Gift, Award, Settings, LogOut, FileText, Smartphone, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useAuth, useUser } from "@/firebase";
+import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { collection, query, where } from "firebase/firestore";
+import type { Notification } from "@/lib/types";
 
 const primaryMenuItems = [
     { label: "Profile", icon: User, href: "/profile/settings" },
-    { label: "Notifications", icon: Bell, href: "/profile/notifications", badge: "4" },
+    { label: "Notifications", icon: Bell, href: "/profile/notifications", badgeKey: "notifications" },
     { label: "My Requests", icon: FileText, href: "/profile/requests" },
     { label: "Order History", icon: ShoppingBag, href: "/profile/orders" },
     { label: "Downloads", icon: Download, href: "/profile/downloads" },
@@ -34,27 +37,39 @@ const tertiaryMenuItems = [
 export default function ProfilePage() {
     const { user, isUserLoading } = useUser();
     const auth = useAuth();
+    const firestore = useFirestore();
     const router = useRouter();
 
+    const notificationsQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return query(collection(firestore, 'users', user.uid, 'notifications'), where('read', '==', false));
+    }, [user, firestore]);
+
+    const { data: unreadNotifications, isLoading: areNotificationsLoading } = useCollection<Notification>(notificationsQuery);
+
     const handleLogout = async () => {
-        await auth.signOut();
+        if(auth) {
+            await auth.signOut();
+        }
         router.push('/login');
     };
+    
+    const isLoading = isUserLoading || areNotificationsLoading;
 
-    if (isUserLoading) {
+    if (isLoading) {
         return (
              <div className="container mx-auto px-4 py-8 md:py-16">
                  <Card className="max-w-2xl mx-auto animate-pulse">
                      <CardHeader className="text-center">
-                         <div className="w-24 h-24 rounded-full bg-muted mx-auto mb-4"></div>
-                         <div className="h-6 w-40 bg-muted rounded-md mx-auto"></div>
-                         <div className="h-4 w-52 bg-muted rounded-md mx-auto mt-2"></div>
+                         <Skeleton className="w-24 h-24 rounded-full bg-muted mx-auto mb-4" />
+                         <Skeleton className="h-6 w-40 bg-muted rounded-md mx-auto" />
+                         <Skeleton className="h-4 w-52 bg-muted rounded-md mx-auto mt-2" />
                      </CardHeader>
                       <CardContent className="p-2">
                         <div className="space-y-1 p-4">
-                           <div className="h-10 bg-muted rounded-md"></div>
-                           <div className="h-10 bg-muted rounded-md"></div>
-                           <div className="h-10 bg-muted rounded-md"></div>
+                           <Skeleton className="h-10 bg-muted rounded-md" />
+                           <Skeleton className="h-10 bg-muted rounded-md" />
+                           <Skeleton className="h-10 bg-muted rounded-md" />
                         </div>
                      </CardContent>
                  </Card>
@@ -83,7 +98,7 @@ export default function ProfilePage() {
     const userDetails = {
         name: user?.displayName || "Valued Customer",
         email: user?.email || "No email provided",
-        initials: user?.displayName?.charAt(0) || "U",
+        initials: user?.displayName?.charAt(0).toUpperCase() || "U",
         avatarUrl: user?.photoURL || `https://picsum.photos/seed/${user?.uid || 'avatar'}/100/100`
     }
 
@@ -105,7 +120,7 @@ export default function ProfilePage() {
                                 <Link href={item.href}>
                                     <item.icon className="mr-4 h-5 w-5 text-muted-foreground" />
                                     <span className="flex-1 text-left">{item.label}</span>
-                                    {item.badge && <Badge>{item.badge}</Badge>}
+                                    {item.badgeKey === 'notifications' && unreadNotifications && unreadNotifications.length > 0 && <Badge>{unreadNotifications.length}</Badge>}
                                 </Link>
                             </Button>
                         ))}
