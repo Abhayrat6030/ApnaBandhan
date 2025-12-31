@@ -1,3 +1,4 @@
+
 import { siteConfig } from '@/lib/constants';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,13 +22,6 @@ const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export default function ContactPage() {
   const contactMethods = [
     {
-      icon: Phone,
-      title: 'Call Us',
-      value: `+${siteConfig.phone}`,
-      href: `tel:+${siteConfig.phone}`,
-      cta: 'Call Now'
-    },
-    {
       icon: WhatsAppIcon,
       title: 'WhatsApp',
       value: 'Chat with us directly',
@@ -40,13 +34,6 @@ export default function ContactPage() {
       value: siteConfig.email,
       href: `mailto:${siteConfig.email}`,
       cta: 'Send Email'
-    },
-    {
-      icon: MapPin,
-      title: 'Our Location',
-      value: siteConfig.address,
-      href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteConfig.address)}`,
-      cta: 'Get Directions'
     },
   ];
 
@@ -62,7 +49,7 @@ export default function ContactPage() {
             </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8 mb-16 max-w-4xl mx-auto">
             {contactMethods.map((method, index) => (
             <Card key={index} className="text-center flex flex-col items-center p-6 bg-card hover:shadow-lg transition-shadow duration-300">
                 <div className="bg-primary/10 p-4 rounded-full mb-4">
