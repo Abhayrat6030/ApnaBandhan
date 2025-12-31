@@ -1,7 +1,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Film, Mails, Album, Package as PackageIcon } from 'lucide-react';
+import { ArrowRight, Film, Mails, Album, Package as PackageIcon, Video } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { services, serviceCategories } from '@/lib/data';
@@ -17,6 +17,7 @@ const categoryIcons = {
   'invitation-cards': Mails,
   'album-design': Album,
   'combo-packages': PackageIcon,
+  'video-editing': Video,
 };
 
 
@@ -78,7 +79,7 @@ export default function Home() {
       </section>
 
       {/* Featured Services Section */}
-      <section id="services" className="py-12 md:py-16 bg-secondary/20">
+      <section id="services" className="py-8 md:py-12 bg-secondary/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="font-bold text-3xl md:text-4xl tracking-tight">

@@ -233,32 +233,40 @@ export const whyChooseUs: WhyChooseUs[] = [
 ];
 
 export const serviceCategories: ServiceCategoryInfo[] = [
-    { 
-      id: 'invitation-videos', 
-      name: 'Invitation Videos', 
+    {
+      id: 'invitation-videos',
+      name: 'Invitation Videos',
       description: 'Announce your special day with a stunning video that captures your love story.',
       href: '/invitation-videos',
       imageUrl: 'https://picsum.photos/seed/wedding-film/600/400',
       imageHint: 'wedding film reel'
     },
-    { 
-      id: 'invitation-cards', 
-      name: 'Invitation Cards', 
+    {
+      id: 'invitation-cards',
+      name: 'Invitation Cards',
       description: 'Elegant and modern digital & printable cards for every wedding style.',
       href: '/invitation-cards',
       imageUrl: 'https://picsum.photos/seed/invitation-stationery/600/400',
       imageHint: 'invitation stationery'
     },
-    { 
-      id: 'album-design', 
-      name: 'Album Designs', 
+    {
+        id: 'video-editing',
+        name: 'Wedding Video Editing',
+        description: 'We edit your raw wedding footage into a beautiful, cinematic full-length movie.',
+        href: '/video-editing',
+        imageUrl: 'https://picsum.photos/seed/video-edit/600/400',
+        imageHint: 'video editing'
+    },
+    {
+      id: 'album-design',
+      name: 'Album Designs',
       description: 'Treasure your memories with a beautifully designed, professional wedding album.',
       href: '/album-design',
       imageUrl: 'https://picsum.photos/seed/wedding-photobook/600/400',
       imageHint: 'wedding photobook'
     },
-    { 
-      id: 'combo-packages', 
+    {
+      id: 'combo-packages',
       name: 'Combo Packages',
       description: 'Get the best value with our curated packages combining our most popular services.',
       href: '/packages',
