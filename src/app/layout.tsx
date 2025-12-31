@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import FloatingWhatsApp from '@/components/shared/FloatingWhatsApp';
 import BottomNav from '@/components/layout/BottomNav';
 
 const fontInter = Inter({
@@ -53,7 +52,6 @@ export default function RootLayout({
           {!isAdminRoute && <Footer isHomePage={isHomePage} />}
         </div>
         {!isAdminRoute && <BottomNav />}
-        {!isAdminRoute && <FloatingWhatsApp />}
         <Toaster />
       </body>
     </html>
