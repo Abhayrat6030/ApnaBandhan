@@ -25,14 +25,14 @@ export default function AdminDashboardPage() {
   }, [firestore, isAdmin]);
 
   const servicesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !isAdmin) return null;
     return collection(firestore, 'services');
-  }, [firestore]);
+  }, [firestore, isAdmin]);
 
   const packagesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !isAdmin) return null;
     return collection(firestore, 'comboPackages');
-  }, [firestore]);
+  }, [firestore, isAdmin]);
 
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
   
   const isLoading = isUserLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
 
-  if (isLoading) {
+  if (isLoading && isAdmin) {
     return (
        <div className="p-4 md:p-8">
         <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
