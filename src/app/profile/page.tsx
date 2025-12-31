@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,8 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useAuth, useUser } from "@/firebase";
+import { useRouter } from "next/navigation";
 
 const primaryMenuItems = [
     { label: "Profile", icon: User, href: "/profile/settings" },
@@ -30,12 +31,59 @@ const tertiaryMenuItems = [
 
 
 export default function ProfilePage() {
-    // Mock user data
-    const user = {
-        name: "Rohan Sharma",
-        email: "rohan.sharma@example.com",
-        initials: "RS",
-        avatarUrl: "https://picsum.photos/seed/profile-avatar/100/100"
+    const { user, isUserLoading } = useUser();
+    const auth = useAuth();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await auth.signOut();
+        router.push('/');
+    };
+
+    const userDetails = {
+        name: user?.displayName || "Guest User",
+        email: user?.email || "guest@example.com",
+        initials: user?.displayName?.charAt(0) || "G",
+        avatarUrl: user?.photoURL || `https://picsum.photos/seed/${user?.uid || 'avatar'}/100/100`
+    }
+
+    if (isUserLoading) {
+        return (
+             <div className="container mx-auto px-4 py-8 md:py-16">
+                 <Card className="max-w-2xl mx-auto animate-pulse">
+                     <CardHeader className="text-center">
+                         <div className="w-24 h-24 rounded-full bg-muted mx-auto mb-4"></div>
+                         <div className="h-6 w-40 bg-muted rounded-md mx-auto"></div>
+                         <div className="h-4 w-52 bg-muted rounded-md mx-auto mt-2"></div>
+                     </CardHeader>
+                      <CardContent className="p-2">
+                        <div className="space-y-1 p-4">
+                           <div className="h-10 bg-muted rounded-md"></div>
+                           <div className="h-10 bg-muted rounded-md"></div>
+                           <div className="h-10 bg-muted rounded-md"></div>
+                        </div>
+                     </CardContent>
+                 </Card>
+             </div>
+        )
+    }
+
+    if (!user) {
+        return (
+            <div className="container mx-auto px-4 py-8 md:py-16">
+                <Card className="max-w-md mx-auto text-center">
+                    <CardHeader>
+                        <CardTitle>Welcome!</CardTitle>
+                        <CardDescription>Please log in to view your profile and orders.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button asChild>
+                            <Link href="/login">Login / Sign Up</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        )
     }
 
     return (
@@ -43,11 +91,11 @@ export default function ProfilePage() {
              <Card className="max-w-2xl mx-auto">
                 <CardHeader className="text-center">
                     <Avatar className="w-24 h-24 mx-auto mb-4 border-4 border-primary/20">
-                        <AvatarImage src={user.avatarUrl} alt={user.name} />
-                        <AvatarFallback className="text-3xl bg-muted">{user.initials}</AvatarFallback>
+                        <AvatarImage src={userDetails.avatarUrl} alt={userDetails.name} />
+                        <AvatarFallback className="text-3xl bg-muted">{userDetails.initials}</AvatarFallback>
                     </Avatar>
-                    <CardTitle className="text-2xl">{user.name}</CardTitle>
-                    <CardDescription>{user.email}</CardDescription>
+                    <CardTitle className="text-2xl">{userDetails.name}</CardTitle>
+                    <CardDescription>{userDetails.email}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-2">
                     <div className="space-y-1">
@@ -89,7 +137,7 @@ export default function ProfilePage() {
                     </div>
 
                      <div className="mt-6 p-4">
-                        <Button variant="outline" className="w-full">
+                        <Button variant="outline" className="w-full" onClick={handleLogout}>
                             <LogOut className="mr-2 h-4 w-4"/>
                             Logout
                         </Button>

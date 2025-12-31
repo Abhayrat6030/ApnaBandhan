@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Logo from '@/components/shared/Logo';
+import Link from 'next/link';
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -37,8 +38,11 @@ export default function AdminLoginPage() {
                             <Input id="password" type="password" required defaultValue="password" />
                         </div>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="flex flex-col gap-4">
                         <Button type="submit" className="w-full" variant="secondary">Login</Button>
+                         <Button asChild variant="link" size="sm">
+                            <Link href="/login">Are you a customer? Login here</Link>
+                        </Button>
                     </CardFooter>
                 </form>
             </Card>
