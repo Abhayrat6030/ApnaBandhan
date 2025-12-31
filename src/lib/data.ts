@@ -26,7 +26,7 @@ export const services: Service[] = [
     description: 'A cinematic wedding invitation video to impress your guests.',
     price: 2500,
     priceType: 'starting',
-    isFeatured: true,
+    isFeatured: false,
     samples: [
       { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
        { type: 'image', url: 'https://picsum.photos/seed/wv1/600/400', imageHint: 'wedding ceremony' },
@@ -140,7 +140,7 @@ export const services: Service[] = [
     description: 'The ultimate package for a grand wedding announcement.',
     price: 4999,
     priceType: 'fixed',
-    isFeatured: true,
+    isFeatured: false,
     samples: [
        { type: 'image', url: 'https://picsum.photos/seed/cp1/600/400', imageHint: 'luxury wedding' },
     ],
@@ -155,7 +155,7 @@ export const services: Service[] = [
     description: 'An adorable invitation to celebrate the upcoming arrival.',
     price: 750,
     priceType: 'fixed',
-    isFeatured: true,
+    isFeatured: false,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/baby1/600/800', imageHint: 'baby shower' },
     ],
