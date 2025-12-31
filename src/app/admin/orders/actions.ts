@@ -13,6 +13,12 @@ const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 // This is a server-side verification using the Firebase Admin SDK
 async function verifyAdmin() {
+    // If adminApp is not initialized (because the service key is missing), we cannot verify.
+    if (!adminApp) {
+        console.warn("Cannot verify admin: Firebase Admin SDK not initialized.");
+        return false;
+    }
+
     const authorization = headers().get('Authorization');
     if (authorization?.startsWith('Bearer ')) {
         const idToken = authorization.split('Bearer ')[1];
