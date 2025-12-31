@@ -56,8 +56,12 @@ export default function OrderHistoryPage() {
 
     const allServicesMap = useMemo(() => {
         const map = new Map<string, string>();
-        services?.forEach(s => map.set(s.id, s.name));
-        packages?.forEach(p => map.set(p.id, p.name));
+        if (services) {
+            services.forEach(s => map.set(s.id, s.name));
+        }
+        if (packages) {
+            packages.forEach(p => map.set(p.id, p.name));
+        }
         return map;
     }, [services, packages]);
 
