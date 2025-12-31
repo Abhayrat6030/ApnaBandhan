@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
+import { collection, addDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -20,8 +21,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { submitOrder } from './actions';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 
 
 const allServicesAndPackages = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
@@ -46,6 +46,7 @@ export default function OrderPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { user } = useUser();
+  const firestore = useFirestore();
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -61,7 +62,7 @@ export default function OrderPage() {
   async function onSubmit(data: OrderFormValues) {
     setIsSubmitting(true);
     
-    if (!user) {
+    if (!user || !firestore) {
         toast({
             title: "Authentication Error",
             description: "You must be logged in to place an order.",
@@ -72,26 +73,38 @@ export default function OrderPage() {
     }
 
     try {
-        const idToken = await user.getIdToken();
-        const result = await submitOrder(data, idToken);
+        const ordersCollection = collection(firestore, 'orders');
+        
+        const newOrder = {
+            userId: user.uid,
+            fullName: data.fullName,
+            phoneNumber: data.phone,
+            email: data.email,
+            weddingDate: data.weddingDate.toISOString().split('T')[0], // format to YYYY-MM-DD
+            selectedServiceId: data.selectedService,
+            messageNotes: data.message || '',
+            orderDate: new Date().toISOString(),
+            status: 'Pending',
+            paymentStatus: 'Pending',
+        };
 
-        if (result.success) {
-          toast({
+        await addDoc(ordersCollection, newOrder);
+
+        toast({
             title: "Order Submitted Successfully!",
             description: "We have received your details and will contact you shortly.",
             variant: "default"
-          });
-          form.reset();
-          setIsSubmitted(true);
-        } else {
-          throw new Error(result.message || 'Failed to submit order.');
-        }
+        });
+        form.reset();
+        setIsSubmitted(true);
+
     } catch (error: any) {
          toast({
             title: "Submission Failed",
-            description: error.message || "Something went wrong. Please try again.",
+            description: "Something went wrong. Please check your connection and try again.",
             variant: "destructive",
           });
+          console.error("Order submission error:", error);
     }
 
     setIsSubmitting(false);
