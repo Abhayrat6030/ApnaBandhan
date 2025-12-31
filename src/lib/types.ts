@@ -5,6 +5,13 @@ export type NavItem = {
 
 export type ServiceCategory = 'invitation-videos' | 'invitation-cards' | 'combo-packages' | 'video-editing' | 'album-design';
 
+export type ServiceCategoryInfo = {
+  id: ServiceCategory;
+  name: string;
+  description: string;
+  href: string;
+};
+
 export type Service = {
   id: string;
   name: string;

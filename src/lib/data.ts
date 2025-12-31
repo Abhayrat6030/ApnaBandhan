@@ -1,4 +1,4 @@
-import { Service, Package, Order, WhyChooseUs, ServiceCategory } from './types';
+import { Service, Package, Order, WhyChooseUs, ServiceCategoryInfo } from './types';
 
 export const services: Service[] = [
   {
@@ -72,7 +72,7 @@ export const services: Service[] = [
     description: 'We edit your raw wedding footage into a beautiful, cinematic full-length movie.',
     price: 15000,
     priceType: 'starting',
-    isFeatured: true,
+    isFeatured: false,
     samples: [
        { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
        { type: 'image', url: 'https://picsum.photos/seed/fve1/600/400', imageHint: 'wedding film' },
@@ -82,8 +82,8 @@ export const services: Service[] = [
   },
     {
     id: 'album-design',
-    name: 'Wedding Album Design',
-    slug: 'album-design',
+    name: 'Classic Wedding Album',
+    slug: 'album-design-classic',
     category: 'album-design',
     description: 'Professional and creative design for your wedding photo album.',
     price: 5000,
@@ -96,6 +96,22 @@ export const services: Service[] = [
     inclusions: ['Design for 30-page album', 'Upto 150 photos', 'Creative Layouts', 'Print-ready soft copy'],
     deliveryTime: '7-10 Business Days',
   },
+    {
+    id: 'album-design-modern',
+    name: 'Modern Magazine Style Album',
+    slug: 'album-design-modern',
+    category: 'album-design',
+    description: 'A contemporary, magazine-style layout for your wedding photos.',
+    price: 6500,
+    priceType: 'starting',
+    isFeatured: false,
+    samples: [
+       { type: 'image', url: 'https://picsum.photos/seed/ad3/800/600', imageHint: 'modern album' },
+       { type: 'image', url: 'https://picsum.photos/seed/ad4/800/600', imageHint: 'clean album' },
+    ],
+    inclusions: ['Design for 35-page album', 'Upto 200 photos', 'Minimalist & Elegant Layout', 'Print-ready soft copy'],
+    deliveryTime: '8-12 Business Days',
+  },
   {
     id: 'combo-premium',
     name: 'Premium Invite Combo',
@@ -104,7 +120,7 @@ export const services: Service[] = [
     description: 'The ultimate package for a grand wedding announcement.',
     price: 4999,
     priceType: 'fixed',
-    isFeatured: true,
+    isFeatured: false,
     samples: [
        { type: 'image', url: 'https://picsum.photos/seed/cp1/600/400', imageHint: 'luxury wedding' },
     ],
@@ -128,7 +144,7 @@ export const packages: Package[] = [
     isBestValue: false,
   },
   {
-    id: 'combo-premium',
+    id: 'combo-premium-package',
     name: 'Premium Cinematic Combo',
     price: '₹4,999',
     description: 'Our most popular package for a stunning impression.',
@@ -180,12 +196,31 @@ export const whyChooseUs: WhyChooseUs[] = [
   },
 ];
 
-export const serviceCategories: { id: ServiceCategory; name: string }[] = [
-    { id: 'invitation-videos', name: 'Invitation Videos' },
-    { id: 'invitation-cards', name: 'Invitation Cards' },
-    { id: 'combo-packages', name: 'Combo Packages' },
-    { id: 'video-editing', name: 'Full Wedding Video Editing' },
-    { id: 'album-design', name: 'Album Designing' },
+export const serviceCategories: ServiceCategoryInfo[] = [
+    { 
+      id: 'invitation-videos', 
+      name: 'Invitation Videos', 
+      description: 'Announce your special day with a stunning video that captures your love story.',
+      href: '/invitation-videos' 
+    },
+    { 
+      id: 'invitation-cards', 
+      name: 'Invitation Cards', 
+      description: 'Elegant and modern digital & printable cards for every wedding style.',
+      href: '/invitation-cards'
+    },
+    { 
+      id: 'album-design', 
+      name: 'Album Designs', 
+      description: 'Treasure your memories with a beautifully designed, professional wedding album.',
+      href: '/album-design'
+    },
+    { 
+      id: 'combo-packages', 
+      name: 'Combo Packages',
+      description: 'Get the best value with our curated packages combining our most popular services.',
+      href: '/packages'
+    },
 ];
 
 export const mockOrders: Order[] = [
@@ -219,7 +254,7 @@ export const mockOrders: Order[] = [
     phone: '+919988776655',
     email: 'ankit.desai@example.com',
     weddingDate: '2024-11-30',
-    service: 'Wedding Album Design',
+    service: 'Classic Wedding Album',
     message: 'We have about 200 photos for a 40-page album.',
     status: 'Delivered',
     paymentStatus: 'Paid',

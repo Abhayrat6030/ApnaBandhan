@@ -1,7 +1,17 @@
 
-import { services, serviceCategories } from '@/lib/data';
-import { ServiceCard } from '@/components/shared/ServiceCard';
+import { serviceCategories } from '@/lib/data';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { ArrowRight, Film, Heart, Package, Image as ImageIcon } from 'lucide-react';
+
+const categoryIcons: { [key: string]: React.ElementType } = {
+    'invitation-videos': Film,
+    'invitation-cards': ImageIcon,
+    'combo-packages': Package,
+    'album-design': Heart,
+    'video-editing': Film,
+};
+
 
 export default function ServicesPage() {
   return (
@@ -16,27 +26,29 @@ export default function ServicesPage() {
           </p>
         </div>
 
-        {serviceCategories.map((category) => {
-          const categoryServices = services.filter(s => s.category === category.id);
-          if (categoryServices.length === 0) return null;
-
-          return (
-            <section key={category.id} className="mb-16">
-                <div className="flex justify-between items-center mb-8">
-                    <h2 className="font-headline text-3xl font-bold tracking-tight capitalize">
-                        <Link href={`/${category.id.replace(/_/g, '-')}`} className="hover:text-primary transition-colors">
-                            {category.name}
-                        </Link>
-                    </h2>
-                </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {categoryServices.map((service) => (
-                  <ServiceCard key={service.id} service={service} />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {serviceCategories.map((category) => {
+                 const Icon = categoryIcons[category.id] || Heart;
+                 return (
+                    <Link key={category.id} href={category.href} className="group">
+                        <Card className="h-full flex flex-col items-center text-center p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
+                            <CardHeader className="p-0">
+                                <div className="bg-primary/10 p-4 rounded-full mb-4 group-hover:bg-primary/20 transition-colors">
+                                    <Icon className="h-10 w-10 text-primary" />
+                                </div>
+                                <CardTitle className="font-bold text-xl">{category.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-0 mt-4 flex-grow">
+                                <p className="text-muted-foreground">{category.description}</p>
+                            </CardContent>
+                             <div className="mt-6 text-sm font-semibold text-primary group-hover:underline">
+                                View All <ArrowRight className="inline-block ml-1 h-4 w-4" />
+                            </div>
+                        </Card>
+                    </Link>
+                 )
+            })}
+        </div>
       </div>
     </div>
   );

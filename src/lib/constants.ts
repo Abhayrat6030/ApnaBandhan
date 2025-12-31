@@ -11,9 +11,7 @@ export const siteConfig = {
 
 export const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
-  { label: 'Invitation Videos', href: '/invitation-videos' },
-  { label: 'Invitation Cards', href: '/invitation-cards' },
-  { label: 'Album Design', href: '/album-design' },
+  { label: 'Services', href: '/services' },
   { label: 'Packages', href: '/packages' },
   { label: 'About Us', href: '/about' },
   { label: 'Contact', href: '/contact' },
