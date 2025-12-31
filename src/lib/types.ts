@@ -37,6 +37,7 @@ export type Service = {
 export type Package = {
   id: string;
   name: string;
+  slug?: string;
   price: string;
   description: string;
   features: string[];

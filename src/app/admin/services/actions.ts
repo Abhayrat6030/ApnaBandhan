@@ -2,10 +2,38 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
-import { db, auth } from '@/firebase';
+import { collection, addDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '@/firebase';
 import type { Service, Package } from '@/lib/types';
 import { z } from 'zod';
+import { getAuth } from 'firebase-admin/auth';
+import { adminApp } from '@/firebase/admin';
+import { headers } from 'next/headers';
+
+
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
+
+// This is a server-side verification using the Firebase Admin SDK
+async function verifyAdmin() {
+    // If adminApp is not initialized (because the service key is missing), we cannot verify.
+    if (!adminApp) {
+        console.warn("Cannot verify admin: Firebase Admin SDK not initialized.");
+        return false;
+    }
+
+    const authorization = headers().get('Authorization');
+    if (authorization?.startsWith('Bearer ')) {
+        const idToken = authorization.split('Bearer ')[1];
+        try {
+            const decodedToken = await getAuth(adminApp).verifyIdToken(idToken);
+            return decodedToken.email === ADMIN_EMAIL;
+        } catch (error) {
+            console.error('Error verifying admin token:', error);
+            return false;
+        }
+    }
+    return false;
+}
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
@@ -24,12 +52,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-async function verifyAdmin() {
-    // This is a placeholder. In a real app, you'd use a more robust method
-    // like checking a custom claim from the user's ID token.
-    return auth.currentUser?.email === 'abhayrat603@gmail.com';
-}
 
 export async function addService(data: FormValues) {
   const isAdmin = await verifyAdmin();
@@ -78,3 +100,19 @@ export async function addService(data: FormValues) {
   }
 }
 
+export async function deleteItem(itemId: string, itemType: 'Service' | 'Package') {
+    const isAdmin = await verifyAdmin();
+    if (!isAdmin) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    try {
+        const collectionName = itemType === 'Service' ? 'services' : 'comboPackages';
+        await deleteDoc(doc(db, collectionName, itemId));
+        revalidatePath('/admin/services');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error deleting document: ", error);
+        return { success: false, error: error.message || 'Failed to delete item.' };
+    }
+}

@@ -1,35 +1,55 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { collection } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, db } from '@/firebase';
+import { useCollection, useMemoFirebase, db, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
+import { deleteItem } from './actions';
 
-type CombinedService = (Service | Partial<Package>) & { type: 'Service' | 'Package' };
+type CombinedService = (Partial<Service> & Partial<Package>) & { id: string; name: string; type: 'Service' | 'Package', slug?: string };
+
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export default function AdminServicesPage() {
+  const { user } = useUser();
+  const isAdmin = user?.email === ADMIN_EMAIL;
+
   const servicesQuery = useMemoFirebase(() => {
+    if (!isAdmin) return null;
     return collection(db, 'services');
-  }, []);
+  }, [isAdmin]);
 
   const packagesQuery = useMemoFirebase(() => {
+    if (!isAdmin) return null;
     return collection(db, 'comboPackages');
-  }, []);
+  }, [isAdmin]);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
@@ -37,11 +57,38 @@ export default function AdminServicesPage() {
   const allItems: CombinedService[] = useMemo(() => {
       const items: CombinedService[] = [];
       if(services) items.push(...services.map(s => ({...s, type: 'Service' } as CombinedService)));
-      if(packages) items.push(...packages.map(p => ({...p, name: p.name, price: parseFloat(p.price.replace(/[^0-9.-]+/g,"")), type: 'Package' } as CombinedService)));
+      if(packages) items.push(...packages.map(p => ({...p, name: p.name, id: p.slug || p.name.toLowerCase().replace(/\s+/g, '-'), type: 'Package', price: parseFloat(p.price.replace(/[^0-9.-]+/g,"")) } as CombinedService)));
       return items.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
   }, [services, packages]);
   
+  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<CombinedService | null>(null);
+
   const isLoading = areServicesLoading || arePackagesLoading;
+
+  const handleDeleteClick = (item: CombinedService) => {
+    setItemToDelete(item);
+    setDeleteAlertOpen(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    setIsDeleting(itemToDelete.id);
+    const result = await deleteItem(itemToDelete.slug || itemToDelete.id, itemToDelete.type);
+    
+    if (result.success) {
+      toast({ title: "Success", description: `${itemToDelete.name} has been deleted.` });
+    } else {
+      toast({ title: "Error", description: result.error, variant: 'destructive' });
+    }
+
+    setIsDeleting(null);
+    setDeleteAlertOpen(false);
+    setItemToDelete(null);
+  }
   
   const renderSkeleton = () => (
       <Table>
@@ -67,6 +114,7 @@ export default function AdminServicesPage() {
   )
 
   return (
+    <>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="flex items-center">
         <h1 className="font-headline text-lg font-semibold md:text-2xl">Manage Services</h1>
@@ -111,15 +159,30 @@ export default function AdminServicesPage() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isDeleting}>
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">Toggle menu</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                            <DropdownMenuItem disabled>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-destructive" 
+                              onClick={() => handleDeleteClick(item)}
+                              disabled={isDeleting === item.id}
+                            >
+                              {isDeleting === item.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="mr-2 h-4 w-4" />
+                              )}
+                              Delete
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -136,5 +199,25 @@ export default function AdminServicesPage() {
         </CardFooter>
       </Card>
     </main>
+
+    <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the item
+                    <span className="font-bold"> {itemToDelete?.name}</span>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+                     {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
