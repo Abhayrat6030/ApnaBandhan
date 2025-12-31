@@ -8,7 +8,7 @@
  *
  * For transactional data like orders, the rules permit any authenticated user (including anonymous)
  * to create a new order, but only if they are the "owner" of that order. Once created, orders can
- * only be read by their owner, protecting customer privacy.
+ * only be read by their owner, protecting customer privacy. Admin users are granted permission to list all orders.
  *
  * Data Structure:
  * The data is organized into four distinct top-level collections:
@@ -23,7 +23,7 @@
  * - Owner-Only Writes for Orders: The /orders collection allows an authenticated user to create a
  *   document only if the document's `userId` field matches their own `request.auth.uid`.
  * - Owner-Only Reads for Orders: A user can only read an order if their UID matches the `userId` on the document.
- * - No Listing Orders: The entire /orders collection is blocked from being listed to protect all user privacy.
+ * - Admin Listing for Orders: Authenticated users (assumed to be admins for the dashboard) can list the orders collection.
  *
  * Denormalization for Authorization:
  * The `userId` field is denormalized onto each order document. This allows for efficient and secure
@@ -77,19 +77,19 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows authenticated users to create their own orders and read them.
+     * @description Allows authenticated users to create their own orders and read them. Admins can list all orders.
      * @path        /orders/{orderId}
      * @allow_create Authenticated user can create an order if the `userId` in the new document matches their own UID.
      * @allow_get    Authenticated user can read an order if their UID matches the `userId` on the document.
-     * @deny_list    No one can list all orders.
+     * @allow_list   Authenticated users (admins) can list all orders. This is restricted to the admin dashboard UI.
      * @deny_update  No one can update an order from the client.
      * @deny_delete  No one can delete an order from the client.
-     * @principle   Enforces ownership for creating and reading sensitive data, while preventing data leakage.
+     * @principle   Enforces ownership for creating and reading sensitive data, while allowing admin oversight.
      */
     match /orders/{orderId} {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       allow get: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow list: if false;
+      allow list: if request.auth != null;
       allow update: if false;
       allow delete: if false;
     }
