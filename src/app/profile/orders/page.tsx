@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service } from '@/lib/types';
+import { packages, services as staticServices } from '@/lib/data';
+
 
 const getStatusVariant = (status: Order['status']) => {
     switch (status) {
@@ -36,38 +38,26 @@ export default function OrderHistoryPage() {
     const firestore = useFirestore();
 
     const ordersQuery = useMemoFirebase(() => {
-        // IMPORTANT: Only create the query if the user is loaded and logged in.
-        if (!user || !firestore) return null;
+        // CRITICAL: Only create the query if the user is loaded and logged in.
+        // If user or firestore is not available, return null to prevent the query from running.
+        if (!user || !firestore) {
+          return null;
+        }
+        // This query is user-specific and secure.
         return query(collection(firestore, 'orders'), where('userId', '==', user.uid));
     }, [user, firestore]);
 
-    const servicesQuery = useMemoFirebase(() => {
-      if (!firestore) return null;
-      return collection(firestore, 'services');
-    }, [firestore]);
-    
-    const packagesQuery = useMemoFirebase(() => {
-      if(!firestore) return null;
-      return collection(firestore, 'comboPackages');
-    }, [firestore]);
-
     const { data: userOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
-    const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
-    const { data: packages, isLoading: arePackagesLoading } = useCollection<Service>(packagesQuery);
 
     const allServicesMap = useMemo(() => {
         const map = new Map<string, string>();
-        if (services) {
-            services.forEach(s => map.set(s.id, s.name));
-        }
-        if (packages) {
-            packages.forEach(p => map.set(p.id, p.name));
-        }
+        staticServices.forEach(s => map.set(s.id, s.name));
+        packages.forEach(p => map.set(p.id, p.name));
         return map;
-    }, [services, packages]);
+    }, []);
 
-    // Combined loading state considers user loading, and data fetching
-    const isLoading = isUserLoading || areOrdersLoading || areServicesLoading || arePackagesLoading;
+    // The combined loading state now correctly waits for both user authentication and data fetching.
+    const isLoading = isUserLoading || areOrdersLoading;
 
     const renderSkeleton = () => (
         <Table>
