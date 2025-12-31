@@ -108,20 +108,20 @@ service cloud.firestore {
         allow list, delete: if false;
 
         /**
-         * @description Notifications for a user. Only the user can read their own notifications.
+         * @description Notifications for a user. Only the user can read and list their own notifications.
          * @path /users/{userId}/notifications/{notificationId}
          */
         match /notifications/{notificationId} {
-            allow read: if request.auth != null && request.auth.uid == userId;
+            allow get, list: if request.auth != null && request.auth.uid == userId;
             allow write: if false; // Only trusted server/admin should write notifications
         }
 
         /**
-         * @description Downloadable products for a user. Only the user can read their own products.
+         * @description Downloadable products for a user. Only the user can read and list their own products.
          * @path /users/{userId}/downloadableProducts/{productId}
          */
         match /downloadableProducts/{productId} {
-            allow read: if request.auth != null && request.auth.uid == userId;
+            allow get, list: if request.auth != null && request.auth.uid == userId;
             allow write: if false; // Only trusted server/admin should write products
         }
     }
