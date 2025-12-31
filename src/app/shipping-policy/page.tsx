@@ -1,6 +1,6 @@
 
 import { siteConfig } from "@/lib/constants";
-import { Truck, Mail, Phone } from "lucide-react";
+import { Truck, Mail, Phone, File, Clock, CheckCircle, FolderDown, MessageSquare, Info } from "lucide-react";
 import Link from "next/link";
 
 export default function ShippingPolicyPage() {
@@ -26,12 +26,12 @@ export default function ShippingPolicyPage() {
                     <h2>2. Delivery Method</h2>
                     <p>All final products will be delivered electronically. The primary methods of delivery are:</p>
                     <ul>
-                        <li><strong>Email:</strong> A secure download link to your final files will be sent to the email address you provided during the order process.</li>
-                        <li><strong>WhatsApp:</strong> For your convenience, we can also deliver the final files or download links directly to your WhatsApp number.</li>
-                        <li><strong>Google Drive/Cloud Storage:</strong> For larger files, such as full-length edited videos, we will provide a secure link to a cloud storage service like Google Drive from which you can download your files.</li>
+                        <li><strong><Mail className="inline-block mr-2 h-5 w-5" /> Email:</strong> A secure download link to your final files will be sent to the email address you provided during the order process.</li>
+                        <li><strong><MessageSquare className="inline-block mr-2 h-5 w-5" /> WhatsApp:</strong> For your convenience, we can also deliver the final files or download links directly to your WhatsApp number.</li>
+                        <li><strong><FolderDown className="inline-block mr-2 h-5 w-5" /> Google Drive/Cloud Storage:</strong> For larger files, such as full-length edited videos, we will provide a secure link to a cloud storage service like Google Drive from which you can download your files.</li>
                     </ul>
 
-                    <h2>3. Delivery Timelines</h2>
+                    <h2><Clock className="inline-block mr-3 h-6 w-6 text-primary" />Delivery Timelines</h2>
                     <p>The estimated delivery timeline for each service is mentioned on its respective product page. Please note that these are estimates and can be affected by several factors:</p>
                     <ul>
                         <li><strong>Project Complexity:</strong> More complex projects may require more time.</li>
@@ -40,7 +40,7 @@ export default function ShippingPolicyPage() {
                     </ul>
                     <p>The delivery countdown begins once we have received <strong>both</strong> the advance payment and all necessary content (photos, text, etc.) from you.</p>
 
-                    <h2>4. File Formats</h2>
+                    <h2><File className="inline-block mr-3 h-6 w-6 text-primary" />File Formats</h2>
                     <p>Final files are delivered in standard, high-quality formats:</p>
                     <ul>
                         <li><strong>Videos:</strong> MP4 format in Full HD (1080p) unless specified otherwise.</li>
@@ -49,20 +49,20 @@ export default function ShippingPolicyPage() {
                         <li><strong>Source Files:</strong> If included in your package (e.g., CDR files), they will be delivered as specified.</li>
                     </ul>
 
-                    <h2>5. Proofing and Final Delivery</h2>
+                    <h2><CheckCircle className="inline-block mr-3 h-6 w-6 text-primary" />Proofing and Final Delivery</h2>
                     <ul>
                         <li>A low-resolution, watermarked "proof" or "draft" version of your project will be sent to you for review.</li>
                         <li>It is your responsibility to review this proof carefully for any errors in text, dates, or other details.</li>
                         <li>The final, high-resolution, watermark-free files will only be prepared and delivered after we receive your final approval and the remaining balance payment has been cleared.</li>
                     </ul>
 
-                    <h2>6. Storage and Access to Files</h2>
+                    <h2><FolderDown className="inline-block mr-3 h-6 w-6 text-primary" />Storage and Access to Files</h2>
                     <p>We will keep your final files available on our cloud storage for a period of <strong>30 days</strong> after delivery. We highly recommend you download and back up your files immediately upon receipt. After this period, we cannot guarantee that the files will remain accessible.</p>
                     
                     <h2>7. No Shipping Charges</h2>
                     <p>As all our products are digital, there are no shipping fees or delivery charges associated with any of our services.</p>
 
-                    <h2>8. Contact Us</h2>
+                    <h2><MessageSquare className="inline-block mr-3 h-6 w-6 text-primary" />Contact Us</h2>
                     <p>If you have any questions about our Shipping & Delivery Policy, or if you have not received your files within the expected timeframe, please contact us immediately:</p>
                      <ul>
                         <li><Mail className="inline-block mr-2 h-5 w-5" /> By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></li>

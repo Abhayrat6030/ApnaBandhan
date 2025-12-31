@@ -1,7 +1,7 @@
 
 import { siteConfig } from "@/lib/constants";
 import Link from "next/link";
-import { ShieldCheck, Mail, Phone } from "lucide-react";
+import { ShieldCheck, Mail, Phone, Fingerprint, Database, Truck, User, AlertTriangle, MessageSquare, PenSquare, Share2, Info } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
   return (
@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
                 
                 <p>By using our Service, you agree to the collection and use of information in accordance with this policy. If you do not agree with the terms of this policy, please do not use our Service.</p>
 
-                <h2>1. Information We Collect</h2>
+                <h2><Info className="inline-block mr-3 h-6 w-6 text-primary" />Information We Collect</h2>
                 <p>We collect several different types of information for various purposes to provide and improve our Service to you.</p>
 
                 <h3>Types of Data Collected</h3>
@@ -30,10 +30,10 @@ export default function PrivacyPolicyPage() {
                 <h4>Personal Data</h4>
                 <p>While using our Service, particularly when you place an order, contact us, or register an account, we may ask you to provide us with certain personally identifiable information ("Personal Data"). This may include, but is not limited to:</p>
                 <ul>
-                    <li><strong>Contact Information:</strong> Full Name, Email Address, Phone Number.</li>
-                    <li><strong>Event Details:</strong> Names of the couple/individuals, parents' names, event dates, times, and venue addresses.</li>
-                    <li><strong>Project Content:</strong> Photographs, videos, text, and any other materials you provide for the creation of your invitations, videos, or albums.</li>
-                    <li><strong>Communication Data:</strong> Records of your correspondence with us via email, WhatsApp, or phone.</li>
+                    <li><Fingerprint className="inline-block mr-2 h-5 w-5" /> <strong>Contact Information:</strong> Full Name, Email Address, Phone Number.</li>
+                    <li><PenSquare className="inline-block mr-2 h-5 w-5" /> <strong>Event Details:</strong> Names of the couple/individuals, parents' names, event dates, times, and venue addresses.</li>
+                    <li><Share2 className="inline-block mr-2 h-5 w-5" /> <strong>Project Content:</strong> Photographs, videos, text, and any other materials you provide for the creation of your invitations, videos, or albums.</li>
+                    <li><MessageSquare className="inline-block mr-2 h-5 w-5" /> <strong>Communication Data:</strong> Records of your correspondence with us via email, WhatsApp, or phone.</li>
                 </ul>
 
                 <h4>Usage Data</h4>
@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
                 <h4>Tracking & Cookies Data</h4>
                 <p>We use cookies and similar tracking technologies to track activity on our Service and hold certain information. Cookies are files with a small amount of data which may include an anonymous unique identifier. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some portions of our Service.</p>
 
-                <h2>2. How We Use Your Data</h2>
+                <h2><User className="inline-block mr-3 h-6 w-6 text-primary" />How We Use Your Data</h2>
                 <p>ApnaBandhan uses the collected data for various purposes:</p>
                 <ul>
                     <li><strong>To Provide and Deliver Our Services:</strong> To create and personalize the service you ordered (e.g., invitation video, e-card, album design) using the details and content you provide.</li>
@@ -53,35 +53,35 @@ export default function PrivacyPolicyPage() {
                     <li><strong>For Marketing (with your consent):</strong> With your explicit permission, we may use your finished project in our portfolio on our website or social media. We will never do so without your consent.</li>
                 </ul>
 
-                <h2>3. Data Storage and Security</h2>
+                <h2><Database className="inline-block mr-3 h-6 w-6 text-primary" />Data Storage and Security</h2>
                 <p>The security of your data is of paramount importance to us. We implement a variety of security measures to maintain the safety of your personal information. Project files and personal data are stored on secure servers.</p>
                 <p>However, please remember that no method of transmission over the Internet or method of electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your Personal Data, we cannot guarantee its absolute security.</p>
                 
-                <h2>4. Data Retention</h2>
+                <h2><Truck className="inline-block mr-3 h-6 w-6 text-primary" />Data Retention</h2>
                 <p>We will retain your Personal Data and project files only for as long as is necessary for the purposes set out in this Privacy Policy. We retain completed project data for a period of <strong>90 days</strong> after final delivery to accommodate any requests for minor changes or re-downloads. After this period, project files may be permanently deleted from our active systems.</p>
 
-                <h2>5. Data Disclosure and Sharing</h2>
+                <h2><Share2 className="inline-block mr-3 h-6 w-6 text-primary" />Data Disclosure and Sharing</h2>
                 <p>We do not sell, trade, or otherwise transfer your personally identifiable information to outside parties. Your information will not be shared with third parties, except in the following circumstances:</p>
                  <ul>
                     <li><strong>Service Providers:</strong> We may employ third-party companies and individuals to facilitate our Service (e.g., payment processors, hosting providers), who have access to your Personal Data only to perform these tasks on our behalf and are obligated not to disclose or use it for any other purpose.</li>
                     <li><strong>Legal Requirements:</strong> We may disclose your Personal Data in the good faith belief that such action is necessary to comply with a legal obligation, protect and defend the rights or property of ApnaBandhan, or protect the personal safety of users of the Service or the public.</li>
                 </ul>
 
-                <h2>6. Your Rights</h2>
+                <h2><User className="inline-block mr-3 h-6 w-6 text-primary" />Your Rights</h2>
                 <p>You have certain rights regarding your personal data. You have the right to request access to the data we hold about you, to request corrections to any inaccurate information, and to request the deletion of your personal data from our systems (subject to our data retention policy). To make such a request, please contact us using the details below.</p>
 
-                <h2>7. Children's Privacy</h2>
+                <h2><AlertTriangle className="inline-block mr-3 h-6 w-6 text-primary" />Children's Privacy</h2>
                 <p>Our Service does not address anyone under the age of 18 ("Children"). We do not knowingly collect personally identifiable information from anyone under the age of 18. If you are a parent or guardian and you are aware that your child has provided us with Personal Data, please contact us. If we become aware that we have collected Personal Data from children without verification of parental consent, we take steps to remove that information from our servers.</p>
 
-                <h2>8. Changes To This Privacy Policy</h2>
+                <h2><PenSquare className="inline-block mr-3 h-6 w-6 text-primary" />Changes To This Privacy Policy</h2>
                 <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date at the top. You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.</p>
 
-                <h2>9. Contact Us</h2>
+                <h2><MessageSquare className="inline-block mr-3 h-6 w-6 text-primary" />Contact Us</h2>
                 <p>If you have any questions about this Privacy Policy, please contact us:</p>
                 <ul>
                     <li><Mail className="inline-block mr-2 h-5 w-5" /> By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></li>
                     <li><Phone className="inline-block mr-2 h-5 w-5" /> By phone/WhatsApp: <a href={`https://wa.me/${siteConfig.phone}`}>+{siteConfig.phone}</a></li>
-                    <li><Link href="/contact" className="inline-flex items-center">By visiting our Contact Page</Link></li>
+                    <li><Link href="/contact" className="inline-flex items-center"><Info className="inline-block mr-2 h-5 w-5" />By visiting our Contact Page</Link></li>
                 </ul>
             </div>
         </div>

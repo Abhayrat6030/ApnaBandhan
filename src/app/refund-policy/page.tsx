@@ -1,6 +1,6 @@
 
 import { siteConfig } from "@/lib/constants";
-import { CircleDollarSign, Mail, Phone } from "lucide-react";
+import { CircleDollarSign, Mail, Phone, Clock, FileWarning, MessageSquare, Info } from "lucide-react";
 import Link from "next/link";
 
 export default function RefundPolicyPage() {
@@ -28,7 +28,7 @@ export default function RefundPolicyPage() {
                     <h2>2. Advance Payments</h2>
                     <p>To secure your project in our production schedule and to cover the initial costs of design and planning, we require an advance payment before work begins. <strong>This advance payment is strictly non-refundable.</strong></p>
                     
-                    <h2>3. Cancellation Policy</h2>
+                    <h2><Clock className="inline-block mr-3 h-6 w-6 text-primary" />Cancellation Policy</h2>
                     <p>The possibility of cancellation depends on the stage of the project:</p>
                     <ul>
                         <li><strong>Within 2 Hours of Order:</strong> If you choose to cancel your order within 2 hours of making the advance payment AND before any work has commenced or any communication regarding the design has been initiated by our team, you may be eligible for a full refund of the advance amount.</li>
@@ -36,7 +36,7 @@ export default function RefundPolicyPage() {
                     </ul>
                     <p>To request a cancellation, you must contact us immediately via phone or WhatsApp for the quickest response.</p>
 
-                    <h2>4. Refund Policy on Final Product</h2>
+                    <h2><FileWarning className="inline-block mr-3 h-6 w-6 text-primary" />Refund Policy on Final Product</h2>
                     <p>We do not offer refunds or exchanges once the final, high-resolution digital files have been delivered to you. All sales are considered final upon delivery.</p>
 
                     <h3>Scenarios where refunds are NOT provided:</h3>
@@ -60,7 +60,7 @@ export default function RefundPolicyPage() {
                     <h2>7. How to Address an Issue</h2>
                     <p>If you have a concern about your project, please contact us immediately. We are committed to finding a fair resolution. To discuss an issue, please contact us within 48 hours of receiving your proof or final file.</p>
 
-                    <h2>8. Contact Us</h2>
+                    <h2><MessageSquare className="inline-block mr-3 h-6 w-6 text-primary" />Contact Us</h2>
                     <p>For any questions about our Refund & Cancellation Policy, please contact us before placing an order:</p>
                     <ul>
                         <li><Mail className="inline-block mr-2 h-5 w-5" /> By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></li>

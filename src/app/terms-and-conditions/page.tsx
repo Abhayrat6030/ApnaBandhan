@@ -1,7 +1,7 @@
 
 import { siteConfig } from "@/lib/constants";
 import Link from "next/link";
-import { FileText, Mail, Phone } from "lucide-react";
+import { FileText, Mail, Phone, UserCheck, MessageSquare, Edit, Copyright, AlertTriangle, Law, Info } from "lucide-react";
 
 export default function TermsAndConditionsPage() {
   return (
@@ -30,7 +30,7 @@ export default function TermsAndConditionsPage() {
                         <li>The final deliverables will be provided in standard digital formats (e.g., MP4, JPEG, PDF) via a secure download link, email, or WhatsApp. No physical products will be shipped unless explicitly stated as part of the service.</li>
                     </ul>
 
-                    <h2>2. Ordering Process and Client Responsibilities</h2>
+                    <h2><UserCheck className="inline-block mr-3 h-6 w-6 text-primary" />Ordering Process and Client Responsibilities</h2>
                     <p>To ensure a smooth process, you (the "Client") agree to the following:</p>
                     <ul>
                         <li><strong>Provide Accurate Information:</strong> You must provide accurate, complete, and final information for the project. This includes all text (names, dates, venues), high-resolution photographs, and any other required content.</li>
@@ -46,7 +46,7 @@ export default function TermsAndConditionsPage() {
                         <li><strong>Refunds and Cancellations:</strong> Our detailed refund policy is available on our <Link href="/refund-policy">Refund Policy</Link> page. As our products are custom-made and digital, we generally do not offer refunds once work has begun.</li>
                     </ul>
 
-                    <h2>4. Revisions Policy</h2>
+                    <h2><Edit className="inline-block mr-3 h-6 w-6 text-primary" />Revisions Policy</h2>
                     <ul>
                         <li>Each service includes a specific number of revision rounds as mentioned in its description. A "revision round" consists of a list of minor changes.</li>
                         <li>Minor changes include text adjustments, swapping photo placements (with photos already provided), and minor color tweaks.</li>
@@ -54,7 +54,7 @@ export default function TermsAndConditionsPage() {
                         <li>Additional revision rounds beyond what is included in the package will be subject to extra charges at our current hourly rate.</li>
                     </ul>
 
-                    <h2>5. Intellectual Property and Usage Rights</h2>
+                    <h2><Copyright className="inline-block mr-3 h-6 w-6 text-primary" />Intellectual Property and Usage Rights</h2>
                     <ul>
                         <li><strong>Client Content:</strong> You represent and warrant that you have the legal rights and permissions to use all content (photos, videos, music, text) that you provide to us. You agree to indemnify ApnaBandhan against any claims of copyright infringement arising from the use of content you supplied.</li>
                         <li><strong>Our Designs:</strong> All design elements, templates, and layouts created by ApnaBandhan remain the intellectual property of ApnaBandhan. We grant you a license to use the final product for personal use only.</li>
@@ -63,17 +63,17 @@ export default function TermsAndConditionsPage() {
                         <li><strong>Prohibited Use:</strong> You may not resell, redistribute, or use the deliverables for any commercial purpose without obtaining prior written consent and a commercial license from ApnaBandhan.</li>
                     </ul>
 
-                    <h2>6. Limitation of Liability</h2>
+                    <h2><AlertTriangle className="inline-block mr-3 h-6 w-6 text-primary" />Limitation of Liability</h2>
                     <p>To the maximum extent permitted by applicable law, in no event shall ApnaBandhan, nor its directors, employees, or partners, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.</p>
                     <p>Our total liability in any matter arising out of or related to these terms is limited to the amount paid by you for the specific service in question.</p>
 
-                    <h2>7. Governing Law</h2>
+                    <h2><Law className="inline-block mr-3 h-6 w-6 text-primary" />Governing Law</h2>
                     <p>These Terms shall be governed and construed in accordance with the laws of India, with jurisdiction in the courts of New Delhi, without regard to its conflict of law provisions.</p>
 
                     <h2>8. Changes to Terms</h2>
                     <p>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.</p>
 
-                    <h2>9. Contact Us</h2>
+                    <h2><MessageSquare className="inline-block mr-3 h-6 w-6 text-primary" />Contact Us</h2>
                     <p>If you have any questions about these Terms and Conditions, please contact us:</p>
                     <ul>
                         <li><Mail className="inline-block mr-2 h-5 w-5" /> By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></li>
