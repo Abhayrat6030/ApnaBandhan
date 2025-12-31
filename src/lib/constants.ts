@@ -3,7 +3,7 @@ import type { NavItem } from './types';
 export const siteConfig = {
   name: 'ApnaBandhan',
   tagline: 'Wedding Invitations • Videos • Albums',
-  phone: '+919876543210', // Add a real number here
+  phone: 'AIzaSyBIAWez_BWA7tv9j5BG1wowTsb6sh3SnYE', // Add a real number here
   email: 'contact@apnabandhan.com',
   address: 'New Delhi, India',
   workingHours: 'Mon-Sat: 10:00 AM - 7:00 PM',
@@ -11,11 +11,10 @@ export const siteConfig = {
 
 export const navItems: NavItem[] = [
   { label: 'Home', href: '/' },
-  { label: 'Services', href: '/services' },
   { label: 'Invitation Videos', href: '/invitation-videos' },
   { label: 'Invitation Cards', href: '/invitation-cards' },
-  { label: 'Packages', href: '/packages' },
   { label: 'Album Design', href: '/album-design' },
+  { label: 'Packages', href: '/packages' },
   { label: 'About Us', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];

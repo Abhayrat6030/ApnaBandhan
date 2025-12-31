@@ -1,5 +1,6 @@
 import { services, serviceCategories } from '@/lib/data';
 import { ServiceCard } from '@/components/shared/ServiceCard';
+import Link from 'next/link';
 
 export default function ServicesPage() {
   return (
@@ -20,9 +21,13 @@ export default function ServicesPage() {
 
           return (
             <section key={category.id} className="mb-16">
-              <h2 className="font-headline text-3xl font-bold tracking-tight mb-8 capitalize">
-                {category.name}
-              </h2>
+                <div className="flex justify-between items-center mb-8">
+                    <h2 className="font-headline text-3xl font-bold tracking-tight capitalize">
+                        <Link href={`/${category.id.replace('_', '-')}`} className="hover:text-primary transition-colors">
+                            {category.name}
+                        </Link>
+                    </h2>
+                </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {categoryServices.map((service) => (
                   <ServiceCard key={service.id} service={service} />
