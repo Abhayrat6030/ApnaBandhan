@@ -16,19 +16,19 @@ export default function ShippingPolicyPage() {
                     <p className="mt-2 text-muted-foreground">Last updated: {new Date().toLocaleDateString('en-CA')}</p>
                 </div>
 
-                <div className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert">
+                <div className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert space-y-8">
 
-                    <div className="mb-8">
+                    <div>
                       <p>This policy outlines how ApnaBandhan handles the delivery of our digital products and services. As we exclusively provide digital goods, no physical items will be shipped.</p>
                     </div>
 
-                    <div className="mb-8">
-                      <h2 className="flex items-center"><Info className="inline-block mr-3 h-6 w-6 text-primary" />Nature of Products</h2>
+                    <div>
+                      <h2 className="flex items-center !mb-4"><Info className="inline-block mr-3 h-6 w-6 text-primary" />Nature of Products</h2>
                       <p>All our services, including but not limited to invitation videos, e-cards, album designs, and video editing, result in digital files. These are not physical products and therefore do not require physical shipping.</p>
                     </div>
                     
-                    <div className="mb-8">
-                      <h2 className="flex items-center"><Truck className="inline-block mr-3 h-6 w-6 text-primary" />Delivery Method</h2>
+                    <div>
+                      <h2 className="flex items-center !mb-4"><Truck className="inline-block mr-3 h-6 w-6 text-primary" />Delivery Method</h2>
                       <p>All final products will be delivered electronically. The primary methods of delivery are:</p>
                       <ul>
                           <li><Mail className="inline-block mr-2 h-5 w-5 text-accent" /> <strong>Email:</strong> A secure download link to your final files will be sent to the email address you provided during the order process.</li>
@@ -37,8 +37,8 @@ export default function ShippingPolicyPage() {
                       </ul>
                     </div>
 
-                    <div className="mb-8">
-                      <h2 className="flex items-center"><Clock className="inline-block mr-3 h-6 w-6 text-primary" />Delivery Timelines</h2>
+                    <div>
+                      <h2 className="flex items-center !mb-4"><Clock className="inline-block mr-3 h-6 w-6 text-primary" />Delivery Timelines</h2>
                       <p>The estimated delivery timeline for each service is mentioned on its respective product page. Please note that these are estimates and can be affected by several factors:</p>
                       <ul>
                           <li><strong>Project Complexity:</strong> More complex projects may require more time.</li>
@@ -48,8 +48,8 @@ export default function ShippingPolicyPage() {
                       <p>The delivery countdown begins once we have received <strong>both</strong> the advance payment and all necessary content (photos, text, etc.) from you.</p>
                     </div>
 
-                    <div className="mb-8">
-                      <h2 className="flex items-center"><File className="inline-block mr-3 h-6 w-6 text-primary" />File Formats</h2>
+                    <div>
+                      <h2 className="flex items-center !mb-4"><File className="inline-block mr-3 h-6 w-6 text-primary" />File Formats</h2>
                       <p>Final files are delivered in standard, high-quality formats:</p>
                       <ul>
                           <li><strong>Videos:</strong> MP4 format in Full HD (1080p) unless specified otherwise.</li>
@@ -59,8 +59,8 @@ export default function ShippingPolicyPage() {
                       </ul>
                     </div>
 
-                    <div className="mb-8">
-                      <h2 className="flex items-center"><CheckCircle className="inline-block mr-3 h-6 w-6 text-primary" />Proofing and Final Delivery</h2>
+                    <div>
+                      <h2 className="flex items-center !mb-4"><CheckCircle className="inline-block mr-3 h-6 w-6 text-primary" />Proofing and Final Delivery</h2>
                       <ul>
                           <li>A low-resolution, watermarked "proof" or "draft" version of your project will be sent to you for review.</li>
                           <li>It is your responsibility to review this proof carefully for any errors in text, dates, or other details.</li>
@@ -68,22 +68,22 @@ export default function ShippingPolicyPage() {
                       </ul>
                     </div>
 
-                    <div className="mb-8">
-                      <h2 className="flex items-center"><FolderDown className="inline-block mr-3 h-6 w-6 text-primary" />Storage and Access to Files</h2>
+                    <div>
+                      <h2 className="flex items-center !mb-4"><FolderDown className="inline-block mr-3 h-6 w-6 text-primary" />Storage and Access to Files</h2>
                       <p>We will keep your final files available on our cloud storage for a period of <strong>30 days</strong> after delivery. We highly recommend you download and back up your files immediately upon receipt. After this period, we cannot guarantee that the files will remain accessible.</p>
                     </div>
                     
-                    <div className="mb-8">
-                      <h2 className="flex items-center"><Info className="inline-block mr-3 h-6 w-6 text-primary" />No Shipping Charges</h2>
+                    <div>
+                      <h2 className="flex items-center !mb-4"><Info className="inline-block mr-3 h-6 w-6 text-primary" />No Shipping Charges</h2>
                       <p>As all our products are digital, there are no shipping fees or delivery charges associated with any of our services.</p>
                     </div>
 
-                    <div className="mb-8">
-                      <h2 className="flex items-center"><MessageSquare className="inline-block mr-3 h-6 w-6 text-primary" />Contact Us</h2>
+                    <div>
+                      <h2 className="flex items-center !mb-4"><MessageSquare className="inline-block mr-3 h-6 w-6 text-primary" />Contact Us</h2>
                       <p>If you have any questions about our Shipping & Delivery Policy, or if you have not received your files within the expected timeframe, please contact us immediately:</p>
                        <ul>
                           <li><Mail className="inline-block mr-2 h-5 w-5 text-accent" /> By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></li>
-                          <li><Phone className="inline-block mr-2 h-5 w-5 text-accent" /> By phone/WhatsApp: <a href={`https://wa.me/${siteConfig.phone}`}>+{siteConfig.phone}</a></li>
+                          <li><Phone className="inline-block mr-2 h-5 w-5 text-accent" /> By phone/WhatsApp: <a href={`https://wa.me/${siteConfig.phone}`}>{siteConfig.phone}</a></li>
                       </ul>
                     </div>
                 </div>
