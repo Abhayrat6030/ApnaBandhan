@@ -11,6 +11,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import FloatingWhatsApp from '@/components/shared/FloatingWhatsApp';
+import BottomNav from '@/components/layout/BottomNav';
 
 const fontInter = Inter({
   subsets: ['latin'],
@@ -46,11 +47,12 @@ export default function RootLayout({
           fontInter.variable
         )}
       >
-        <div className="relative flex min-h-dvh flex-col">
+        <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">
           {!isAdminRoute && <Header />}
           <main className="flex-1">{children}</main>
           {!isAdminRoute && <Footer isHomePage={isHomePage} />}
         </div>
+        {!isAdminRoute && <BottomNav />}
         {!isAdminRoute && <FloatingWhatsApp />}
         <Toaster />
       </body>
