@@ -9,9 +9,11 @@ export const services: Service[] = [
     category: 'invitation-videos',
     description: 'Create excitement with a beautiful Save The Date video. Perfect for sharing on social media.',
     price: 1500,
+    originalPrice: 2000,
     priceType: 'starting',
     isFeatured: true,
     topRated: true,
+    rating: 4.9,
     samples: [
       { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
       { type: 'image', url: 'https://picsum.photos/seed/sv1/600/400', imageHint: 'wedding couple' },
@@ -30,6 +32,7 @@ export const services: Service[] = [
     priceType: 'starting',
     isFeatured: false,
     topRated: true,
+    rating: 4.8,
     samples: [
       { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
        { type: 'image', url: 'https://picsum.photos/seed/wv1/600/400', imageHint: 'wedding ceremony' },
@@ -45,9 +48,11 @@ export const services: Service[] = [
     category: 'invitation-cards',
     description: 'Eco-friendly and modern digital cards (Image/PDF) for WhatsApp and email.',
     price: 800,
+    originalPrice: 1000,
     priceType: 'fixed',
     isFeatured: true,
     topRated: true,
+    rating: 4.9,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/dc1/600/800', imageHint: 'invitation card' },
       { type: 'image', url: 'https://picsum.photos/seed/dc2/600/800', imageHint: 'floral invitation' },
@@ -66,6 +71,7 @@ export const services: Service[] = [
     priceType: 'fixed',
     isFeatured: false,
     topRated: true,
+    rating: 4.7,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/bday1/600/800', imageHint: 'birthday invitation' },
     ],
@@ -83,6 +89,7 @@ export const services: Service[] = [
     priceType: 'fixed',
     isFeatured: false,
     topRated: false,
+    rating: 4.5,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/cdr1/600/800', imageHint: 'elegant invitation' },
     ],
@@ -100,6 +107,7 @@ export const services: Service[] = [
     priceType: 'starting',
     isFeatured: true,
     topRated: true,
+    rating: 5.0,
     samples: [
        { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
        { type: 'image', url: 'https://picsum.photos/seed/fve1/600/400', imageHint: 'wedding film' },
@@ -117,6 +125,7 @@ export const services: Service[] = [
     priceType: 'starting',
     isFeatured: true,
     topRated: true,
+    rating: 4.8,
     samples: [
        { type: 'image', url: 'https://picsum.photos/seed/ad1/800/600', imageHint: 'wedding album' },
        { type: 'image', url: 'https://picsum.photos/seed/ad2/800/600', imageHint: 'photo album' },
@@ -134,6 +143,7 @@ export const services: Service[] = [
     priceType: 'starting',
     isFeatured: false,
     topRated: false,
+    rating: 4.9,
     samples: [
        { type: 'image', url: 'https://picsum.photos/seed/ad3/800/600', imageHint: 'modern album' },
        { type: 'image', url: 'https://picsum.photos/seed/ad4/800/600', imageHint: 'clean album' },
@@ -151,6 +161,7 @@ export const services: Service[] = [
     priceType: 'fixed',
     isFeatured: false,
     topRated: true,
+    rating: 5.0,
     samples: [
        { type: 'image', url: 'https://picsum.photos/seed/cp1/600/400', imageHint: 'luxury wedding' },
     ],
@@ -167,6 +178,7 @@ export const services: Service[] = [
     priceType: 'fixed',
     isFeatured: false,
     topRated: false,
+    rating: 4.6,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/baby1/600/800', imageHint: 'baby shower' },
     ],

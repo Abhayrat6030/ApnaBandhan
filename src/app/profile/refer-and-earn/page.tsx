@@ -4,10 +4,20 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Gift, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ReferAndEarnPage() {
     const referralCode = "ROHAN25";
     const referralLink = `https://apnabandhan.com/refer?code=${referralCode}`;
+    const { toast } = useToast();
+
+    const copyToClipboard = (text: string, type: string) => {
+        navigator.clipboard.writeText(text);
+        toast({
+            title: `${type} Copied!`,
+            description: `The ${type.toLowerCase()} has been copied to your clipboard.`,
+        })
+    }
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-16">
@@ -21,11 +31,11 @@ export default function ReferAndEarnPage() {
                     <p className="text-muted-foreground mb-4">Share your unique referral code with your friends. When they place their first order, you both get a 20% discount!</p>
                     <div className="p-4 bg-muted rounded-lg flex items-center justify-center gap-4">
                         <span className="text-2xl font-bold tracking-widest">{referralCode}</span>
-                        <Button variant="ghost" size="icon" onClick={() => navigator.clipboard.writeText(referralCode)}>
+                        <Button variant="ghost" size="icon" onClick={() => copyToClipboard(referralCode, 'Referral Code')}>
                             <Copy className="h-5 w-5" />
                         </Button>
                     </div>
-                    <Button className="mt-6 w-full" onClick={() => navigator.clipboard.writeText(referralLink)}>
+                    <Button className="mt-6 w-full" onClick={() => copyToClipboard(referralLink, 'Referral Link')}>
                         Copy Referral Link
                     </Button>
                 </CardContent>

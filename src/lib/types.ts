@@ -1,4 +1,5 @@
 
+
 export type NavItem = {
   label: string;
   href: string;
@@ -22,9 +23,11 @@ export type Service = {
   category: ServiceCategory;
   description: string;
   price: number;
+  originalPrice?: number;
   priceType: 'starting' | 'fixed';
   isFeatured: boolean;
   topRated?: boolean;
+  rating?: number;
   samples: { type: 'image' | 'video'; url: string, imageHint?: string }[];
   inclusions: string[];
   deliveryTime: string;
