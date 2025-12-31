@@ -54,22 +54,26 @@ export default function AboutUsPage() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            {whyChooseUs.map((item) => (
+            {whyChooseUs.map((item) => {
+                const Icon = {
+                    Heart,
+                    Film,
+                    Printer,
+                    Gift,
+                }[item.icon];
+              return (
               <div key={item.title} className="p-6">
                 <div className="flex justify-center items-center mb-4">
                   <div className="bg-primary/10 p-4 rounded-full">
                     <div className="bg-primary/20 p-3 rounded-full">
-                       {item.icon === 'Heart' && <Heart className="h-8 w-8 text-primary" />}
-                       {item.icon === 'Film' && <Film className="h-8 w-8 text-primary" />}
-                       {item.icon === 'Printer' && <Printer className="h-8 w-8 text-primary" />}
-                       {item.icon === 'Gift' && <Gift className="h-8 w-8 text-primary" />}
+                       {Icon && <Icon className="h-8 w-8 text-primary" />}
                     </div>
                   </div>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                 <p className="text-muted-foreground">{item.description}</p>
               </div>
-            ))}
+            )})}
           </div>
         </div>
 
