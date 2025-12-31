@@ -23,7 +23,7 @@ export default function Header() {
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Logo className="h-8 w-auto text-primary" />
-            <span className="font-bold font-headline hidden sm:inline-block">{siteConfig.name}</span>
+            <span className="font-bold hidden sm:inline-block">{siteConfig.name}</span>
           </Link>
         </div>
 
@@ -35,7 +35,7 @@ export default function Header() {
               href={item.href}
               className={cn(
                 'transition-colors hover:text-primary',
-                pathname === item.href ? 'text-primary' : 'text-muted-foreground'
+                pathname === item.href ? 'text-primary font-semibold' : 'text-muted-foreground'
               )}
             >
               {item.label}
@@ -43,12 +43,14 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="flex flex-1 items-center justify-end space-x-4">
-          <Button variant="ghost" className="hidden lg:flex items-center">
-             <Phone className="mr-2 h-4 w-4" />
-             {siteConfig.phone}
+        <div className="flex flex-1 items-center justify-end space-x-2">
+          <Button asChild variant="ghost" className="hidden lg:flex items-center">
+             <a href={`tel:${siteConfig.phone}`}>
+                <Phone className="mr-2 h-4 w-4" />
+                {siteConfig.phone}
+             </a>
           </Button>
-          <Button asChild className="bg-primary hover:bg-primary/90 hidden md:flex">
+          <Button asChild>
             <Link href="/order">Order Now</Link>
           </Button>
 
@@ -62,9 +64,9 @@ export default function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="pr-0 flex flex-col">
                <SheetHeader className="p-4 border-b">
-                 <Link href="/" className="mr-6 flex items-center space-x-2">
+                 <Link href="/" className="mr-6 flex items-center space-x-2" onClick={() => setMenuOpen(false)}>
                    <Logo className="h-8 w-auto text-primary" />
-                  <span className="font-bold font-headline">{siteConfig.name}</span>
+                  <span className="font-bold">{siteConfig.name}</span>
                 </Link>
                 <SheetTitle className="sr-only">Main Menu</SheetTitle>
               </SheetHeader>

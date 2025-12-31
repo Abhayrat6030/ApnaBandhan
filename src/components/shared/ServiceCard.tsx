@@ -33,8 +33,8 @@ export function ServiceCard({ service }: ServiceCardProps) {
         </div>
       </CardHeader>
       <CardContent className="flex-grow p-6">
-        <Badge variant="secondary" className="mb-2">{service.category.replace('-', ' ')}</Badge>
-        <CardTitle className="font-headline text-xl mb-2">{service.name}</CardTitle>
+        <Badge variant="outline" className="mb-2 capitalize">{service.category.replace('-', ' ')}</Badge>
+        <CardTitle className="font-bold text-xl mb-2">{service.name}</CardTitle>
         <p className="text-muted-foreground line-clamp-3">{service.description}</p>
       </CardContent>
       <CardFooter className="p-6 pt-0 flex justify-between items-center">

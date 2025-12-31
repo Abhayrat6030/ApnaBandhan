@@ -3,7 +3,7 @@
 
 import type { Metadata } from 'next';
 import { usePathname } from 'next/navigation';
-import { Poppins, Cormorant_Garamond } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -12,17 +12,11 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import FloatingWhatsApp from '@/components/shared/FloatingWhatsApp';
 
-const fontPoppins = Poppins({
+const fontInter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
   variable: '--font-body',
 });
 
-const fontCormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-headline',
-});
 
 // export const metadata: Metadata = {
 //   title: 'ApnaBandhan | Wedding Invitations • Videos • Albums',
@@ -37,6 +31,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  const isAdminRoute = pathname.startsWith('/admin');
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -48,16 +43,15 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',
-          fontCormorant.variable,
-          fontPoppins.variable
+          fontInter.variable
         )}
       >
         <div className="relative flex min-h-dvh flex-col">
-          <Header />
+          {!isAdminRoute && <Header />}
           <main className="flex-1">{children}</main>
-          <Footer isHomePage={isHomePage} />
+          {!isAdminRoute && <Footer isHomePage={isHomePage} />}
         </div>
-        <FloatingWhatsApp />
+        {!isAdminRoute && <FloatingWhatsApp />}
         <Toaster />
       </body>
     </html>

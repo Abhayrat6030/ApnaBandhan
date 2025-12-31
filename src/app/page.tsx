@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative h-[70vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white overflow-hidden">
+      <section className="relative h-[70vh] md:h-[80vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
         <Image
           src={placeholderImages.hero.imageUrl}
           alt={placeholderImages.hero.description}
@@ -27,19 +27,19 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 p-4 flex flex-col items-center" data-aos="fade-up">
-          <h1 className="font-headline text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-            ApnaBandhan
+          <h1 className="font-bold text-5xl md:text-6xl lg:text-7xl tracking-tight">
+            {siteConfig.name}
           </h1>
           <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90">
-            Complete Wedding Invitation, Video & Album Solution
+            {siteConfig.tagline}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Button asChild size="lg" variant="secondary">
               <Link href="/services">
                 View Samples <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="secondary">
+            <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20">
                <Link href={`https://wa.me/${siteConfig.phone}`} target="_blank">
                 WhatsApp Order
               </Link>
@@ -52,7 +52,7 @@ export default function Home() {
       <section id="services" className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-tight">
+            <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
               Our Core Services
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
@@ -78,7 +78,7 @@ export default function Home() {
       <section className="py-16 md:py-24 bg-secondary/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-tight">
+            <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
               Best Sample Showcase
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
@@ -96,7 +96,7 @@ export default function Home() {
                   data-ai-hint={item.imageHint}
                 />
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-white font-headline text-lg text-center px-2">{item.description}</p>
+                  <p className="text-white font-semibold text-lg text-center px-2">{item.description}</p>
                 </div>
               </Card>
             ))}
@@ -108,7 +108,7 @@ export default function Home() {
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-tight">
+            <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
               Why Choose ApnaBandhan?
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
@@ -128,7 +128,7 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                <h3 className="font-headline text-xl font-semibold mb-2">{item.title}</h3>
+                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                 <p className="text-muted-foreground">{item.description}</p>
               </div>
             ))}
@@ -139,14 +139,14 @@ export default function Home() {
       {/* CTA Section */}
       <section className="bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 py-16 md:py-20 text-center">
-          <h2 className="font-headline text-3xl md:text-4xl font-bold tracking-tight">
+          <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
             Ready to Start Your Beautiful Journey?
           </h2>
           <p className="mt-4 max-w-2xl mx-auto opacity-90">
             Let's create something unforgettable for your wedding. Contact us today!
           </p>
           <div className="mt-8">
-            <Button asChild size="lg" variant="secondary" className="text-accent-foreground hover:bg-secondary/90">
+            <Button asChild size="lg" variant="secondary">
               <Link href="/order">
                 Order Now <ArrowRight className="ml-2 h-5 w-5" />
               </Link>

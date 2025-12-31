@@ -11,7 +11,7 @@ export default function PackagesPage() {
     <div className="bg-secondary/30">
         <div className="container mx-auto px-4 py-16 md:py-24">
         <div className="text-center mb-12">
-            <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
+            <h1 className="font-bold text-4xl md:text-5xl tracking-tight">
             Combo Packages
             </h1>
             <p className="mt-4 max-w-3xl mx-auto text-muted-foreground text-lg">
@@ -26,28 +26,28 @@ export default function PackagesPage() {
                 pkg.isBestValue ? 'border-primary border-2 shadow-lg relative' : 'shadow-md'
             )}>
                 {pkg.isBestValue && (
-                    <Badge className="absolute -top-3 right-5 bg-primary text-primary-foreground">Best Value</Badge>
+                    <Badge className="absolute -top-3 right-5">Best Value</Badge>
                 )}
                 <CardHeader className="text-center">
-                    <CardTitle className="font-headline text-2xl">{pkg.name}</CardTitle>
+                    <CardTitle className="font-bold text-2xl">{pkg.name}</CardTitle>
                     <CardDescription>{pkg.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow">
                     <div className="text-center mb-6">
-                        <span className="font-headline text-4xl font-bold">{pkg.price}</span>
+                        <span className="font-bold text-4xl">{pkg.price}</span>
                         <span className="text-muted-foreground">/one-time</span>
                     </div>
                     <ul className="space-y-3">
                         {pkg.features.map(feature => (
                         <li key={feature} className="flex items-start">
-                            <Check className="h-5 w-5 mr-3 mt-1 shrink-0 text-green-500" />
+                            <Check className="h-5 w-5 mr-3 mt-1 shrink-0 text-accent" />
                             <span>{feature}</span>
                         </li>
                         ))}
                     </ul>
                 </CardContent>
                 <CardFooter className="p-6 mt-4">
-                <Button asChild size="lg" className={cn("w-full", !pkg.isBestValue && "bg-accent text-accent-foreground hover:bg-accent/90")}>
+                <Button asChild size="lg" className={cn("w-full")} variant={pkg.isBestValue ? "secondary" : "default"}>
                     <Link href={`/order?service=${pkg.id}`}>
                         Choose Package <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>

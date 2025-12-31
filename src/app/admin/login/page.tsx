@@ -17,13 +17,13 @@ export default function AdminLoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-secondary">
+        <div className="flex min-h-screen items-center justify-center bg-background">
             <Card className="w-full max-w-sm">
                 <CardHeader className="text-center">
                     <div className="flex justify-center mb-4">
                         <Logo className="w-12 h-12 text-primary" />
                     </div>
-                    <CardTitle className="font-headline text-2xl">Admin Panel</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Admin Panel</CardTitle>
                     <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleLogin}>
@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button type="submit" className="w-full">Login</Button>
+                        <Button type="submit" className="w-full" variant="secondary">Login</Button>
                     </CardFooter>
                 </form>
             </Card>

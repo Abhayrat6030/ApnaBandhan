@@ -81,12 +81,12 @@ export default function OrderPage() {
         <div className="container mx-auto px-4 py-16 md:py-24 flex justify-center">
             <Card className="w-full max-w-2xl text-center">
                 <CardHeader>
-                    <CardTitle className="font-headline text-3xl">Thank You!</CardTitle>
+                    <CardTitle className="font-bold text-3xl">Thank You!</CardTitle>
                     <CardDescription>Your order has been placed successfully.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground mb-6">Our team will review your details and get in touch with you via WhatsApp or phone within 24 hours to proceed.</p>
-                    <Button asChild>
+                    <Button asChild variant="secondary">
                         <a href="/">Back to Home</a>
                     </Button>
                 </CardContent>
@@ -99,7 +99,7 @@ export default function OrderPage() {
     <div className="container mx-auto px-4 py-16 md:py-24 flex justify-center">
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">Book Your Service</CardTitle>
+          <CardTitle className="font-bold text-3xl">Book Your Service</CardTitle>
           <CardDescription>Fill out the form below to place your order. We'll get back to you shortly!</CardDescription>
         </CardHeader>
         <CardContent>
@@ -231,7 +231,7 @@ export default function OrderPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={isSubmitting} className="w-full" size="lg">
+              <Button type="submit" disabled={isSubmitting} className="w-full" size="lg" variant="secondary">
                 {isSubmitting ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
