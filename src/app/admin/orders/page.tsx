@@ -8,6 +8,7 @@ import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service } from '@/lib/types';
+import { Card, CardContent } from '@/components/ui/card';
 
 
 export default function AdminOrdersPage() {
@@ -77,9 +78,13 @@ export default function AdminOrdersPage() {
         </Button>
       </div>
 
-      {isLoading ? renderSkeleton() : (
-        allOrders ? <OrderTable orders={ordersWithServiceNames} /> : <p>No orders found.</p>
-      )}
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? renderSkeleton() : (
+            allOrders ? <OrderTable orders={ordersWithServiceNames} /> : <p className="p-6">No orders found.</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
