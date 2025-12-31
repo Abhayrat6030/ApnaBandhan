@@ -103,7 +103,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
               </ScrollArea>
                <div className="p-6 border-t mt-auto">
                  <Button asChild className="w-full" size="lg">
-                    <Link href="/order" onClick={() => setMenuOpen(false)}>Order Now</Link>
+                    <Link href="/profile/orders" onClick={() => setMenuOpen(false)}>Order Now</Link>
                 </Button>
               </div>
             </SheetContent>

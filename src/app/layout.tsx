@@ -37,7 +37,25 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith('/admin');
+  const isAuthRoute = pathname.startsWith('/admin/login');
   const [isMenuOpen, setMenuOpen] = React.useState(false);
+
+  if (isAuthRoute) {
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={cn(
+            'min-h-screen bg-background font-body antialiased',
+            fontInter.variable,
+            fontPlayfair.variable
+          )}
+        >
+          {children}
+          <Toaster />
+        </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>

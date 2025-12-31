@@ -1,4 +1,5 @@
 
+'use client';
 
 import { mockOrders } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -47,7 +48,7 @@ export default function OrderHistoryPage() {
                                 <TableRow key={order.id}>
                                     <TableCell className="font-medium">{order.id}</TableCell>
                                     <TableCell>{order.service}</TableCell>
-                                    <TableCell>{order.orderDate}</TableCell>
+                                    <TableCell>{order.orderDate.toString()}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                                     </TableCell>

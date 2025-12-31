@@ -54,10 +54,10 @@ export type Order = {
     clientName: string;
     phone: string;
     email: string;
-    weddingDate: string;
+    weddingDate: string | Date;
     service: string;
     message: string;
     status: 'Pending' | 'Paid' | 'In Progress' | 'Delivered';
     paymentStatus: 'Pending' | 'Advance' | 'Paid';
-    orderDate: string;
+    orderDate: string | Date;
 }

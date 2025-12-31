@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { navItems as mainNavItems } from '@/lib/constants';
 
 const navItems = [
-  { href: '/order', label: 'Order', icon: ShoppingCart },
+  { href: '/profile/orders', label: 'Order', icon: ShoppingCart },
   { href: '/', label: 'Home', icon: Home },
   { href: '/services', label: 'Category', icon: LayoutGrid },
   { href: '/profile', label: 'Profile', icon: User },
