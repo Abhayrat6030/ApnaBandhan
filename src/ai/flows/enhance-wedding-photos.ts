@@ -15,7 +15,8 @@ const EnhanceWeddingPhotosInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
-      'A wedding photo as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'n    ),
+      'A wedding photo as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'
+    ),
 });
 export type EnhanceWeddingPhotosInput = z.infer<typeof EnhanceWeddingPhotosInputSchema>;
 
