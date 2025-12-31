@@ -3,48 +3,53 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Publicly readable data
+    // Helper function to check ownership
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Publicly readable data that anyone can view.
     match /services/{serviceId} {
       allow get, list: if true;
-      allow write: if false;
+      allow write: if false; // Only admins should write
     }
 
     match /comboPackages/{comboPackageId} {
       allow get, list: if true;
-      allow write: if false;
+      allow write: if false; // Only admins should write
     }
 
     match /media/{mediaId} {
       allow get, list: if true;
-      allow write: if false;
+      allow write: if false; // Only admins should write
     }
 
     // Orders: Authenticated users can create orders for themselves.
     // They can read their own orders. Admins can read all orders.
     match /orders/{orderId} {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow get: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow list: if request.auth != null; // Allows admins to list, and users to query their own.
-      allow update, delete: if request.auth != null; // TODO: Restrict to admins in production
+      allow get: if request.auth != null && (resource.data.userId == request.auth.uid); // TODO: Add admin role check
+      allow list: if request.auth != null; // Allow admins to list all, and users to query their own.
+      allow update, delete: if false; // TODO: Restrict to admins
     }
     
-    // User-specific data
+    // User-specific private data
     match /users/{userId} {
-      // A user can read and update their own profile data.
-      allow get, update, create: if request.auth != null && request.auth.uid == userId;
+      // A user can read and write their own profile data.
+      allow get, update, create: if isOwner(userId);
       // Nobody can list all users or delete a user profile directly.
       allow list, delete: if false;
 
       // Notifications: Users can list and read their own notifications.
       match /notifications/{notificationId} {
-        allow get, list: if request.auth != null && request.auth.uid == userId;
-        allow create, update, delete: if false; // Only server/admins should write notifications
+        allow get, list: if isOwner(userId);
+        allow create, update, delete: if false; // Only server/admins should write
       }
 
       // Downloadable Products: Users can list and read their own products.
       match /downloadableProducts/{productId} {
-        allow get, list: if request.auth != null && request.auth.uid == userId;
-        allow create, update, delete: if false; // Only server/admins should create download links
+        allow get, list: if isOwner(userId);
+        allow create, update, delete: if false; // Only server/admins should create
       }
     }
   }
