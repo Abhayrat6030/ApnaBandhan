@@ -46,11 +46,10 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    try {
-        initiateEmailSignUp(auth, values.email, values.password, values.name);
 
+    const handleSuccess = () => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-             if (user) {
+            if (user) {
                 toast({
                     title: 'Account Created!',
                     description: 'You have been successfully signed up.',
@@ -60,26 +59,29 @@ export default function SignupPage() {
             }
         });
 
-         setTimeout(() => {
+        // Failsafe timeout
+        setTimeout(() => {
             if (!auth.currentUser) {
-                toast({
-                    title: 'Sign Up Failed',
-                    description: 'Could not create account. The email may already be in use.',
-                    variant: 'destructive',
-                });
-                setIsLoading(false);
+                handleError({ code: 'auth/unknown-error' });
                 unsubscribe();
             }
-        }, 3000);
-        
-    } catch (error: any) {
+        }, 5000);
+    };
+
+    const handleError = (error: any) => {
+        setIsLoading(false);
+        let description = 'An unexpected error occurred.';
+        if (error.code === 'auth/email-already-in-use') {
+            description = 'This email is already in use. Please log in instead.';
+        }
         toast({
             title: 'Sign Up Failed',
-            description: error.message || 'An unexpected error occurred.',
+            description: description,
             variant: 'destructive',
         });
-        setIsLoading(false);
-    }
+    };
+    
+    initiateEmailSignUp(auth, values.email, values.password, values.name, handleSuccess, handleError);
   }
 
   return (

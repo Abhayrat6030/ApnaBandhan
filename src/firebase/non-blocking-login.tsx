@@ -17,19 +17,28 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
 }
 
 /** Initiate email/password sign-up (non-blocking). */
-export function initiateEmailSignUp(authInstance: Auth, email: string, password: string, displayName: string) {
+export function initiateEmailSignUp(
+    authInstance: Auth, 
+    email: string, 
+    password: string, 
+    displayName: string,
+    onSuccess: () => void,
+    onError: (error: any) => void
+) {
   // CRITICAL: Call createUserWithEmailAndPassword directly.
   createUserWithEmailAndPassword(authInstance, email, password)
     .then(userCredential => {
         if (userCredential.user) {
             // After creating the user, update their profile with the display name
-            return updateProfile(userCredential.user, { displayName });
+            updateProfile(userCredential.user, { displayName }).then(() => {
+                onSuccess();
+            }).catch(error => {
+                onError(error);
+            });
         }
     })
     .catch(error => {
-        // Errors will be caught by the onAuthStateChanged listener if it's set up
-        // or you can handle them here if needed for specific UI feedback.
-        console.error("Sign up error:", error);
+        onError(error);
     });
 }
 
