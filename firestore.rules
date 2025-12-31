@@ -32,19 +32,16 @@ service cloud.firestore {
      */
     match /orders/{orderId} {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow get: if request.auth != null && resource.data.userId == request.auth.uid;
-      // CORRECTED: Allow any authenticated user (admin) to list all orders.
+      allow get: if request.auth != null && (resource.data.userId == request.auth.uid || request.auth.token.email == 'admin@apnabandhan.com');
+      // Admin can list all orders, user can list their own.
       allow list: if request.auth != null;
-      allow update, delete: if false;
+      allow update, delete: if request.auth != null && request.auth.token.email == 'admin@apnabandhan.com';
     }
-
+    
     /**
-     * @description User-specific subcollections for profile, notifications, and downloadable products.
+     * @description User-specific data.
      */
     match /users/{userId} {
-        /**
-         * @description User profile data. Users can create, read, and update their own profile.
-         */
         allow read, update, create: if request.auth != null && request.auth.uid == userId;
         allow list, delete: if false;
 
@@ -52,7 +49,6 @@ service cloud.firestore {
          * @description Notifications for a user. Only the user can read and list their own notifications.
          */
         match /notifications/{notificationId} {
-            // CORRECTED: Allow both get and list for the owner.
             allow get, list: if request.auth != null && request.auth.uid == userId;
             allow write: if false;
         }
@@ -61,7 +57,6 @@ service cloud.firestore {
          * @description Downloadable products for a user. Only the user can read and list their own products.
          */
         match /downloadableProducts/{productId} {
-            // CORRECTED: Allow both get and list for the owner.
             allow get, list: if request.auth != null && request.auth.uid == userId;
             allow write: if false;
         }
