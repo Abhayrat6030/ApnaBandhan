@@ -36,6 +36,7 @@ export default function OrderHistoryPage() {
     const firestore = useFirestore();
 
     const ordersQuery = useMemoFirebase(() => {
+        // IMPORTANT: Only create the query if the user is loaded and logged in.
         if (!user || !firestore) return null;
         return query(collection(firestore, 'orders'), where('userId', '==', user.uid));
     }, [user, firestore]);
@@ -65,6 +66,7 @@ export default function OrderHistoryPage() {
         return map;
     }, [services, packages]);
 
+    // Combined loading state considers user loading, and data fetching
     const isLoading = isUserLoading || areOrdersLoading || areServicesLoading || arePackagesLoading;
 
     const renderSkeleton = () => (
