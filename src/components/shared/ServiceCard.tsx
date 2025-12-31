@@ -12,12 +12,12 @@ interface ServiceCardProps {
 export function ServiceCard({ service }: ServiceCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-      <CardHeader className="p-6 pb-0">
+      <CardHeader className="p-6">
         <Badge variant="outline" className="mb-2 capitalize w-fit">{service.category.replace('-', ' ')}</Badge>
         <CardTitle className="font-bold text-xl mb-2">{service.name}</CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow p-6">
-        <p className="text-muted-foreground line-clamp-3">{service.description}</p>
+      <CardContent className="flex-grow p-6 pt-0">
+        {/* Description has been removed as per user request */}
       </CardContent>
       <CardFooter className="p-6 pt-0 flex justify-end items-center">
         <Button asChild variant="ghost" size="sm">
