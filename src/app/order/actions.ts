@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { siteConfig } from '@/lib/constants';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { getApp } from 'firebase-admin/app';
+import { getApp, getApps, initializeApp, credential } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeFirebase } from '@/firebase';
 import { headers } from 'next/headers';
@@ -18,6 +18,17 @@ const orderFormSchema = z.object({
   selectedService: z.string().min(1, { message: 'Please select a service.' }),
   message: z.string().max(500, { message: 'Message must be less than 500 characters.' }).optional(),
 });
+
+// Helper function to initialize Firebase Admin SDK
+function initializeAdminApp() {
+    if (getApps().length > 0) {
+        return getApp();
+    }
+    // This is a simplified initialization for a serverless environment.
+    // In a real-world scenario, you would use service account credentials from environment variables.
+    return initializeApp();
+}
+
 
 export async function submitOrder(data: any) { // Use any to handle incoming JSON
   const validation = orderFormSchema.safeParse({
@@ -33,6 +44,7 @@ export async function submitOrder(data: any) { // Use any to handle incoming JSO
   }
 
   try {
+    initializeAdminApp();
     const headersList = headers();
     const idToken = headersList.get('Authorization')?.split('Bearer ')[1];
 
@@ -40,7 +52,7 @@ export async function submitOrder(data: any) { // Use any to handle incoming JSO
         return { success: false, message: 'You must be logged in to place an order.' };
     }
 
-    const decodedToken = await getAuth(getApp()).verifyIdToken(idToken);
+    const decodedToken = await getAuth().verifyIdToken(idToken);
     const user = { uid: decodedToken.uid };
 
 
