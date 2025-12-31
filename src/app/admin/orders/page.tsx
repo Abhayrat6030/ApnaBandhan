@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order } from '@/lib/types';
+import type { Order, Service } from '@/lib/types';
 
 
 export default function AdminOrdersPage() {
@@ -18,7 +18,40 @@ export default function AdminOrdersPage() {
       return collection(firestore, 'orders');
   }, [firestore]);
 
-  const { data: allOrders, isLoading } = useCollection<Order>(ordersQuery);
+  const servicesQuery = useMemoFirebase(() => {
+      if (!firestore) return null;
+      return collection(firestore, 'services');
+  }, [firestore]);
+
+  const packagesQuery = useMemoFirebase(() => {
+      if(!firestore) return null;
+      return collection(firestore, 'comboPackages');
+  }, [firestore]);
+
+  const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+  const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
+  const { data: packages, isLoading: arePackagesLoading } = useCollection<Service>(packagesQuery);
+  
+  const allServicesMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (services) {
+        services.forEach(s => map.set(s.id, s.name));
+    }
+    if (packages) {
+        packages.forEach(p => map.set(p.id, p.name));
+    }
+    return map;
+  }, [services, packages]);
+
+  const ordersWithServiceNames = useMemo(() => {
+    if (!allOrders) return [];
+    return allOrders.map(order => ({
+      ...order,
+      serviceName: allServicesMap.get(order.selectedServiceId) || order.selectedServiceId,
+    }));
+  }, [allOrders, allServicesMap]);
+  
+  const isLoading = areOrdersLoading || areServicesLoading || arePackagesLoading;
 
   const renderSkeleton = () => (
     <div>
@@ -45,7 +78,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {isLoading ? renderSkeleton() : (
-        allOrders ? <OrderTable orders={allOrders} /> : <p>No orders found.</p>
+        allOrders ? <OrderTable orders={ordersWithServiceNames} /> : <p>No orders found.</p>
       )}
     </div>
   );

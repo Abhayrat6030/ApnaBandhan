@@ -8,10 +8,10 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { collection, query, where } from "firebase/firestore";
+import { collection, query, where, doc } from "firebase/firestore";
 import type { Notification } from "@/lib/types";
 
 const primaryMenuItems = [
@@ -40,11 +40,17 @@ export default function ProfilePage() {
     const firestore = useFirestore();
     const router = useRouter();
 
+    const userProfileQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, 'users', user.uid);
+    }, [user, firestore]);
+
     const notificationsQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
         return query(collection(firestore, 'users', user.uid, 'notifications'), where('read', '==', false));
     }, [user, firestore]);
-
+    
+    const { data: userProfile, isLoading: isProfileLoading } = useDoc(userProfileQuery);
     const { data: unreadNotifications, isLoading: areNotificationsLoading } = useCollection<Notification>(notificationsQuery);
 
     const handleLogout = async () => {
@@ -54,7 +60,7 @@ export default function ProfilePage() {
         router.push('/login');
     };
     
-    const isLoading = isUserLoading || areNotificationsLoading;
+    const isLoading = isUserLoading || areNotificationsLoading || isProfileLoading;
 
     if (isLoading) {
         return (
@@ -96,9 +102,9 @@ export default function ProfilePage() {
     }
 
     const userDetails = {
-        name: user?.displayName || "Valued Customer",
-        email: user?.email || "No email provided",
-        initials: user?.displayName?.charAt(0).toUpperCase() || "U",
+        name: userProfile?.displayName || user?.displayName || "Valued Customer",
+        email: userProfile?.email || user?.email || "No email provided",
+        initials: (userProfile?.displayName || user?.displayName || "U").charAt(0).toUpperCase(),
         avatarUrl: user?.photoURL || `https://picsum.photos/seed/${user?.uid || 'avatar'}/100/100`
     }
 

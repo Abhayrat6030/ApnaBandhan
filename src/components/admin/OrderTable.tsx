@@ -20,12 +20,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, MessageSquare } from 'lucide-react';
 import type { Order } from '@/lib/types';
-import { siteConfig } from '@/lib/constants';
-import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 interface OrderTableProps {
-  orders: Order[];
+  orders: (Order & { serviceName?: string })[];
 }
 
 export default function OrderTable({ orders }: OrderTableProps) {
@@ -69,7 +67,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
               <div>{order.fullName}</div>
               <div className="text-sm text-muted-foreground">{order.phoneNumber}</div>
             </TableCell>
-            <TableCell>{order.selectedServiceId}</TableCell>
+            <TableCell>{order.serviceName || order.selectedServiceId}</TableCell>
             <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
             <TableCell>
               <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
