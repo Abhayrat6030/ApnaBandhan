@@ -1,7 +1,7 @@
 
 import { siteConfig } from "@/lib/constants";
 import Link from "next/link";
-import { FileText, Mail, Phone, UserCheck, MessageSquare, Edit, Copyright, AlertTriangle, Law, Info } from "lucide-react";
+import { FileText, Mail, Phone, UserCheck, MessageSquare, Edit, Copyright, AlertTriangle, Gavel, Info } from "lucide-react";
 
 export default function TermsAndConditionsPage() {
   return (
@@ -67,7 +67,7 @@ export default function TermsAndConditionsPage() {
                     <p>To the maximum extent permitted by applicable law, in no event shall ApnaBandhan, nor its directors, employees, or partners, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.</p>
                     <p>Our total liability in any matter arising out of or related to these terms is limited to the amount paid by you for the specific service in question.</p>
 
-                    <h2><Law className="inline-block mr-3 h-6 w-6 text-primary" />Governing Law</h2>
+                    <h2><Gavel className="inline-block mr-3 h-6 w-6 text-primary" />Governing Law</h2>
                     <p>These Terms shall be governed and construed in accordance with the laws of India, with jurisdiction in the courts of New Delhi, without regard to its conflict of law provisions.</p>
 
                     <h2>8. Changes to Terms</h2>
