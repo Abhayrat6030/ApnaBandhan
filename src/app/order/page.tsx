@@ -20,7 +20,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/firebase';
+import { submitOrder } from './actions';
+import { useUser } from '@/firebase';
+
 
 const allServicesAndPackages = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
 const uniqueServices = Array.from(new Map(allServicesAndPackages.map(item => [item.id, item])).values());
@@ -43,36 +45,26 @@ export default function OrderPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const auth = useAuth();
+  const { user } = useUser();
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
     defaultValues: {
-      fullName: '',
+      fullName: user?.displayName || '',
       phone: '',
-      email: '',
+      email: user?.email || '',
       selectedService: serviceId || '',
       message: '',
     },
   });
-
+  
   async function onSubmit(data: OrderFormValues) {
     setIsSubmitting(true);
     
     try {
-        const idToken = await auth.currentUser?.getIdToken();
-        const result = await fetch('/api/submit-order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`
-            },
-            body: JSON.stringify(data),
-        });
+        const result = await submitOrder(data);
 
-        const response = await result.json();
-
-        if (response.success) {
+        if (result.success) {
           toast({
             title: "Order Submitted Successfully!",
             description: "We have received your details and will contact you shortly.",
@@ -81,7 +73,7 @@ export default function OrderPage() {
           form.reset();
           setIsSubmitted(true);
         } else {
-          throw new Error(response.message || 'Failed to submit order.');
+          throw new Error(result.message || 'Failed to submit order.');
         }
     } catch (error: any) {
          toast({
@@ -90,7 +82,6 @@ export default function OrderPage() {
             variant: "destructive",
           });
     }
-
 
     setIsSubmitting(false);
   }
