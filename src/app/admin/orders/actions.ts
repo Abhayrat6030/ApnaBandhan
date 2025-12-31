@@ -3,27 +3,33 @@
 
 import { revalidatePath } from 'next/cache';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db, auth } from '@/firebase';
+import { db } from '@/firebase';
 import type { Order } from '@/lib/types';
 import { getAuth } from 'firebase-admin/auth';
 import { adminApp } from '@/firebase/admin';
+import { headers } from 'next/headers';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 // This is a server-side verification using the Firebase Admin SDK
-async function verifyAdmin(currentUser: import('firebase/auth').User | null) {
-    if (currentUser?.email === ADMIN_EMAIL) {
-        return true;
+async function verifyAdmin() {
+    const authorization = headers().get('Authorization');
+    if (authorization?.startsWith('Bearer ')) {
+        const idToken = authorization.split('Bearer ')[1];
+        try {
+            const decodedToken = await getAuth(adminApp).verifyIdToken(idToken);
+            return decodedToken.email === ADMIN_EMAIL;
+        } catch (error) {
+            console.error('Error verifying admin token:', error);
+            return false;
+        }
     }
     return false;
 }
 
 
 export async function updateOrderStatus(orderId: string, status: Order['status']) {
-    // This is a placeholder for getting the current user on the server.
-    // In a real app, you'd get this from the session or token.
-    const currentUser = auth.currentUser;
-    const isAdmin = await verifyAdmin(currentUser);
+    const isAdmin = await verifyAdmin();
 
     if (!isAdmin) {
         return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };
@@ -41,8 +47,7 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
 }
 
 export async function updatePaymentStatus(orderId: string, paymentStatus: Order['paymentStatus']) {
-    const currentUser = auth.currentUser;
-    const isAdmin = await verifyAdmin(currentUser);
+    const isAdmin = await verifyAdmin();
 
     if (!isAdmin) {
         return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };
