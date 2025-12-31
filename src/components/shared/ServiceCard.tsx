@@ -19,11 +19,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
       <CardContent className="flex-grow p-6">
         <p className="text-muted-foreground line-clamp-3">{service.description}</p>
       </CardContent>
-      <CardFooter className="p-6 pt-0 flex justify-between items-center">
-        <div className="font-semibold text-lg">
-          ₹{service.price.toLocaleString('en-IN')}
-          {service.priceType === 'starting' && <span className="text-sm font-normal text-muted-foreground"> onwards</span>}
-        </div>
+      <CardFooter className="p-6 pt-0 flex justify-end items-center">
         <Button asChild variant="ghost" size="sm">
           <Link href={`/services/${service.slug}`}>
             View Details <ArrowRight className="ml-2 h-4 w-4" />
