@@ -12,6 +12,8 @@ import { collection, query, orderBy, limit, where } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, db } from '@/firebase';
 import { services as staticServices, packages as staticPackages } from '@/lib/data';
 
+export const dynamic = 'force-dynamic';
+
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export default function AdminDashboardPage() {

@@ -12,6 +12,8 @@ import type { Order } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { packages, services as staticServices } from '@/lib/data';
 
+export const dynamic = 'force-dynamic';
+
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export default function AdminOrdersPage() {

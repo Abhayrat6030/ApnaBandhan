@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Order } from '@/lib/types';
 import { packages, services as staticServices } from '@/lib/data';
 
+export const dynamic = 'force-dynamic';
 
 const getStatusVariant = (status: Order['status']) => {
     switch (status) {
