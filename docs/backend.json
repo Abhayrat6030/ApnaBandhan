@@ -1,0 +1,269 @@
+{
+  "entities": {
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a customer order for wedding services.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name of the customer placing the order."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Phone number of the customer."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the customer.",
+          "format": "email"
+        },
+        "weddingDate": {
+          "type": "string",
+          "description": "Date of the wedding event.",
+          "format": "date-time"
+        },
+        "selectedServiceId": {
+          "type": "string",
+          "description": "Reference to the Service ordered. (Relationship: Service 1:N Order)"
+        },
+        "messageNotes": {
+          "type": "string",
+          "description": "Additional notes or instructions from the customer."
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "Date and time when the order was placed.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status of the order (e.g., Pending, Paid, In Progress, Delivered)."
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "Payment status of the order (e.g., Pending, Paid)."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Method of payment used for the order (e.g., UPI, Google Pay)."
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "phoneNumber",
+        "email",
+        "weddingDate",
+        "selectedServiceId",
+        "orderDate",
+        "status",
+        "paymentStatus"
+      ]
+    },
+    "Service": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Service",
+      "type": "object",
+      "description": "Represents a wedding service offered by ApnaBandhan.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the service."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the service (e.g., Wedding Invitation Video)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the service."
+        },
+        "price": {
+          "type": "number",
+          "description": "Starting or fixed price of the service."
+        },
+        "deliveryTimeline": {
+          "type": "string",
+          "description": "Estimated delivery timeline for the service."
+        },
+        "samplePreviewUrl": {
+          "type": "string",
+          "description": "URL of a sample preview image or video for the service.",
+          "format": "uri"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the service (e.g., Invitation Videos, Invitation Cards)."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "price",
+        "deliveryTimeline",
+        "samplePreviewUrl",
+        "category"
+      ]
+    },
+    "ComboPackage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ComboPackage",
+      "type": "object",
+      "description": "Represents a combination of wedding services offered as a package.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the combo package."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the combo package (e.g., Card + Invitation Video)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the combo package."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the combo package."
+        },
+        "serviceIds": {
+          "type": "array",
+          "description": "References to Services included in the combo package. (Relationship: ComboPackage N:N Service)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "highlight": {
+          "type": "string",
+          "description": "Highlight of the package."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "price",
+        "serviceIds"
+      ]
+    },
+    "Media": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Media",
+      "type": "object",
+      "description": "Represents uploaded media files (images or videos) used for samples, albums, or other purposes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the media file."
+        },
+        "url": {
+          "type": "string",
+          "description": "URL of the stored media file.",
+          "format": "uri"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of media (e.g., image, video)."
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Date and time when the media file was uploaded.",
+          "format": "date-time"
+        },
+        "serviceId": {
+          "type": "string",
+          "description": "Reference to the Service that uses this media. (Relationship: Service 1:N Media)"
+        }
+      },
+      "required": [
+        "id",
+        "url",
+        "type",
+        "uploadDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/services/{serviceId}",
+        "definition": {
+          "entityName": "Service",
+          "schema": {
+            "$ref": "#/backend/entities/Service"
+          },
+          "description": "Stores wedding services offered by ApnaBandhan.",
+          "params": [
+            {
+              "name": "serviceId",
+              "description": "Unique identifier for the service."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/comboPackages/{comboPackageId}",
+        "definition": {
+          "entityName": "ComboPackage",
+          "schema": {
+            "$ref": "#/backend/entities/ComboPackage"
+          },
+          "description": "Stores combo packages that combine multiple services.",
+          "params": [
+            {
+              "name": "comboPackageId",
+              "description": "Unique identifier for the combo package."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/media/{mediaId}",
+        "definition": {
+          "entityName": "Media",
+          "schema": {
+            "$ref": "#/backend/entities/Media"
+          },
+          "description": "Stores media files (images or videos) used for samples, albums, or other purposes.",
+          "params": [
+            {
+              "name": "mediaId",
+              "description": "Unique identifier for the media file."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores customer orders for wedding services.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "Unique identifier for the order."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support ApnaBandhan's wedding services website, focusing on authorization independence, clarity, and scalability. It leverages denormalization to avoid complex security rules and ensures data integrity.  The structure is segregated into collections based on entity type to maintain a homogeneous security posture.\n\n**Authorization Independence:**\n*   No `get()` calls in security rules. While there are no user-specific collections in the current schema, if user-specific data were to be added, ownership would be ensured via path-based rules (e.g., `/users/{userId}/orders/{orderId}`).\n\n**Structural Segregation (Homogeneous Security Posture):**\n*   Each top-level collection (`services`, `comboPackages`, `media`, and `orders`) contains documents of the same type, simplifying security rules.\n\n**QAPs Support:**\n*   The structure enables secure `list` operations by segregating data based on entity type.  This prevents the need for complex filtering in rules.\n\n**Invariants:**\n*   Timestamps (`orderDate`, `uploadDate`) can be enforced via rules.  Ownership (if applicable in the future) would be enforced via path-based rules or membership maps.\n\n**Justification:**\n*   `/services`: Stores wedding services. The schema includes fields like `name`, `description`, `price`, and `category`.\n*   `/comboPackages`: Stores combo packages composed of services. The `serviceIds` array represents the relationship between combo packages and services.\n*   `/media`: Stores media files (images/videos) used for service samples or albums. The `serviceId` field links media to specific services.\n*   `/orders`: Stores customer orders. The `selectedServiceId` field links orders to specific services. The `status` and `paymentStatus` fields track the order's progress."
+  }
+}
