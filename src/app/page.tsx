@@ -41,7 +41,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative h-[40vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
+      <section className="relative h-[30vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
         <Image
           src={placeholderImages.hero.imageUrl}
           alt={placeholderImages.hero.description}
