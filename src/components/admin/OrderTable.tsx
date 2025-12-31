@@ -68,7 +68,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
               <div className="text-sm text-muted-foreground">{order.phoneNumber}</div>
             </TableCell>
             <TableCell>{order.serviceName || order.selectedServiceId}</TableCell>
-            <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
+            <TableCell>{new Date(order.orderDate).toLocaleDateString('en-CA')}</TableCell>
             <TableCell>
               <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
             </TableCell>
