@@ -32,7 +32,7 @@ export default function ServicesPage() {
             {serviceCategories.map((category) => (
               <Link key={category.id} href={category.href} className="group block h-full">
                 <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
-                  <div className="relative aspect-[4/3] w-full">
+                  <div className="relative aspect-[16/9] w-full">
                     <Image
                       src={category.imageUrl}
                       alt={category.name}
