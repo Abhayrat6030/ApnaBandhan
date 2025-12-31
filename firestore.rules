@@ -6,10 +6,9 @@
  * secure, read-only catalog that must be managed directly via the Firebase Console or a trusted
  * server-side admin SDK.
  *
- * For transactional data like orders, the rules permit anyone (including anonymous users) to
- * create a new order, mirroring a public contact/order form. However, once created, orders are
- * completely locked down and cannot be read, listed, updated, or deleted by any client,
- * protecting customer privacy.
+ * For transactional data like orders, the rules permit any authenticated user (including anonymous)
+ * to create a new order, but only if they are the "owner" of that order. Once created, orders can
+ * only be read by their owner, protecting customer privacy.
  *
  * Data Structure:
  * The data is organized into four distinct top-level collections:
@@ -20,25 +19,19 @@
  *
  * Key Security Decisions:
  * - Admin-Only Writes: All content collections (/services, /comboPackages, /media) are configured
- *   to be read-only from the client. This is a deliberate choice due to the absence of an
- *   admin role or ownership fields in the data model. All content management must be performed
- *   by a trusted backend process.
- * - "Contact Form" Pattern for Orders: The /orders collection allows any user to create a document
- *   but immediately prevents anyone from reading or modifying it. This is a secure pattern for
- *   capturing public submissions while preventing data leakage.
- * - No User Data Listing: There are no user-specific collections, but if they were added, listing
- *   users would be disallowed by default. The /orders collection is explicitly blocked from being
- *   listed to protect privacy.
+ *   to be read-only from the client. All content management must be performed by a trusted backend process.
+ * - Owner-Only Writes for Orders: The /orders collection allows an authenticated user to create a
+ *   document only if the document's `userId` field matches their own `request.auth.uid`.
+ * - Owner-Only Reads for Orders: A user can only read an order if their UID matches the `userId` on the document.
+ * - No Listing Orders: The entire /orders collection is blocked from being listed to protect all user privacy.
  *
  * Denormalization for Authorization:
- * This ruleset does not require any cross-document reads (`get()` or `exists()`) for authorization,
- * ensuring high performance. Future additions, such as user-specific data, should denormalize
- * ownership information (e.g., a `userId` field) directly onto documents to maintain this efficiency.
+ * The `userId` field is denormalized onto each order document. This allows for efficient and secure
+ * ownership checks without needing cross-document reads (`get()` or `exists()`).
  *
  * Structural Segregation:
  * The use of separate top-level collections for public content versus private transactions
- * (/services vs. /orders) allows for simple, powerful, and performant rules. This segregation
- * ensures that security policies for public data do not accidentally expose private data.
+ * allows for simple, powerful, and performant rules.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -49,16 +42,12 @@ service cloud.firestore {
      * @path        /services/{serviceId}
      * @allow       Any user, signed in or not, can read a specific service or list all services. (get, list)
      * @deny        Any user attempting to create, update, or delete a service. (create, update, delete)
-     * @principle   Public Read with Admin-Only Writes. Since no admin role is defined, all writes are blocked for maximum security.
+     * @principle   Public Read with Admin-Only Writes.
      */
     match /services/{serviceId} {
       allow get: if true;
       allow list: if true;
-      // CRITICAL: Cannot implement owner-only writes. The 'Service' entity is missing an 'ownerId' or 'admin' field.
-      // TODO: Add admin role validation once an authorization system is implemented.
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow write: if false;
     }
 
     /**
@@ -66,16 +55,12 @@ service cloud.firestore {
      * @path        /comboPackages/{comboPackageId}
      * @allow       Any user, signed in or not, can read a specific combo package or list all packages. (get, list)
      * @deny        Any user attempting to create, update, or delete a combo package. (create, update, delete)
-     * @principle   Public Read with Admin-Only Writes. Since no admin role is defined, all writes are blocked for maximum security.
+     * @principle   Public Read with Admin-Only Writes.
      */
     match /comboPackages/{comboPackageId} {
       allow get: if true;
       allow list: if true;
-      // CRITICAL: Cannot implement owner-only writes. The 'ComboPackage' entity is missing an 'ownerId' or 'admin' field.
-      // TODO: Add admin role validation once an authorization system is implemented.
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow write: if false;
     }
 
     /**
@@ -83,28 +68,27 @@ service cloud.firestore {
      * @path        /media/{mediaId}
      * @allow       Any user, signed in or not, can read a specific media item or list all media. (get, list)
      * @deny        Any user attempting to create, update, or delete a media item. (create, update, delete)
-     * @principle   Public Read with Admin-Only Writes. Since no admin role is defined, all writes are blocked for maximum security.
+     * @principle   Public Read with Admin-Only Writes.
      */
     match /media/{mediaId} {
       allow get: if true;
       allow list: if true;
-      // CRITICAL: Cannot implement owner-only writes. The 'Media' entity is missing an 'ownerId' or 'admin' field.
-      // TODO: Add admin role validation once an authorization system is implemented.
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow write: if false;
     }
 
     /**
-     * @description Allows any user to submit an order, but locks the order from being read or modified afterwards by clients.
+     * @description Allows authenticated users to create their own orders and read them.
      * @path        /orders/{orderId}
-     * @allow       Any user, including anonymous users, can submit a new order. (create)
-     * @deny        Any client attempting to read, list, update, or delete an order after it has been created.
-     * @principle   Enforces a "write-once, read-never" pattern for public submissions to protect sensitive customer data.
+     * @allow_create Authenticated user can create an order if the `userId` in the new document matches their own UID.
+     * @allow_get    Authenticated user can read an order if their UID matches the `userId` on the document.
+     * @deny_list    No one can list all orders.
+     * @deny_update  No one can update an order from the client.
+     * @deny_delete  No one can delete an order from the client.
+     * @principle   Enforces ownership for creating and reading sensitive data, while preventing data leakage.
      */
     match /orders/{orderId} {
-      allow create: if true;
-      allow get: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow get: if request.auth != null && resource.data.userId == request.auth.uid;
       allow list: if false;
       allow update: if false;
       allow delete: if false;

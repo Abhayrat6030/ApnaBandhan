@@ -12,7 +12,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BottomNav from '@/components/layout/BottomNav';
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseClientProvider, useAuth, initiateAnonymousSignIn, useUser } from '@/firebase';
 
 const fontInter = Inter({
   subsets: ['latin'],
@@ -23,6 +23,19 @@ const fontPlayfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-headline',
 });
+
+function AuthHandler({ children }: { children: React.ReactNode }) {
+  const auth = useAuth();
+  const { isUserLoading, user } = useUser();
+
+  React.useEffect(() => {
+    if (!isUserLoading && !user) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
+
+  return <>{children}</>;
+}
 
 
 // export const metadata: Metadata = {
@@ -83,9 +96,11 @@ export default function RootLayout({
         )}
       >
         <FirebaseClientProvider>
+          <AuthHandler>
             <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">
                 <AppContent />
             </div>
+          </AuthHandler>
         </FirebaseClientProvider>
       </body>
     </html>
