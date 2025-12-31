@@ -1,15 +1,24 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Film, Mails, Album, Package as PackageIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { services } from '@/lib/data';
+import { services, serviceCategories } from '@/lib/data';
 import { siteConfig } from '@/lib/constants';
 import placeholderImages from '@/lib/placeholder-images.json';
 import { ServiceCard } from '@/components/shared/ServiceCard';
+import { cn } from '@/lib/utils';
 
 const featuredServices = services.filter(s => s.isFeatured);
+
+const categoryIcons = {
+  'invitation-videos': Film,
+  'invitation-cards': Mails,
+  'album-design': Album,
+  'combo-packages': PackageIcon,
+};
+
 
 export default function Home() {
   return (
@@ -47,8 +56,31 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Categories Section */}
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-row justify-around items-center border-b">
+            {serviceCategories.map((category, index) => {
+              const Icon = categoryIcons[category.id as keyof typeof categoryIcons];
+              return (
+                <Link href={category.href} key={category.id} className="flex-1 group">
+                    <div className={cn(
+                        "flex flex-col items-center justify-center gap-2 py-4 text-center text-muted-foreground transition-colors group-hover:text-primary",
+                        // Simple active state for demo - assuming 'all' or first one is active
+                        index === 0 ? "text-primary border-b-2 border-primary" : ""
+                    )}>
+                        {Icon && <Icon className="h-7 w-7" />}
+                        <span className="text-sm font-medium">{category.name}</span>
+                    </div>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* Featured Services Section */}
-      <section id="services" className="py-16 md:py-24 bg-background">
+      <section id="services" className="py-16 md:py-24 bg-secondary/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="font-bold text-3xl md:text-4xl tracking-tight">
