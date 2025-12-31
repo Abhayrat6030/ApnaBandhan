@@ -3,7 +3,7 @@
 
 import type { Metadata } from 'next';
 import { usePathname } from 'next/navigation';
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import * as React from 'react';
 
 import './globals.css';
@@ -16,6 +16,11 @@ import BottomNav from '@/components/layout/BottomNav';
 const fontInter = Inter({
   subsets: ['latin'],
   variable: '--font-body',
+});
+
+const fontPlayfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-headline',
 });
 
 
@@ -31,7 +36,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isHomePage = pathname === '/';
   const isAdminRoute = pathname.startsWith('/admin');
   const [isMenuOpen, setMenuOpen] = React.useState(false);
 
@@ -45,13 +49,14 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',
-          fontInter.variable
+          fontInter.variable,
+          fontPlayfair.variable
         )}
       >
         <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">
           {!isAdminRoute && <Header isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />}
           <main className="flex-1">{children}</main>
-          {!isAdminRoute && <Footer isHomePage={isHomePage} />}
+          {!isAdminRoute && <Footer isHomePage={pathname === '/'} />}
         </div>
         {!isAdminRoute && <BottomNav setMenuOpen={setMenuOpen} />}
         <Toaster />

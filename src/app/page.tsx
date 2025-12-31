@@ -41,7 +41,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative h-[25vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
+      <section className="relative h-[60vh] md:h-[70vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
         <Image
           src={placeholderImages.hero.imageUrl}
           alt={placeholderImages.hero.description}
@@ -50,21 +50,21 @@ export default function Home() {
           className="object-cover"
           data-ai-hint={placeholderImages.hero.imageHint}
         />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 p-4 flex flex-col items-center" data-aos="fade-up">
-          <h1 className="font-bold text-4xl md:text-5xl tracking-tight">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-transparent" />
+        <div className="relative z-10 p-4 flex flex-col items-center animate-fade-in-up">
+          <h1 className="font-bold text-4xl md:text-6xl tracking-tight !leading-tight">
             {siteConfig.name}
           </h1>
-          <p className="mt-3 max-w-2xl text-md md:text-lg text-primary-foreground/90">
+          <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90">
             {siteConfig.tagline}
           </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-4">
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" variant="secondary">
               <Link href="/services">
                 View Samples <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20">
+            <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white">
                <Link href={`https://wa.me/${siteConfig.phone}`} target="_blank">
                 WhatsApp Order
               </Link>
@@ -74,7 +74,7 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-2 bg-background">
+      <section className="py-4 bg-background border-b">
         <div className="container mx-auto px-4">
           <Carousel
             plugins={[plugin.current]}
@@ -86,15 +86,15 @@ export default function Home() {
                 loop: true,
             }}
             >
-            <CarouselContent className="-ml-1">
+            <CarouselContent className="-ml-2">
                 {serviceCategories.map((category) => {
                 const Icon = categoryIcons[category.id as keyof typeof categoryIcons];
                 return (
-                    <CarouselItem key={category.id} className="pl-1 basis-[28%] sm:basis-1/5 md:basis-[15%]">
+                    <CarouselItem key={category.id} className="pl-2 basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-[15%]">
                         <Link href={category.href} className="group block">
-                            <div className="flex flex-col items-center justify-center gap-1 p-1 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary h-24">
-                                {Icon && <Icon className="h-7 w-7" />}
-                                <span className="text-xs sm:text-sm font-medium leading-tight">{category.name}</span>
+                            <div className="flex flex-col items-center justify-center gap-2 p-2 rounded-lg hover:bg-muted text-center text-muted-foreground transition-colors group-hover:text-primary h-28">
+                                {Icon && <Icon className="h-8 w-8" />}
+                                <span className="text-sm font-medium leading-tight">{category.name}</span>
                             </div>
                         </Link>
                     </CarouselItem>
@@ -105,85 +105,97 @@ export default function Home() {
       </section>
 
       {/* Top Rated Videos Section */}
-      {topRatedVideos.length > 0 && <section id="top-videos" className="py-8 md:py-12 bg-secondary/20">
+      {topRatedVideos.length > 0 && <section id="top-videos" className="py-12 md:py-16 bg-secondary/30">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-bold text-2xl tracking-tight">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               Invitation Videos
             </h2>
-             <Button asChild variant="outline" size="sm">
-              <Link href="/invitation-videos">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <p className="mt-2 text-lg text-muted-foreground">Stunning videos to announce your special day.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedVideos.map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
+           <div className="text-center mt-8">
+            <Button asChild variant="outline">
+              <Link href="/invitation-videos">
+                View All Videos <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>}
       
       {/* Top Rated Cards Section */}
-      {topRatedCards.length > 0 && <section id="top-cards" className="py-8 md:py-12 bg-background">
+      {topRatedCards.length > 0 && <section id="top-cards" className="py-12 md:py-16 bg-background">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-bold text-2xl tracking-tight">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               Invitation Cards
             </h2>
-             <Button asChild variant="outline" size="sm">
-              <Link href="/invitation-cards">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <p className="mt-2 text-lg text-muted-foreground">Elegant digital and printable invitations.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedCards.map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
+          <div className="text-center mt-8">
+            <Button asChild variant="outline">
+              <Link href="/invitation-cards">
+                View All Cards <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>}
 
        {/* Top Rated Album Designs Section */}
-      {topRatedAlbums.length > 0 && <section id="top-albums" className="py-8 md:py-12 bg-secondary/20">
+      {topRatedAlbums.length > 0 && <section id="top-albums" className="py-12 md:py-16 bg-secondary/30">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-bold text-2xl tracking-tight">
+           <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               Album Designs
             </h2>
-             <Button asChild variant="outline" size="sm">
-              <Link href="/album-design">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <p className="mt-2 text-lg text-muted-foreground">Timeless designs to preserve your memories.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedAlbums.map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
+           <div className="text-center mt-8">
+            <Button asChild variant="outline">
+              <Link href="/album-design">
+                View All Designs <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>}
 
        {/* Top Rated Video Editing Section */}
-      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="py-8 md:py-12 bg-background">
+      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="py-12 md:py-16 bg-background">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-bold text-2xl tracking-tight">
+           <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
               Wedding Video Editing
             </h2>
-             <Button asChild variant="outline" size="sm">
-              <Link href="/video-editing">
-                View All <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <p className="mt-2 text-lg text-muted-foreground">Cinematic edits of your precious moments.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedVideoEditing.map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
+          </div>
+          <div className="text-center mt-8">
+            <Button asChild variant="outline">
+              <Link href="/video-editing">
+                View All Editing Services <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>}

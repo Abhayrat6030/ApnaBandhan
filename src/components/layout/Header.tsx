@@ -33,16 +33,16 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
+      <div className="container flex h-20 items-center">
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Logo className="h-8 w-auto text-primary" />
-            <span className="font-bold hidden sm:inline-block">{siteConfig.name}</span>
+            <Logo className="h-10 w-auto text-primary" />
+            <span className="font-bold hidden sm:inline-block text-xl">{siteConfig.name}</span>
           </Link>
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex flex-1 items-center space-x-6 text-sm font-medium">
+        <nav className="hidden md:flex flex-1 items-center space-x-8 text-base font-medium">
           {navItems.map((item) => (
             <Link
               key={item.label}
@@ -70,7 +70,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
           {/* Mobile Nav Sheet */}
           <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
-            <SheetContent side="left" className="pr-0 flex flex-col">
+            <SheetContent side="left" className="p-0 flex flex-col">
                <SheetHeader className="p-4 border-b">
                  <Link href="/" className="mr-6 flex items-center space-x-2" onClick={() => setMenuOpen(false)}>
                    <Logo className="h-8 w-auto text-primary" />
@@ -89,12 +89,12 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
                             href={item.href}
                             onClick={() => setMenuOpen(false)}
                             className={cn(
-                                'flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-muted',
+                                'flex items-center gap-3 rounded-lg px-3 py-3 transition-all hover:bg-muted',
                                 pathname === item.href ? 'bg-muted text-primary font-semibold' : 'text-foreground'
                             )}
                         >
-                            {Icon && <Icon className="h-4 w-4" />}
-                            <span className="text-base">{item.label}</span>
+                            {Icon && <Icon className="h-5 w-5" />}
+                            <span className="text-lg">{item.label}</span>
                         </Link>
                       )
                     })}
@@ -102,7 +102,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
                 </div>
               </ScrollArea>
                <div className="p-6 border-t mt-auto">
-                 <Button asChild className="w-full">
+                 <Button asChild className="w-full" size="lg">
                     <Link href="/order" onClick={() => setMenuOpen(false)}>Order Now</Link>
                 </Button>
               </div>
