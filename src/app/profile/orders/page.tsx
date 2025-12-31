@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order } from '@/lib/types';
+import type { Order, Service } from '@/lib/types';
+import { services as staticServices } from '@/lib/data';
 
 const getStatusVariant = (status: Order['status']) => {
     switch (status) {
@@ -36,13 +37,26 @@ export default function OrderHistoryPage() {
     const firestore = useFirestore();
 
     const ordersQuery = useMemoFirebase(() => {
-        if (!user) return null;
+        if (!user || !firestore) return null;
         return query(collection(firestore, 'orders'), where('userId', '==', user.uid));
     }, [user, firestore]);
 
-    const { data: userOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+    const servicesQuery = useMemoFirebase(() => {
+      if (!firestore) return null;
+      return collection(firestore, 'services');
+    }, [firestore]);
 
-    const isLoading = isUserLoading || areOrdersLoading;
+    const { data: userOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+    const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
+
+    const allServicesMap = useMemo(() => {
+        const map = new Map<string, string>();
+        staticServices.forEach(s => map.set(s.id, s.name));
+        services?.forEach(s => map.set(s.id, s.name));
+        return map;
+    }, [services]);
+
+    const isLoading = isUserLoading || areOrdersLoading || areServicesLoading;
 
     const renderSkeleton = () => (
         <Table>
@@ -93,7 +107,7 @@ export default function OrderHistoryPage() {
                                     {userOrders.map((order) => (
                                         <TableRow key={order.id}>
                                             <TableCell className="font-medium truncate" style={{maxWidth: 100}}>{order.id}</TableCell>
-                                            <TableCell>{order.selectedServiceId}</TableCell>
+                                            <TableCell>{allServicesMap.get(order.selectedServiceId) || order.selectedServiceId}</TableCell>
                                             <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
