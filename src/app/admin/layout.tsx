@@ -14,7 +14,7 @@ import { siteConfig } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
-import { SheetTitle } from "@/components/ui/sheet";
+import { SheetTitle, SheetHeader } from "@/components/ui/sheet";
 
 export default function AdminLayout({
   children,
@@ -24,7 +24,9 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <Sidebar>
-        <SheetTitle className="sr-only">Admin Menu</SheetTitle>
+        <SheetHeader className="md:hidden p-4 border-b">
+           <SheetTitle>Admin Menu</SheetTitle>
+        </SheetHeader>
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <Logo className="w-8 h-8 text-primary" />
