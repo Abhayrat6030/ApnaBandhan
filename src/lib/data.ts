@@ -251,7 +251,7 @@ export const serviceCategories: ServiceCategoryInfo[] = [
     },
     {
         id: 'video-editing',
-        name: 'Wedding Video Editing',
+        name: 'Wedding Video',
         description: 'We edit your raw footage into a beautiful, cinematic wedding film.',
         href: '/video-editing',
         imageUrl: 'https://picsum.photos/seed/video-edit/600/400',
