@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -10,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { siteConfig, navItems } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import Logo from '../shared/Logo';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -58,34 +60,34 @@ export default function Header() {
                 <span className="sr-only">Open Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="pr-0">
-               <SheetHeader className="p-4">
-                <SheetTitle className="sr-only">Main Menu</SheetTitle>
-              </SheetHeader>
-              <div className="flex items-center justify-between px-6">
-                <Link href="/" className="mr-6 flex items-center space-x-2">
+            <SheetContent side="left" className="pr-0 flex flex-col">
+               <SheetHeader className="p-4 border-b">
+                 <Link href="/" className="mr-6 flex items-center space-x-2">
                    <Logo className="h-8 w-auto text-primary" />
                   <span className="font-bold font-headline">{siteConfig.name}</span>
                 </Link>
-              </div>
-              <div className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
-                <div className="flex flex-col space-y-3">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={() => setMenuOpen(false)}
-                      className={cn(
-                        'text-lg transition-colors hover:text-primary',
-                        pathname === item.href ? 'text-primary font-semibold' : 'text-foreground'
-                      )}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                <SheetTitle className="sr-only">Main Menu</SheetTitle>
+              </SheetHeader>
+              <ScrollArea className="flex-1">
+                <div className="py-4 pl-6 pr-6">
+                  <div className="flex flex-col space-y-3">
+                    {navItems.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={cn(
+                          'text-lg transition-colors hover:text-primary',
+                          pathname === item.href ? 'text-primary font-semibold' : 'text-foreground'
+                        )}
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-               <div className="pl-6">
+              </ScrollArea>
+               <div className="p-6 border-t mt-auto">
                  <Button asChild className="w-full">
                     <Link href="/order" onClick={() => setMenuOpen(false)}>Order Now</Link>
                 </Button>
