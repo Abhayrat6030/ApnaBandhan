@@ -8,7 +8,6 @@ import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service } from '@/lib/types';
-import { packages, services as allStaticServices } from '@/lib/data';
 
 export default function AdminDashboardPage() {
   const firestore = useFirestore();
@@ -23,14 +22,31 @@ export default function AdminDashboardPage() {
     return query(collection(firestore, 'orders'), orderBy('orderDate', 'desc'), limit(5));
   }, [firestore]);
 
+  const servicesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'services');
+  }, [firestore]);
+
+  const packagesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'comboPackages');
+  }, [firestore]);
+
   const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
+  const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
+  const { data: packages, isLoading: arePackagesLoading } = useCollection<any>(packagesQuery);
   
   const serviceAndPackageMap = useMemo(() => {
     const map = new Map<string, { name: string; price: number }>();
-    [...allStaticServices, ...packages.map(p => ({...p, price: Number(p.price.replace('₹','').replace(',',''))}))].forEach(s => map.set(s.id, { name: s.name, price: s.price }));
+    if (services) {
+      services.forEach(s => map.set(s.id, { name: s.name, price: s.price }));
+    }
+    if (packages) {
+      packages.forEach(p => map.set(p.id, { name: p.name, price: Number(p.price.toString().replace(/[^0-9.-]+/g,"")) }));
+    }
     return map;
-  }, []);
+  }, [services, packages]);
 
   const totalRevenue = useMemo(() => {
     if (!allOrders) return 0;
@@ -55,7 +71,7 @@ export default function AdminDashboardPage() {
     }));
   }, [recentOrders, serviceAndPackageMap]);
   
-  const isLoading = areOrdersLoading || areRecentOrdersLoading;
+  const isLoading = areOrdersLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
 
   if (isLoading) {
     return (

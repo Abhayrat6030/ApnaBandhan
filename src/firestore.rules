@@ -7,9 +7,10 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
-    
+
     // Helper function to check if the user is an admin.
     function isAdmin() {
+      // Allow for a specific admin email for now
       return request.auth != null && request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
@@ -29,32 +30,48 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Orders can be created by any authenticated user for themselves.
-    // They can only read their own orders. Admins can read and update all orders.
+    // Orders collection
     match /orders/{orderId} {
+      // Users can create orders for themselves
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow get: if request.auth != null && (isOwner(resource.data.userId) || isAdmin());
+      
+      // Admins can read all orders, users can read their own.
+      allow get: if isOwner(resource.data.userId) || isAdmin();
+      
+      // Only Admins can list all orders. This is a collection-level query.
       allow list: if isAdmin();
+      
+      // Only Admins can update an order's status.
       allow update: if isAdmin();
-      allow delete: if false; 
+      
+      // Deleting orders is not allowed from the client.
+      allow delete: if false;
     }
-    
-    // User-specific private data is nested under the user's ID.
+
+    // User-specific data is nested under the user's ID.
     match /users/{userId} {
       // A user can read and write to their own top-level profile document.
+      // Admin can also access any user's profile.
       allow get, update, create: if isOwner(userId) || isAdmin();
-      // No one should be able to list all user documents.
+      
+      // Listing all users is forbidden to protect privacy.
       allow list, delete: if false;
 
-      // Users can list and read their own notifications.
+      // Notifications subcollection
       match /notifications/{notificationId} {
+        // Users can list and read their own notifications.
         allow get, list: if isOwner(userId);
+        
+        // Only the server/admin can create/update/delete notifications.
         allow create, update, delete: if isAdmin();
       }
 
-      // Users can list and read their own downloadable products.
+      // Downloadable products subcollection
       match /downloadableProducts/{productId} {
+        // Users can list and read their own downloadable products.
         allow get, list: if isOwner(userId);
+
+        // Only the server/admin can create/update/delete products.
         allow create, update, delete: if isAdmin();
       }
     }

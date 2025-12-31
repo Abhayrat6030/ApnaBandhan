@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -61,7 +61,7 @@ export default function OrderPage() {
   });
 
   // Set default values once user data is available
-  useState(() => {
+  useEffect(() => {
     if (user) {
       form.reset({
         fullName: user.displayName || '',
