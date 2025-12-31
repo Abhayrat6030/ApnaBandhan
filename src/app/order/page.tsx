@@ -61,8 +61,19 @@ export default function OrderPage() {
   async function onSubmit(data: OrderFormValues) {
     setIsSubmitting(true);
     
+    if (!user) {
+        toast({
+            title: "Authentication Error",
+            description: "You must be logged in to place an order.",
+            variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+    }
+
     try {
-        const result = await submitOrder(data);
+        const idToken = await user.getIdToken();
+        const result = await submitOrder(data, idToken);
 
         if (result.success) {
           toast({
@@ -241,7 +252,7 @@ export default function OrderPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={isSubmitting} className="w-full" size="lg" variant="secondary">
+              <Button type="submit" disabled={isSubmitting || !user} className="w-full" size="lg" variant="secondary">
                 {isSubmitting ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -249,6 +260,7 @@ export default function OrderPage() {
                     </>
                 ) : 'Place Order'}
               </Button>
+               {!user && <p className="text-center text-sm text-muted-foreground">Please log in to place an order.</p>}
             </form>
           </Form>
         </CardContent>

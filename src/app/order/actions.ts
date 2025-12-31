@@ -2,12 +2,12 @@
 'use server';
 
 import { z } from 'zod';
-import { siteConfig } from '@/lib/constants';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { auth as adminAuth } from 'firebase-admin';
 import { initializeFirebase } from '@/firebase';
-import { headers } from 'next/headers';
-import { getApp, getApps, initializeApp } from 'firebase-admin/app';
+import { getApp, getApps, initializeApp, type App } from 'firebase-admin/app';
+import { getAuth as getAdminAuth } from 'firebase-admin/auth';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 
 // This is the schema for the data coming directly from the form
 const orderFormSchema = z.object({
@@ -20,15 +20,17 @@ const orderFormSchema = z.object({
 });
 
 
-// Helper function to initialize Firebase Admin SDK
-function initializeAdminApp() {
+// Helper function to initialize Firebase Admin SDK idempotently
+function initializeAdminApp(): App {
     if (getApps().length > 0) {
         return getApp();
     }
+    // In a deployed environment (like Firebase App Hosting), credentials are automatically discovered.
+    // For local development, you'd need to set up a service account.
     return initializeApp();
 }
 
-export async function submitOrder(data: unknown) {
+export async function submitOrder(data: unknown, idToken: string) {
   const validation = orderFormSchema.safeParse(data);
 
   if (!validation.success) {
@@ -36,24 +38,22 @@ export async function submitOrder(data: unknown) {
     return { success: false, message: 'Invalid data provided. Please check the form and try again.' };
   }
   
-  const headersList = headers();
-  const authorization = headersList.get('Authorization');
-  const idToken = authorization?.split('Bearer ')[1] || null;
-
   if (!idToken) {
     return { success: false, message: 'Authentication error. You must be logged in to place an order.' };
   }
 
   try {
-    initializeAdminApp();
+    const adminApp = initializeAdminApp();
+    const adminAuth = getAdminAuth(adminApp);
     
-    const decodedToken = await adminAuth().verifyIdToken(idToken);
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
     const userId = decodedToken.uid;
 
     if (!userId) {
         return { success: false, message: 'Could not verify user. Please log in again.' };
     }
 
+    // Use client SDK for writing data as the user
     const { firestore } = initializeFirebase();
     const ordersCollection = collection(firestore, 'orders');
     
@@ -74,11 +74,6 @@ export async function submitOrder(data: unknown) {
 
     console.log('New Order successfully saved to Firestore:', docRef.id);
 
-    // This part can be re-enabled if needed, but is not essential for submission
-    // const whatsappMessage = `New Order from ${validation.data.fullName}!\n\nService ID: ${validation.data.selectedService}\nPhone: ${validation.data.phone}\nWedding Date: ${validation.data.weddingDate.toLocaleDateString()}\n\nMessage: ${validation.data.message || 'None'}`;
-    // const whatsappUrl = `https://wa.me/${siteConfig.phone}?text=${encodeURIComponent(whatsappMessage)}`;
-    // console.log('Admin WhatsApp URL:', whatsappUrl);
-
     return { success: true, message: 'Order submitted successfully!' };
 
   } catch (error: any) {
@@ -86,7 +81,7 @@ export async function submitOrder(data: unknown) {
      if (error.code === 'auth/id-token-expired') {
         return { success: false, message: 'Your session has expired. Please log in again.' };
     }
-     if (error.code === 'auth/argument-error') {
+     if (error.code === 'auth/argument-error' || error.codePrefix === 'auth') {
         return { success: false, message: 'Authentication failed. Please log in and try again.' };
      }
     return { success: false, message: 'An internal server error occurred. Please try again later.' };
