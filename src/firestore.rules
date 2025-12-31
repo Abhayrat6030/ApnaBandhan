@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -31,11 +32,9 @@ service cloud.firestore {
     }
 
     // --- Orders Collection Rules ---
-    
-    // Rules for individual order documents
     match /orders/{orderId} {
       // Admins can get any order, users can get their own.
-      allow get: if isAdmin() || isOwner(resource.data.userId);
+      allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
       
       // Only Admins can update an order's status or details.
       allow update: if isAdmin();
@@ -44,7 +43,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Rules for the entire 'orders' collection
+    // Rules for queries on the 'orders' collection
     match /orders {
         // Only Admins can list all orders. This is a collection-level query.
         allow list: if isAdmin();

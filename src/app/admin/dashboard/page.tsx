@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit, where } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
@@ -14,16 +14,15 @@ export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
-  // This query was causing the permission error and has been removed for now.
-  // const ordersQuery = useMemoFirebase(() => {
-  //   if (!firestore || !user) return null;
-  //   return collection(firestore, 'orders');
-  // }, [firestore, user]);
-  
+  // Query for all orders, which is allowed for admins by security rules.
+  const allOrdersQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    // This query is for the admin, who has list permissions.
+    return collection(firestore, 'orders');
+  }, [firestore, user]);
+
   const recentOrdersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    // For admins, we can query recent orders. Let's assume a rule allows this.
-    // If not, this might also need adjustment. For now, we limit it.
     return query(collection(firestore, 'orders'), orderBy('orderDate', 'desc'), limit(5));
   }, [firestore, user]);
 
@@ -37,8 +36,7 @@ export default function AdminDashboardPage() {
     return collection(firestore, 'comboPackages');
   }, [firestore]);
 
-  // Temporarily removing allOrders to fix the permission issue.
-  // const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+  const { data: allOrders, isLoading: areAllOrdersLoading } = useCollection<Order>(allOrdersQuery);
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<any>(packagesQuery);
@@ -54,17 +52,16 @@ export default function AdminDashboardPage() {
     return map;
   }, [services, packages]);
 
-  // Temporarily disabling total revenue calculation
-  const totalRevenue = 0;
-  const totalOrders = 0;
-  const completedOrders = 0;
-  // const totalRevenue = useMemo(() => {
-  //   if (!allOrders) return 0;
-  //   return allOrders.filter(o => o.paymentStatus === 'Paid').reduce((sum, order) => {
-  //     const service = serviceAndPackageMap.get(order.selectedServiceId);
-  //     return sum + (service?.price || 0);
-  //   }, 0);
-  // }, [allOrders, serviceAndPackageMap]);
+  const totalRevenue = useMemo(() => {
+    if (!allOrders) return 0;
+    return allOrders.filter(o => o.paymentStatus === 'Paid').reduce((sum, order) => {
+      const service = serviceAndPackageMap.get(order.selectedServiceId);
+      return sum + (service?.price || 0);
+    }, 0);
+  }, [allOrders, serviceAndPackageMap]);
+
+  const totalOrders = allOrders?.length ?? 0;
+  const completedOrders = allOrders?.filter(o => o.status === 'Delivered').length ?? 0;
 
   const stats = [
     { title: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign },
@@ -81,7 +78,7 @@ export default function AdminDashboardPage() {
     }));
   }, [recentOrders, serviceAndPackageMap]);
   
-  const isLoading = isUserLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
+  const isLoading = isUserLoading || areAllOrdersLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
 
   if (isLoading && !recentOrders) {
     return (
