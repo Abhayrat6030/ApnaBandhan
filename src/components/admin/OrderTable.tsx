@@ -66,11 +66,11 @@ export default function OrderTable({ orders }: OrderTableProps) {
         {orders.map((order) => (
           <TableRow key={order.id}>
             <TableCell className="font-medium">
-              <div>{order.clientName}</div>
-              <div className="text-sm text-muted-foreground">{order.phone}</div>
+              <div>{order.fullName}</div>
+              <div className="text-sm text-muted-foreground">{order.phoneNumber}</div>
             </TableCell>
-            <TableCell>{order.service}</TableCell>
-            <TableCell>{order.orderDate}</TableCell>
+            <TableCell>{order.selectedServiceId}</TableCell>
+            <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
             <TableCell>
               <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
             </TableCell>
@@ -89,7 +89,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                   <DropdownMenuItem>View Details</DropdownMenuItem>
                    <DropdownMenuItem asChild>
-                    <Link href={`https://wa.me/${order.phone}`} target="_blank">
+                    <Link href={`https://wa.me/${order.phoneNumber}`} target="_blank">
                         <MessageSquare className="mr-2 h-4 w-4" />
                         Reply on WhatsApp
                     </Link>
