@@ -1,4 +1,8 @@
+
+'use client';
+
 import type { Metadata } from 'next';
+import { usePathname } from 'next/navigation';
 import { Poppins, Cormorant_Garamond } from 'next/font/google';
 
 import './globals.css';
@@ -20,19 +24,27 @@ const fontCormorant = Cormorant_Garamond({
   variable: '--font-headline',
 });
 
-export const metadata: Metadata = {
-  title: 'ApnaBandhan | Wedding Invitations • Videos • Albums',
-  description: 'Complete Wedding Invitation, Video & Album Solution. Professional and affordable wedding services for your special day.',
-  keywords: 'indian wedding invitations, wedding videos, wedding albums, save the date video, e-invites, ApnaBandhan',
-};
+// export const metadata: Metadata = {
+//   title: 'ApnaBandhan | Wedding Invitations • Videos • Albums',
+//   description: 'Complete Wedding Invitation, Video & Album Solution. Professional and affordable wedding services for your special day.',
+//   keywords: 'indian wedding invitations, wedding videos, wedding albums, save the date video, e-invites, ApnaBandhan',
+// };
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <title>ApnaBandhan | Wedding Invitations • Videos • Albums</title>
+        <meta name="description" content="Complete Wedding Invitation, Video & Album Solution. Professional and affordable wedding services for your special day." />
+        <meta name="keywords" content="indian wedding invitations, wedding videos, wedding albums, save the date video, e-invites, ApnaBandhan" />
+      </head>
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',
@@ -43,7 +55,7 @@ export default function RootLayout({
         <div className="relative flex min-h-dvh flex-col">
           <Header />
           <main className="flex-1">{children}</main>
-          <Footer />
+          <Footer isHomePage={isHomePage} />
         </div>
         <FloatingWhatsApp />
         <Toaster />
