@@ -26,20 +26,18 @@ export default function AdminNav() {
       {adminNavItems.map((item) => {
         const Icon = icons[item.href as keyof typeof icons] || LayoutDashboard;
         return (
-          <SidebarMenuItem key={item.label}>
+          <SidebarMenuItem key={item.label} asChild>
             <Link href={item.href} className="w-full">
               <SidebarMenuButton
                 className={cn(
-                  pathname === item.href
+                  pathname.startsWith(item.href) && item.href !== '/admin'
                     ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : ''
+                    : '',
+                   pathname === item.href ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
                 )}
-                asChild
               >
-                <span>
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </span>
+                <Icon className="h-4 w-4" />
+                {item.label}
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>

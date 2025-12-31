@@ -37,7 +37,7 @@ export default function AdminServicesPage() {
   const allItems: CombinedService[] = useMemo(() => {
       const items: CombinedService[] = [];
       if(services) items.push(...services.map(s => ({...s, type: 'Service' } as CombinedService)));
-      if(packages) items.push(...packages.map(p => ({...p, name: p.name, price: parseFloat(p.price.replace('₹','').replace(',','')), type: 'Package' } as CombinedService)));
+      if(packages) items.push(...packages.map(p => ({...p, name: p.name, price: parseFloat(p.price.replace(/[^0-9.-]+/g,"")), type: 'Package' } as CombinedService)));
       return items.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
   }, [services, packages]);
   
@@ -56,7 +56,7 @@ export default function AdminServicesPage() {
         <TableBody>
             {[...Array(5)].map((_, i) => (
                 <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32 sm:w-48" /></TableCell>
                     <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
@@ -68,7 +68,7 @@ export default function AdminServicesPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="font-headline text-3xl font-bold">Manage Services</h1>
         <Button asChild>
           <Link href="/admin/services/new">

@@ -42,6 +42,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
       case 'Pending': return 'secondary';
       case 'In Progress': return 'default';
       case 'Delivered': return 'outline';
+      case 'Paid': return 'default';
       default: return 'secondary';
     }
   };
@@ -87,9 +88,9 @@ export default function OrderTable({ orders }: OrderTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[150px]">Client</TableHead>
-              <TableHead className="min-w-[200px]">Service</TableHead>
-              <TableHead>Order Date</TableHead>
+              <TableHead>Client</TableHead>
+              <TableHead className="hidden sm:table-cell">Service</TableHead>
+              <TableHead className="hidden md:table-cell">Order Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Payment</TableHead>
               <TableHead>
@@ -101,11 +102,11 @@ export default function OrderTable({ orders }: OrderTableProps) {
             {orders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">
-                  <div>{order.fullName}</div>
+                  <div className="truncate max-w-[120px] sm:max-w-none">{order.fullName}</div>
                   <div className="text-sm text-muted-foreground">{order.phoneNumber}</div>
                 </TableCell>
-                <TableCell>{order.serviceName || order.selectedServiceId}</TableCell>
-                <TableCell>{new Date(order.orderDate).toLocaleDateString('en-CA')}</TableCell>
+                <TableCell className="hidden sm:table-cell">{order.serviceName || order.selectedServiceId}</TableCell>
+                <TableCell className="hidden md:table-cell">{new Date(order.orderDate).toLocaleDateString('en-CA')}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                 </TableCell>

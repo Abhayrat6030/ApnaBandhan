@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order, Service } from '@/lib/types';
+import type { Order } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { packages, services as staticServices } from '@/lib/data';
 
@@ -21,7 +21,7 @@ export default function AdminOrdersPage() {
   const ordersQuery = useMemoFirebase(() => {
       if (!isAdmin) return null;
       return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
-  }, [isAdmin, user]);
+  }, [isAdmin]);
 
   const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
 
@@ -54,7 +54,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="font-headline text-3xl font-bold">All Orders</h1>
         <Button>
           <Download className="mr-2 h-4 w-4" />

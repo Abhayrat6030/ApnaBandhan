@@ -4,11 +4,11 @@
 import { useMemo } from 'react';
 import { useUser } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
+import { DollarSign, ShoppingBag, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order, Service as ServiceType, Package as PackageType } from '@/lib/types';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import type { Order, Service as ServiceType } from '@/lib/types';
+import { collection, query, orderBy, limit, where } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, db } from '@/firebase';
 import { services as staticServices, packages as staticPackages } from '@/lib/data';
 
@@ -21,17 +21,17 @@ export default function AdminDashboardPage() {
   const allOrdersQuery = useMemoFirebase(() => {
     if (!isAdmin) return null;
     return collection(db, 'orders');
-  }, [isAdmin, user]);
-
+  }, [isAdmin]);
+  
   const recentOrdersQuery = useMemoFirebase(() => {
     if (!isAdmin) return null;
     return query(collection(db, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [isAdmin, user]);
+  }, [isAdmin]);
 
   const { data: allOrders, isLoading: areAllOrdersLoading } = useCollection<Order>(allOrdersQuery);
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
   
-  const allServicesAndPackages: (ServiceType | PackageType)[] = useMemo(() => [...staticServices, ...staticPackages], []);
+  const allServicesAndPackages = useMemo(() => [...staticServices, ...staticPackages], []);
 
   const stats = useMemo(() => {
     if (!allOrders) {
@@ -45,10 +45,12 @@ export default function AdminDashboardPage() {
         const service = allServicesAndPackages.find(s => s.id === order.selectedServiceId);
         if (order.paymentStatus === 'Paid' && service) {
             let price = 0;
-            if (typeof (service as ServiceType).price === 'number') {
-                price = (service as ServiceType).price;
-            } else if (typeof (service as PackageType).price === 'string') {
-                price = parseFloat((service as PackageType).price.replace('₹', '').replace(',', ''));
+            // The price can be a number (for Service) or a string (for Package)
+            const servicePrice = (service as any).price;
+            if (typeof servicePrice === 'number') {
+                price = servicePrice;
+            } else if (typeof servicePrice === 'string') {
+                price = parseFloat(servicePrice.replace(/[^0-9.-]+/g,""));
             }
             return acc + price;
         }
@@ -71,7 +73,7 @@ export default function AdminDashboardPage() {
     return (
       <div className="p-4 md:p-8">
         <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-8">
           {[...Array(3)].map((_, i) => (
             <Card key={i}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -115,8 +117,8 @@ export default function AdminDashboardPage() {
     <div className="p-4 md:p-8">
       <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-        {stats.map((stat, index) => (
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        {stats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
