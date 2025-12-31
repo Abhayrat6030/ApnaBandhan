@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useMemo } from 'react';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, useUser, db } from '@/firebase';
+import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
@@ -12,19 +11,25 @@ import type { Order, Service } from '@/lib/types';
 
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
 
+  // IMPORTANT FIX: Only create the query if the user is the authenticated admin.
   const recentOrdersQuery = useMemoFirebase(() => {
-    if (!user || user.email !== 'abhayrat603@gmail.com') return null;
-    return query(collection(db, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [user]);
+    if (!firestore || !user || user.email !== 'abhayrat603@gmail.com') {
+      return null;
+    }
+    return query(collection(firestore, 'orders'), orderBy('orderDate', 'desc'), limit(5));
+  }, [firestore, user]);
 
   const servicesQuery = useMemoFirebase(() => {
-    return collection(db, 'services');
-  }, []);
+    if (!firestore) return null;
+    return collection(firestore, 'services');
+  }, [firestore]);
 
   const packagesQuery = useMemoFirebase(() => {
-    return collection(db, 'comboPackages');
-  }, []);
+    if (!firestore) return null;
+    return collection(firestore, 'comboPackages');
+  }, [firestore]);
 
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
@@ -86,6 +91,15 @@ export default function AdminDashboardPage() {
           </Card>
         </div>
       </div>
+    )
+  }
+
+  if (!user || user.email !== 'abhayrat603@gmail.com') {
+    return (
+        <div className="p-4 md:p-8 text-center">
+            <h1 className="font-headline text-2xl font-bold mb-4">Access Denied</h1>
+            <p className="text-muted-foreground">You do not have permission to view this page.</p>
+        </div>
     )
   }
 

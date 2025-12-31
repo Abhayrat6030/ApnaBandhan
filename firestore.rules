@@ -15,9 +15,9 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // In a real app, this would check a custom claim:
-      // return isSignedIn() && request.auth.token.admin == true;
       // For this prototype, we'll check the admin email.
+      // In a production app, this should check a custom claim:
+      // return isSignedIn() && request.auth.token.admin == true;
       return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
@@ -61,34 +61,28 @@ service cloud.firestore {
        /orders/{orderId}
     =============================== */
     match /orders/{orderId} {
-      // Create order (user only)
+      // Users can create orders for themselves.
+      // The `status` and `paymentStatus` must be "Pending" on creation.
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
         && request.resource.data.paymentStatus == "Pending";
 
-      // Read single document (Admin OR User's own order)
-      allow get: if isAdmin() || isOwner(resource.data.userId);
+      // Admins can get any order. Users can only get their own.
+      allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
 
-      // Update (Admin only)
+      // Only Admins can update an order.
       allow update: if isAdmin();
 
-      // Delete blocked
+      // Deleting orders is blocked for data integrity.
       allow delete: if false;
     }
     
-    // IMPORTANT: Collection-level list query rule
+    // IMPORTANT: This separate rule block for the collection is crucial.
+    // It allows admins to perform a `list` query on the entire `orders` collection,
+    // which is required for the admin dashboard.
     match /orders {
         allow list: if isAdmin();
     }
-
-    /* ===============================
-       DEFAULT DENY (SECURITY)
-    =============================== */
-    // This rule is commented out because it's too restrictive for nested collections
-    // and the default behavior is to deny all access unless explicitly allowed.
-    // match /{document=**} {
-    //   allow read, write: if false;
-    // }
   }
 }
