@@ -26,6 +26,7 @@ export type Service = {
   samples: { type: 'image' | 'video'; url: string, imageHint?: string }[];
   inclusions: string[];
   deliveryTime: string;
+  tags?: string[];
 };
 
 export type Package = {
