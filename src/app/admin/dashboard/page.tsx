@@ -9,10 +9,12 @@ import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service } from '@/lib/types';
 
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
+
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
-  const isAdmin = user?.email === 'abhayrat603@gmail.com';
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   const recentOrdersQuery = useMemoFirebase(() => {
     if (!firestore || !isAdmin) {

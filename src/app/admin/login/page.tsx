@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="password">Password</Label>
-                            <Input id="password" type="password" required defaultValue="password" />
+                            <Input id="password" type="password" required defaultValue="Abhay@1986*%%" />
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4">
