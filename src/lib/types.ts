@@ -60,4 +60,5 @@ export type Order = {
     status: 'Pending' | 'Paid' | 'In Progress' | 'Delivered';
     paymentStatus: 'Pending' | 'Advance' | 'Paid';
     orderDate: string | Date;
+    userId?: string;
 }

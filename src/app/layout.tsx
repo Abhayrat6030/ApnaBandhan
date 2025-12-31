@@ -12,6 +12,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BottomNav from '@/components/layout/BottomNav';
+import { FirebaseClientProvider } from '@/firebase';
 
 const fontInter = Inter({
   subsets: ['latin'],
@@ -39,6 +40,16 @@ export default function RootLayout({
   const isAdminRoute = pathname.startsWith('/admin');
   const isAuthRoute = pathname.startsWith('/admin/login');
   const [isMenuOpen, setMenuOpen] = React.useState(false);
+
+  const AppContent = () => (
+    <>
+      {!isAdminRoute && <Header isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />}
+      <main className="flex-1">{children}</main>
+      {!isAdminRoute && <Footer isHomePage={pathname === '/'} />}
+      {!isAdminRoute && <BottomNav setMenuOpen={setMenuOpen} />}
+      <Toaster />
+    </>
+  );
 
   if (isAuthRoute) {
     return (
@@ -71,13 +82,11 @@ export default function RootLayout({
           fontPlayfair.variable
         )}
       >
-        <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">
-          {!isAdminRoute && <Header isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />}
-          <main className="flex-1">{children}</main>
-          {!isAdminRoute && <Footer isHomePage={pathname === '/'} />}
-        </div>
-        {!isAdminRoute && <BottomNav setMenuOpen={setMenuOpen} />}
-        <Toaster />
+        <FirebaseClientProvider>
+            <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">
+                <AppContent />
+            </div>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

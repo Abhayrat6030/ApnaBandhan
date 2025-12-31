@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -20,6 +21,7 @@ import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { submitOrder } from './actions';
+import { useUser } from '@/firebase';
 
 const allServicesAndPackages = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
 const uniqueServices = Array.from(new Map(allServicesAndPackages.map(item => [item.id, item])).values());
@@ -32,6 +34,7 @@ const orderFormSchema = z.object({
   weddingDate: z.date({ required_error: 'Wedding date is required.' }),
   selectedService: z.string().min(1, { message: 'Please select a service.' }),
   message: z.string().max(500, { message: 'Message must be less than 500 characters.' }).optional(),
+  userId: z.string().optional(),
 });
 
 type OrderFormValues = z.infer<typeof orderFormSchema>;
@@ -42,6 +45,7 @@ export default function OrderPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { user } = useUser();
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -56,7 +60,7 @@ export default function OrderPage() {
 
   async function onSubmit(data: OrderFormValues) {
     setIsSubmitting(true);
-    const result = await submitOrder(data);
+    const result = await submitOrder({ ...data, userId: user?.uid });
     setIsSubmitting(false);
 
     if (result.success) {
