@@ -1,16 +1,12 @@
+
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from '@/components/ui/sidebar';
 import { adminNavItems } from '@/lib/constants';
 import { LayoutDashboard, ShoppingCart, List, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useSidebar } from '@/components/ui/sidebar';
+import { Button } from '../ui/button';
 
 const icons = {
   '/admin/dashboard': LayoutDashboard,
@@ -21,26 +17,26 @@ const icons = {
 
 export default function AdminNav() {
   const pathname = usePathname();
-  const { setOpenMobile } = useSidebar();
 
   return (
-    <SidebarMenu>
+    <>
       {adminNavItems.map((item) => {
         const Icon = icons[item.href as keyof typeof icons] || LayoutDashboard;
         const isActive = pathname === item.href || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href));
         return (
-          <SidebarMenuItem key={item.label} asChild>
-            <Link href={item.href} className="w-full" onClick={() => setOpenMobile(false)}>
-              <SidebarMenuButton
-                isActive={isActive}
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </SidebarMenuButton>
+          <Button
+            key={item.label}
+            asChild
+            variant={isActive ? "secondary" : "ghost"}
+            className="justify-start"
+          >
+            <Link href={item.href} >
+              <Icon className="mr-2 h-4 w-4" />
+              {item.label}
             </Link>
-          </SidebarMenuItem>
+          </Button>
         );
       })}
-    </SidebarMenu>
+    </>
   );
 }
