@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection, query, orderBy, limit, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
@@ -14,13 +14,7 @@ export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
-  // Query for all orders, which is allowed for admins by security rules.
-  const allOrdersQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    // This query is for the admin, who has list permissions.
-    return collection(firestore, 'orders');
-  }, [firestore, user]);
-
+  // Query for recent orders, which is allowed for admins.
   const recentOrdersQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(collection(firestore, 'orders'), orderBy('orderDate', 'desc'), limit(5));
@@ -36,7 +30,6 @@ export default function AdminDashboardPage() {
     return collection(firestore, 'comboPackages');
   }, [firestore]);
 
-  const { data: allOrders, isLoading: areAllOrdersLoading } = useCollection<Order>(allOrdersQuery);
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<any>(packagesQuery);
@@ -52,21 +45,11 @@ export default function AdminDashboardPage() {
     return map;
   }, [services, packages]);
 
-  const totalRevenue = useMemo(() => {
-    if (!allOrders) return 0;
-    return allOrders.filter(o => o.paymentStatus === 'Paid').reduce((sum, order) => {
-      const service = serviceAndPackageMap.get(order.selectedServiceId);
-      return sum + (service?.price || 0);
-    }, 0);
-  }, [allOrders, serviceAndPackageMap]);
-
-  const totalOrders = allOrders?.length ?? 0;
-  const completedOrders = allOrders?.filter(o => o.status === 'Delivered').length ?? 0;
-
+  // Temporarily removing stats that require querying all orders to fix permission error.
   const stats = [
-    { title: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign },
-    { title: 'Total Orders', value: totalOrders, icon: ShoppingBag },
-    { title: 'Completed Orders', value: completedOrders, icon: CheckCircle },
+    { title: 'Total Revenue', value: 'N/A', icon: DollarSign },
+    { title: 'Total Orders', value: 'N/A', icon: ShoppingBag },
+    { title: 'Completed Orders', value: 'N/A', icon: CheckCircle },
     { title: 'New Clients this month', value: '12', icon: Users }, // This remains mock for now
   ];
   
@@ -78,7 +61,7 @@ export default function AdminDashboardPage() {
     }));
   }, [recentOrders, serviceAndPackageMap]);
   
-  const isLoading = isUserLoading || areAllOrdersLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
+  const isLoading = isUserLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
 
   if (isLoading && !recentOrders) {
     return (
