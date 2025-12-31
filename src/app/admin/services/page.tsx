@@ -16,8 +16,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Service } from '@/lib/types';
+import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+
+type CombinedService = (Service | Partial<Package>) & { type: 'Service' | 'Package' };
 
 export default function AdminServicesPage() {
   const servicesQuery = useMemoFirebase(() => {
@@ -29,13 +31,13 @@ export default function AdminServicesPage() {
   }, []);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
-  const { data: packages, isLoading: arePackagesLoading } = useCollection<Service>(packagesQuery);
+  const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
   
-  const allItems = useMemo(() => {
-      const items: (Service & {isFeatured?: boolean})[] = [];
-      if(services) items.push(...services.map(s => ({...s, isFeatured: s.isFeatured ?? false})));
-      if(packages) items.push(...packages.map(p => ({...p, isFeatured: p.isFeatured ?? false})));
-      return items;
+  const allItems: CombinedService[] = useMemo(() => {
+      const items: CombinedService[] = [];
+      if(services) items.push(...services.map(s => ({...s, type: 'Service' } as CombinedService)));
+      if(packages) items.push(...packages.map(p => ({...p, name: p.name, price: parseFloat(p.price.replace('₹','').replace(',','')), type: 'Package' } as CombinedService)));
+      return items.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
   }, [services, packages]);
   
   const isLoading = areServicesLoading || arePackagesLoading;
@@ -45,9 +47,8 @@ export default function AdminServicesPage() {
         <TableHeader>
           <TableRow>
             <TableHead>Service Name</TableHead>
-            <TableHead>Category</TableHead>
+            <TableHead className="hidden md:table-cell">Category</TableHead>
             <TableHead>Price</TableHead>
-            <TableHead>Featured</TableHead>
             <TableHead><span className="sr-only">Actions</span></TableHead>
           </TableRow>
         </TableHeader>
@@ -55,9 +56,8 @@ export default function AdminServicesPage() {
             {[...Array(5)].map((_, i) => (
                 <TableRow key={i}>
                     <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-12 rounded-full" /></TableCell>
                     <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
                 </TableRow>
             ))}
@@ -71,7 +71,7 @@ export default function AdminServicesPage() {
         <h1 className="font-headline text-3xl font-bold">Manage Services</h1>
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Service
+          Add New
         </Button>
       </div>
 
@@ -80,15 +80,14 @@ export default function AdminServicesPage() {
           <CardTitle>All Services & Packages</CardTitle>
           <CardDescription>Add, edit, or remove services offered on the website.</CardDescription>
         </CardHeader>
-        <CardContent>
-            {isLoading ? renderSkeleton() : (
+        <CardContent className="p-0">
+            {isLoading ? <div className="p-4">{renderSkeleton()}</div> : (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Service Name</TableHead>
-                    <TableHead>Category</TableHead>
+                    <TableHead className="hidden md:table-cell">Category</TableHead>
                     <TableHead>Price</TableHead>
-                    <TableHead>Featured</TableHead>
                     <TableHead><span className="sr-only">Actions</span></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -96,14 +95,13 @@ export default function AdminServicesPage() {
                   {allItems.map(item => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell className="capitalize">{item.category?.replace('-', ' ') || 'Package'}</TableCell>
-                      <TableCell>₹{item.price.toLocaleString('en-IN')}</TableCell>
-                      <TableCell>
-                        <Badge variant={item.isFeatured ? 'default' : 'secondary'}>
-                          {item.isFeatured ? 'Yes' : 'No'}
+                      <TableCell className="hidden md:table-cell capitalize">
+                        <Badge variant={item.type === 'Package' ? 'secondary' : 'outline'}>
+                            {item.category?.replace('-', ' ') || 'Package'}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell>₹{item.price?.toLocaleString('en-IN')}</TableCell>
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button aria-haspopup="true" size="icon" variant="ghost">

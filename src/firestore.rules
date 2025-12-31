@@ -74,8 +74,8 @@ service cloud.firestore {
       // Deleting orders is disallowed for safety.
       allow delete: if false;
 
-      // Admins can LIST all orders. Users can LIST their own orders.
-      allow list: if isAdmin() || (isSignedIn() && request.query.where[0][2] == request.auth.uid);
+      // Admins can LIST all orders. Users can LIST only their own orders.
+      allow list: if isAdmin() || (isSignedIn() && request.query.where[0] == "userId" && request.query.where[1] == "==" && request.query.where[2] == request.auth.uid);
     }
   }
 }

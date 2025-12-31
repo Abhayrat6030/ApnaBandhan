@@ -11,22 +11,20 @@ import { adminApp } from '@/firebase/admin';
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 // This is a server-side verification using the Firebase Admin SDK
-async function verifyAdmin() {
-    try {
-        const currentUser = auth.currentUser;
-        if (currentUser?.email === ADMIN_EMAIL) {
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error("Admin verification failed", error);
-        return false;
+async function verifyAdmin(currentUser: import('firebase/auth').User | null) {
+    if (currentUser?.email === ADMIN_EMAIL) {
+        return true;
     }
+    return false;
 }
 
 
 export async function updateOrderStatus(orderId: string, status: Order['status']) {
-    const isAdmin = await verifyAdmin();
+    // This is a placeholder for getting the current user on the server.
+    // In a real app, you'd get this from the session or token.
+    const currentUser = auth.currentUser;
+    const isAdmin = await verifyAdmin(currentUser);
+
     if (!isAdmin) {
         return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };
     }
@@ -43,7 +41,9 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
 }
 
 export async function updatePaymentStatus(orderId: string, paymentStatus: Order['paymentStatus']) {
-     const isAdmin = await verifyAdmin();
+    const currentUser = auth.currentUser;
+    const isAdmin = await verifyAdmin(currentUser);
+
     if (!isAdmin) {
         return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };
     }

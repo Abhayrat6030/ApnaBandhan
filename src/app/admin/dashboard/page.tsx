@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, Users, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order } from '@/lib/types';
+import type { Order, Service as ServiceType, Package as PackageType } from '@/lib/types';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, db } from '@/firebase';
+import { services as staticServices, packages as staticPackages } from '@/lib/data';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
@@ -20,15 +21,17 @@ export default function AdminDashboardPage() {
   const allOrdersQuery = useMemoFirebase(() => {
     if (!isAdmin) return null;
     return collection(db, 'orders');
-  }, [isAdmin]);
+  }, [isAdmin, user]);
 
   const recentOrdersQuery = useMemoFirebase(() => {
     if (!isAdmin) return null;
     return query(collection(db, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [isAdmin]);
+  }, [isAdmin, user]);
 
   const { data: allOrders, isLoading: areAllOrdersLoading } = useCollection<Order>(allOrdersQuery);
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
+  
+  const allServicesAndPackages: (ServiceType | PackageType)[] = useMemo(() => [...staticServices, ...staticPackages], []);
 
   const stats = useMemo(() => {
     if (!allOrders) {
@@ -36,13 +39,17 @@ export default function AdminDashboardPage() {
         { title: 'Total Revenue', value: 'N/A', icon: DollarSign },
         { title: 'Total Orders', value: 'N/A', icon: ShoppingBag },
         { title: 'Completed Orders', value: 'N/A', icon: CheckCircle },
-        { title: 'New Clients this month', value: 'N/A', icon: Users },
       ];
     }
     const totalRevenue = allOrders.reduce((acc, order) => {
-        const service = [...services, ...packages].find(s => s.id === order.selectedServiceId);
+        const service = allServicesAndPackages.find(s => s.id === order.selectedServiceId);
         if (order.paymentStatus === 'Paid' && service) {
-            const price = typeof service.price === 'string' ? parseFloat(service.price.replace('₹', '').replace(',', '')) : service.price;
+            let price = 0;
+            if (typeof (service as ServiceType).price === 'number') {
+                price = (service as ServiceType).price;
+            } else if (typeof (service as PackageType).price === 'string') {
+                price = parseFloat((service as PackageType).price.replace('₹', '').replace(',', ''));
+            }
             return acc + price;
         }
         return acc;
@@ -55,9 +62,8 @@ export default function AdminDashboardPage() {
         { title: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign },
         { title: 'Total Orders', value: totalOrders, icon: ShoppingBag },
         { title: 'Completed Orders', value: completedOrders, icon: CheckCircle },
-        { title: 'New Clients this month', value: 'N/A', icon: Users },
       ];
-  }, [allOrders]);
+  }, [allOrders, allServicesAndPackages]);
   
   const isLoading = isUserLoading || areAllOrdersLoading || areRecentOrdersLoading;
 
@@ -65,8 +71,8 @@ export default function AdminDashboardPage() {
     return (
       <div className="p-4 md:p-8">
         <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          {[...Array(3)].map((_, i) => (
             <Card key={i}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <Skeleton className="h-4 w-2/3" />
@@ -109,7 +115,7 @@ export default function AdminDashboardPage() {
     <div className="p-4 md:p-8">
       <h1 className="font-headline text-3xl font-bold mb-6">Dashboard</h1>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
         {stats.map((stat, index) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -138,24 +144,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-// Stubs for service data used in revenue calculation
-const services: {id: string, price: number}[] = [
-    { id: 'save-the-date-video', price: 1500 },
-    { id: 'wedding-invitation-video', price: 2500 },
-    { id: 'digital-cards-wedding', price: 800 },
-    { id: 'digital-cards-birthday', price: 700 },
-    { id: 'cdr-file-card', price: 1200 },
-    { id: 'full-wedding-video-editing', price: 15000 },
-    { id: 'album-design', price: 5000 },
-    { id: 'album-design-modern', price: 6500 },
-    { id: 'digital-cards-babyshower', price: 750 },
-    { id: 'digital-cards-engagement', price: 750 },
-    { id: 'digital-cards-housewarming', price: 650 },
-];
-const packages: {id: string, price: string}[] = [
-    { id: 'combo-basic', price: '2999' },
-    { id: 'combo-premium-package', price: '4999' },
-    { id: 'combo-full', price: '7999' },
-    { id: 'combo-premium', price: '4999' },
-];

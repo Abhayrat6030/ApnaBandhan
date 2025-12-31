@@ -10,6 +10,7 @@ import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
+import { packages, services as staticServices } from '@/lib/data';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
@@ -20,40 +21,26 @@ export default function AdminOrdersPage() {
   const ordersQuery = useMemoFirebase(() => {
       if (!isAdmin) return null;
       return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
-  }, [isAdmin]);
-
-  const servicesQuery = useMemoFirebase(() => {
-      return collection(db, 'services');
-  }, []);
-
-  const packagesQuery = useMemoFirebase(() => {
-      return collection(db, 'comboPackages');
-  }, []);
+  }, [isAdmin, user]);
 
   const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
-  const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
-  const { data: packages, isLoading: arePackagesLoading } = useCollection<Service>(packagesQuery);
-  
+
   const allServicesMap = useMemo(() => {
     const map = new Map<string, string>();
-    if (services) {
-        services.forEach(s => map.set(s.id, s.name));
-    }
-    if (packages) {
-        packages.forEach(p => map.set(p.id, p.name));
-    }
+    staticServices.forEach(s => map.set(s.id, s.name));
+    packages.forEach(p => map.set(p.id, p.name));
     return map;
-  }, [services, packages]);
+  }, []);
 
   const ordersWithServiceNames = useMemo(() => {
     if (!allOrders) return [];
     return allOrders.map(order => ({
       ...order,
-      serviceName: allServicesMap.get(order.selectedServiceId) || order.selectedServiceId,
+      serviceName: allServicesMap.get(order.selectedServiceId) || 'Unknown Service',
     }));
   }, [allOrders, allServicesMap]);
   
-  const isLoading = isUserLoading || areOrdersLoading || areServicesLoading || arePackagesLoading;
+  const isLoading = isUserLoading || areOrdersLoading;
 
   const renderSkeleton = () => (
     <div className="p-4">
@@ -71,7 +58,7 @@ export default function AdminOrdersPage() {
         <h1 className="font-headline text-3xl font-bold">All Orders</h1>
         <Button>
           <Download className="mr-2 h-4 w-4" />
-          Export to Excel
+          Export
         </Button>
       </div>
 
