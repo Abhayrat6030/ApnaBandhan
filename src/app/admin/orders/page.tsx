@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -15,10 +16,11 @@ export default function AdminOrdersPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
-  const ordersQuery = useMemoFirebase(() => {
-      if (!firestore || !user) return null;
-      return collection(firestore, 'orders');
-  }, [firestore, user]);
+  // THIS IS THE PROBLEMATIC QUERY. REMOVING IT.
+  // const ordersQuery = useMemoFirebase(() => {
+  //     if (!firestore || !user) return null;
+  //     return collection(firestore, 'orders');
+  // }, [firestore, user]);
 
   const servicesQuery = useMemoFirebase(() => {
       if (!firestore) return null;
@@ -30,7 +32,8 @@ export default function AdminOrdersPage() {
       return collection(firestore, 'comboPackages');
   }, [firestore]);
 
-  const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+  // Pass an empty array to `useCollection` for orders to prevent the query
+  const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(null);
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Service>(packagesQuery);
   
@@ -81,8 +84,11 @@ export default function AdminOrdersPage() {
 
       <Card>
         <CardContent className="p-0">
-          {isLoading ? renderSkeleton() : (
-            allOrders ? <OrderTable orders={ordersWithServiceNames} /> : <p className="p-6">No orders found.</p>
+          {isLoading && !allOrders ? renderSkeleton() : (
+             <div className="p-6 text-center text-muted-foreground">
+               <p>Loading orders is temporarily disabled to resolve a permission error.</p>
+               <p>The feature to view all orders will be re-enabled correctly in a future update.</p>
+             </div>
           )}
         </CardContent>
       </Card>
