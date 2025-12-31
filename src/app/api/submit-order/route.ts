@@ -1,12 +1,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { submitOrder } from '@/app/order/actions';
+import { headers } from 'next/headers';
 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        // The date will be a string here, like "2024-12-04T18:30:00.000Z"
-        const result = await submitOrder(body);
+        
+        const headersList = headers();
+        const authorization = headersList.get('Authorization');
+        const idToken = authorization?.split('Bearer ')[1] || null;
+
+        const result = await submitOrder(body, idToken);
+
         if (result.success) {
             return NextResponse.json(result);
         } else {

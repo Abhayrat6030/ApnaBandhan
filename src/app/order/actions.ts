@@ -3,12 +3,10 @@
 
 import { z } from 'zod';
 import { siteConfig } from '@/lib/constants';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { getApp, getApps, initializeApp, credential } from 'firebase-admin/app';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getApp, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeFirebase } from '@/firebase';
-import { headers } from 'next/headers';
-
 
 const orderFormSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
@@ -30,7 +28,7 @@ function initializeAdminApp() {
 }
 
 
-export async function submitOrder(data: any) { // Use any to handle incoming JSON
+export async function submitOrder(data: any, idToken: string | null) { // Use any to handle incoming JSON
   const validation = orderFormSchema.safeParse({
       ...data,
       // The weddingDate comes in as a string from the fetch body
@@ -42,21 +40,18 @@ export async function submitOrder(data: any) { // Use any to handle incoming JSO
     console.error('Order validation failed:', validation.error.flatten());
     return { success: false, message: 'Invalid data provided.' };
   }
+  
+  if (!idToken) {
+    return { success: false, message: 'Authentication token is missing. Please log in.' };
+  }
 
   try {
     initializeAdminApp();
-    const headersList = headers();
-    const idToken = headersList.get('Authorization')?.split('Bearer ')[1];
-
-    if (!idToken) {
-        return { success: false, message: 'You must be logged in to place an order.' };
-    }
-
+    
     const decodedToken = await getAuth().verifyIdToken(idToken);
-    const user = { uid: decodedToken.uid };
+    const userId = decodedToken.uid;
 
-
-    if (!user) {
+    if (!userId) {
         return { success: false, message: 'You must be logged in to place an order.' };
     }
 
@@ -75,7 +70,7 @@ export async function submitOrder(data: any) { // Use any to handle incoming JSO
         orderDate: new Date().toISOString(),
         status: 'Pending',
         paymentStatus: 'Pending',
-        userId: user.uid,
+        userId: userId, // CRITICAL FIX: Add the user's ID
     };
 
     const docRef = await addDoc(ordersCollection, newOrder);
@@ -88,8 +83,11 @@ export async function submitOrder(data: any) { // Use any to handle incoming JSO
 
     return { success: true, message: 'Order submitted successfully!' };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error submitting order to Firestore:', error);
+     if (error.code === 'auth/id-token-expired') {
+        return { success: false, message: 'Your session has expired. Please log in again.' };
+    }
     return { success: false, message: 'Failed to submit order. Please try again later.' };
   }
 }
