@@ -21,7 +21,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, errorEmitter } from '@/firebase';
+import { useUser, errorEmitter, useFirestore } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 
