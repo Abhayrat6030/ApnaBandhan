@@ -58,7 +58,7 @@ export default function Home() {
           <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90">
             {siteConfig.tagline}
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <div className="mt-8 flex justify-center gap-4">
             <Button asChild variant="secondary">
               <Link href="/services">
                 View Samples <ArrowRight className="ml-2 h-5 w-5" />
