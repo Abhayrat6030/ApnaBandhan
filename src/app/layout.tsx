@@ -37,13 +37,6 @@ function AuthHandler({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-
-// export const metadata: Metadata = {
-//   title: 'ApnaBandhan | Wedding Invitations • Videos • Albums',
-//   description: 'Complete Wedding Invitation, Video & Album Solution. Professional and affordable wedding services for your special day.',
-//   keywords: 'indian wedding invitations, wedding videos, wedding albums, save the date video, e-invites, ApnaBandhan',
-// };
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -64,28 +57,6 @@ export default function RootLayout({
     </>
   );
 
-  if (isAuthRoute && !isAdminRoute) {
-    return (
-      <html lang="en" suppressHydrationWarning>
-         <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        </head>
-        <body
-          className={cn(
-            'min-h-screen bg-background font-body antialiased',
-            fontInter.variable,
-            fontPlayfair.variable
-          )}
-        >
-          <FirebaseClientProvider>
-            {children}
-            <Toaster />
-          </FirebaseClientProvider>
-        </body>
-      </html>
-    );
-  }
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -102,11 +73,16 @@ export default function RootLayout({
         )}
       >
         <FirebaseClientProvider>
-          <AuthHandler>
-            <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">
-                <AppContent />
-            </div>
-          </AuthHandler>
+          {isAuthRoute ? (
+             children
+          ) : (
+            <AuthHandler>
+              <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">
+                  <AppContent />
+              </div>
+            </AuthHandler>
+          )}
+           <Toaster />
         </FirebaseClientProvider>
       </body>
     </html>

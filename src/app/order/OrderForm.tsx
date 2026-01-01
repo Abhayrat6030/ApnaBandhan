@@ -286,7 +286,7 @@ function OrderFormComponent() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={isSubmitting || !user || !db} className="w-full" size="lg" variant="secondary">
+              <Button type="submit" disabled={isSubmitting || !user || !db} className="w-full" size="lg">
                 {isSubmitting ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -294,7 +294,7 @@ function OrderFormComponent() {
                     </>
                 ) : 'Place Order'}
               </Button>
-               {!user && <p className="text-center text-sm text-muted-foreground">Please log in to place an order.</p>}
+               {!(user && !user.isAnonymous) && <p className="text-center text-sm text-muted-foreground">Please log in to place an order.</p>}
             </form>
           </Form>
         </CardContent>

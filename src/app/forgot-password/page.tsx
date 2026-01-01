@@ -13,8 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail } from 'lucide-react';
-import { initiatePasswordReset } from '@/firebase';
-import { auth } from '@/firebase/provider';
+import { initiatePasswordReset, useAuth } from '@/firebase';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -24,6 +23,7 @@ export default function ForgotPasswordPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const auth = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Forgot Password?</CardTitle>
-          <CardDescription>Enter your email and we&apos;ll send you a link to reset your password.</CardDescription>
+          <CardDescription>Enter your email and we'll send you a link to reset your password.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <Form {...form}>
