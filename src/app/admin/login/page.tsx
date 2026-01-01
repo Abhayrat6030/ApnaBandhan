@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -8,14 +7,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Logo from '@/components/shared/Logo';
 import Link from 'next/link';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/firebase';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminLoginPage() {
     const router = useRouter();
+    const { toast } = useToast();
+    const [email, setEmail] = useState('abhayrat603@gmail.com');
+    const [password, setPassword] = useState('Abhay@1986*%%');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        // In a real app, you would handle authentication here
-        router.push('/admin/dashboard');
+        setIsLoading(true);
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            toast({ title: "Login Successful", description: "Redirecting to dashboard..." });
+            router.push('/admin/dashboard');
+        } catch (error: any) {
+            let errorMessage = "An unexpected error occurred.";
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                errorMessage = "Invalid email or password.";
+            }
+            toast({
+                title: "Login Failed",
+                description: errorMessage,
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -32,15 +56,30 @@ export default function AdminLoginPage() {
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" placeholder="admin@example.com" required defaultValue="abhayrat603@gmail.com" />
+                            <Input 
+                                id="email" 
+                                type="email" 
+                                placeholder="admin@example.com" 
+                                required 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="password">Password</Label>
-                            <Input id="password" type="password" required defaultValue="Abhay@1986*%%" />
+                            <Input 
+                                id="password" 
+                                type="password" 
+                                required 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-4">
-                        <Button type="submit" className="w-full" variant="secondary">Login</Button>
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Login'}
+                        </Button>
                          <Button asChild variant="link" size="sm">
                             <Link href="/login">Are you a customer? Login here</Link>
                         </Button>
