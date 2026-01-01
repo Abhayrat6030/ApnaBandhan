@@ -33,16 +33,16 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-20 items-center">
-        <div className="mr-4 flex">
+      <div className="container flex h-14 items-center">
+        <div className="flex">
           <Link href="/" className="flex items-center space-x-2">
-            <Logo className="h-10 w-auto text-primary" />
-            <span className="font-bold sm:inline-block text-xl">{siteConfig.name}</span>
+            <Logo className="h-8 w-auto text-primary" />
+            <span className="font-bold sm:inline-block text-lg">{siteConfig.name}</span>
           </Link>
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex flex-1 items-center space-x-8 text-base font-medium">
+        <nav className="hidden md:flex flex-1 items-center space-x-6 text-sm font-medium ml-6">
           {navItems.map((item) => (
             <Link
               key={item.label}
@@ -72,7 +72,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
           <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
             <SheetContent side="left" className="p-0 flex flex-col">
                <SheetHeader className="p-4 border-b">
-                 <Link href="/" className="mr-6 flex items-center space-x-2" onClick={() => setMenuOpen(false)}>
+                 <Link href="/" className="flex items-center space-x-2" onClick={() => setMenuOpen(false)}>
                    <Logo className="h-8 w-auto text-primary" />
                   <span className="font-bold">{siteConfig.name}</span>
                 </Link>
