@@ -12,9 +12,8 @@ export async function middleware(request: NextRequest) {
       url.pathname = '/admin/login';
       return NextResponse.redirect(url);
     }
-    // The verification of the cookie's validity and admin status
-    // will now be handled within each server action via verifyAdmin().
-    // This makes the middleware simpler and more efficient.
+    // Verification of the cookie's validity and admin status is now handled
+    // in server actions and API routes to ensure secure operations.
   }
 
   return NextResponse.next();
