@@ -2,32 +2,32 @@
   "hero": {
     "id": "hero-1",
     "description": "An elegant Indian wedding ceremony",
-    "imageUrl": "https://picsum.photos/seed/wedding-hero/1920/1080",
+    "imageUrl": "https://i.ibb.co/JrJqQ2q/7fce898952259af24e57e85f7f1d2421.jpg",
     "imageHint": "indian wedding"
   },
   "showcase": [
     {
       "id": "showcase-1",
       "description": "Invitation Video",
-      "imageUrl": "https://picsum.photos/seed/sc1/600/600",
+      "imageUrl": "https://i.ibb.co/VnNYqLm/5b0073b87423e874c2a3045168d338a5.jpg",
       "imageHint": "wedding video"
     },
     {
       "id": "showcase-2",
       "description": "Digital Card",
-      "imageUrl": "https://picsum.photos/seed/sc2/600/600",
+      "imageUrl": "https://i.ibb.co/XxVVwdpw/7bfcc1dfdde989ff0de36c5984608943.jpg",
       "imageHint": "invitation card"
     },
     {
       "id": "showcase-3",
       "description": "Album Design",
-      "imageUrl": "https://picsum.photos/seed/sc3/600/600",
+      "imageUrl": "https://i.ibb.co/jZ8WY9G2/cd1bd075dc4ec82d92964f156b61e2e7.jpg",
       "imageHint": "wedding album"
     },
     {
       "id": "showcase-4",
       "description": "Cinematic Film",
-      "imageUrl": "https://picsum.photos/seed/sc4/600/600",
+      "imageUrl": "https://i.ibb.co/WTc6fv4/3799d62be55904b66bf24d8930ea9be3.jpg",
       "imageHint": "wedding film"
     }
   ]

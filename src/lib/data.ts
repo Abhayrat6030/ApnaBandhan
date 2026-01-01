@@ -16,7 +16,7 @@ export const services: Service[] = [
     rating: 4.9,
     samples: [
       { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
-      { type: 'image', url: 'https://picsum.photos/seed/sv1/600/400', imageHint: 'wedding couple' },
+      { type: 'image', url: 'https://i.ibb.co/pBVfNvdh/modern-wedding-invitation-card-design-with-bride-groom-13329-2351.jpg', imageHint: 'wedding couple' },
     ],
     inclusions: ['HD Quality Video (1080p)', 'Custom Text & Couple Names', '1 Song of Your Choice', 'Delivery in 2 days'],
     deliveryTime: '2-3 Business Days',
@@ -35,7 +35,7 @@ export const services: Service[] = [
     rating: 4.8,
     samples: [
       { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
-       { type: 'image', url: 'https://picsum.photos/seed/wv1/600/400', imageHint: 'wedding ceremony' },
+       { type: 'image', url: 'https://i.ibb.co/ccBJmTv8/Red-And-Gold-Illustrative-Indian-Movie-Poster-1.jpg', imageHint: 'wedding ceremony' },
     ],
     inclusions: ['2-3 Minute Full HD Video', 'Detailed Event Information', 'Photo & Video Integration', 'Voice Over option'],
     deliveryTime: '4-5 Business Days',
@@ -54,8 +54,8 @@ export const services: Service[] = [
     topRated: true,
     rating: 4.9,
     samples: [
-      { type: 'image', url: 'https://picsum.photos/seed/dc1/600/800', imageHint: 'invitation card' },
-      { type: 'image', url: 'https://picsum.photos/seed/dc2/600/800', imageHint: 'floral invitation' },
+      { type: 'image', url: 'https://i.ibb.co/pjvPdGKd/canva-purple-gold-aesthetic-watercolor-flower-wedding-invitation-y-H-34-W-a-U-E.jpg', imageHint: 'invitation card' },
+      { type: 'image', url: 'https://i.ibb.co/Kzw1DzgS/aa3658076dafd6d8495d44b9806013a980d46aa91692708362.jpg', imageHint: 'floral invitation' },
     ],
     inclusions: ['High-Resolution JPEG/PNG', 'Print-ready PDF file', 'Clickable Google Maps Link', '2 Design Revisions'],
     deliveryTime: '1-2 Business Days',
@@ -73,7 +73,7 @@ export const services: Service[] = [
     topRated: false,
     rating: 4.7,
     samples: [
-      { type: 'image', url: 'https://picsum.photos/seed/bday1/600/800', imageHint: 'birthday invitation' },
+      { type: 'image', url: 'https://i.ibb.co/ZwNH6kk/Birthday-invitation-card-scaled.webp', imageHint: 'birthday invitation' },
     ],
     inclusions: ['High-Resolution JPEG/PNG', '2 Design Revisions'],
     deliveryTime: '1 Business Day',
@@ -91,7 +91,7 @@ export const services: Service[] = [
     topRated: false,
     rating: 4.5,
     samples: [
-      { type: 'image', url: 'https://picsum.photos/seed/cdr1/600/800', imageHint: 'elegant invitation' },
+      { type: 'image', url: 'https://i.ibb.co/d0sWG3hf/b6e12aef38030c624290a53648f170ae.jpg', imageHint: 'elegant invitation' },
     ],
     inclusions: ['Fully-editable CDR file', 'All fonts used', 'Color palette information', 'Guidance for printing press'],
     deliveryTime: '2-3 Business Days',
@@ -109,7 +109,7 @@ export const services: Service[] = [
     topRated: false,
     rating: 4.6,
     samples: [
-      { type: 'image', url: 'https://picsum.photos/seed/cdr2/600/800', imageHint: 'luxury wedding' },
+      { type: 'image', url: 'https://i.ibb.co/k2PyZNMQ/2b3cc905d7635ac992fb6b684bdf26d4.jpg', imageHint: 'luxury wedding' },
     ],
     inclusions: ['Editable CDR file', 'Fonts included', 'High-resolution assets'],
     deliveryTime: '1-2 Business Days',
@@ -128,7 +128,7 @@ export const services: Service[] = [
     rating: 5.0,
     samples: [
        { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
-       { type: 'image', url: 'https://picsum.photos/seed/fve1/600/400', imageHint: 'wedding film' },
+       { type: 'image', url: 'https://i.ibb.co/V0M6FtPr/womens-banner.jpg', imageHint: 'wedding film' },
     ],
     inclusions: ['Editing up to 8 hours of footage', 'Color Grading & Correction', 'Sound Design & Mixing', 'Cinematic Highlight Reel (3-5 min)'],
     deliveryTime: '15-20 Business Days',
@@ -146,7 +146,7 @@ export const services: Service[] = [
     rating: 4.8,
     samples: [
        { type: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
-       { type: 'image', url: 'https://picsum.photos/seed/hre1/600/400', imageHint: 'wedding highlight' },
+       { type: 'image', url: 'https://i.ibb.co/gM6Tsmvm/mens-banner.jpg', imageHint: 'wedding highlight' },
     ],
     inclusions: ['3-5 minute highlight video', 'Editing up to 2 hours of footage', 'Cinematic Color Grading', 'Licensed Music'],
     deliveryTime: '7-10 Business Days',
@@ -163,8 +163,8 @@ export const services: Service[] = [
     topRated: true,
     rating: 4.8,
     samples: [
-       { type: 'image', url: 'https://picsum.photos/seed/ad1/800/600', imageHint: 'wedding album' },
-       { type: 'image', url: 'https://picsum.photos/seed/ad2/800/600', imageHint: 'photo album' },
+       { type: 'image', url: 'https://i.ibb.co/xKSd1Tq6/1000132665.png', imageHint: 'wedding album' },
+       { type: 'image', url: 'https://i.ibb.co/cSw3TXRX/canva-green-beige-cute-pastel-watercolor-carriage-aesthetic-baby-shower-invitation-Y6-Maar-KUp-Hk.jpg', imageHint: 'photo album' },
     ],
     inclusions: ['Design for 30-page album', 'Upto 150 photos', 'Creative Layouts', 'Print-ready soft copy'],
     deliveryTime: '7-10 Business Days',
@@ -181,8 +181,8 @@ export const services: Service[] = [
     topRated: false,
     rating: 4.9,
     samples: [
-       { type: 'image', url: 'https://picsum.photos/seed/ad3/800/600', imageHint: 'modern album' },
-       { type: 'image', url: 'https://picsum.photos/seed/ad4/800/600', imageHint: 'clean album' },
+       { type: 'image', url: 'https://i.ibb.co/cShTy3vv/e45b7b214df24fdbafb451cc5418d883.webp', imageHint: 'modern album' },
+       { type: 'image', url: 'https://i.ibb.co/R405N9D5/il-570x-N-3016640146-goy6.jpg', imageHint: 'clean album' },
     ],
     inclusions: ['Design for 35-page album', 'Upto 200 photos', 'Minimalist & Elegant Layout', 'Print-ready soft copy'],
     deliveryTime: '8-12 Business Days',
@@ -197,7 +197,7 @@ export const services: Service[] = [
     priceType: 'fixed',
     isFeatured: false,
     samples: [
-       { type: 'image', url: 'https://picsum.photos/seed/cp0/600/400', imageHint: 'wedding package' },
+       { type: 'image', url: 'https://i.ibb.co/x822fFKV/79a30036044340a7a315ec7f5b59c5bb6b24b72b1698059336.jpg', imageHint: 'wedding package' },
     ],
     inclusions: [ 'Standard Invitation Video', 'Matching Digital Card', '2 Revisions', 'Delivery in 4 days' ],
     deliveryTime: '4 Business Days',
@@ -212,7 +212,7 @@ export const services: Service[] = [
     priceType: 'fixed',
     isFeatured: false,
     samples: [
-       { type: 'image', url: 'https://picsum.photos/seed/cp2/600/400', imageHint: 'premium wedding' },
+       { type: 'image', url: 'https://i.ibb.co/Q3QyT8nj/a3bce99796b09f0738ff35170778cdc8392804c51688993196.jpg', imageHint: 'premium wedding' },
     ],
     inclusions: [ 'Premium Cinematic Video', 'Matching Premium Digital Card', 'Save The Date GIF', '4 Revisions', 'Priority Delivery (3 days)'],
     deliveryTime: '3 Business Days',
@@ -227,7 +227,7 @@ export const services: Service[] = [
     priceType: 'fixed',
     isFeatured: false,
     samples: [
-       { type: 'image', url: 'https://picsum.photos/seed/cp3/600/400', imageHint: 'luxury wedding package' },
+       { type: 'image', url: 'https://i.ibb.co/JjyH9D19/29dfd12fed210708903674bcf3babf7e.jpg', imageHint: 'luxury wedding package' },
     ],
     inclusions: ['Everything in Premium Combo', 'Reception Invitation Video', 'Thank You Card Digital', 'Unlimited Revisions', 'Dedicated Designer'],
     deliveryTime: '5-7 Business Days',
@@ -244,7 +244,7 @@ export const services: Service[] = [
     topRated: true,
     rating: 5.0,
     samples: [
-       { type: 'image', url: 'https://picsum.photos/seed/cp1/600/400', imageHint: 'luxury wedding' },
+       { type: 'image', url: 'https://i.ibb.co/chcW98zq/simple-invitation-free-google-docs-template-t-376x520.webp', imageHint: 'luxury wedding' },
     ],
     inclusions: ['Premium Cinematic Video', 'Matching Digital Card (PDF/JPG)', 'Animated Save the Date GIF', 'Priority Support'],
     deliveryTime: '5-7 Business Days',
@@ -261,7 +261,7 @@ export const services: Service[] = [
     topRated: false,
     rating: 4.6,
     samples: [
-      { type: 'image', url: 'https://picsum.photos/seed/baby1/600/800', imageHint: 'baby shower' },
+      { type: 'image', url: 'https://i.ibb.co/6cNfkwJh/canva-brown-illustrative-baby-shower-flyer-ZQ9t-OEPEVs.jpg', imageHint: 'baby shower' },
     ],
     inclusions: ['High-Resolution JPEG/PNG', '2 Design Revisions'],
     deliveryTime: '1 Business Day',
@@ -277,7 +277,7 @@ export const services: Service[] = [
     priceType: 'fixed',
     isFeatured: false,
     samples: [
-      { type: 'image', url: 'https://picsum.photos/seed/eng1/600/800', imageHint: 'engagement party' },
+      { type: 'image', url: 'https://i.ibb.co/7ddd4sMg/engagement-party-invitation-card-template-hd-design-cfdcbfe093f48ecb080bab140b8b157a-screen.jpg', imageHint: 'engagement party' },
     ],
     inclusions: ['High-Resolution JPEG/PNG', '2 Design Revisions'],
     deliveryTime: '1 Business Day',
@@ -293,7 +293,7 @@ export const services: Service[] = [
     priceType: 'fixed',
     isFeatured: false,
     samples: [
-      { type: 'image', url: 'https://picsum.photos/seed/house1/600/800', imageHint: 'new home' },
+      { type: 'image', url: 'https://i.ibb.co/gMLZLvnb/Screenshot-2025-12-14-19-19-25-58-40deb401b9ffe8e1df2f1cc5ba480b12.jpg', imageHint: 'new home' },
     ],
     inclusions: ['High-Resolution JPEG/PNG', '2 Design Revisions'],
     deliveryTime: '1 Business Day',
