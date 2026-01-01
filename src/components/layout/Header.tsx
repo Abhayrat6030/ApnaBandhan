@@ -42,7 +42,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex flex-1 items-center space-x-6 text-sm font-medium ml-6">
+        <nav className="hidden md:flex flex-1 items-center space-x-6 text-sm font-medium">
           {navItems.map((item) => (
             <Link
               key={item.label}
@@ -64,7 +64,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
                 {siteConfig.phone}
              </a>
           </Button>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link href="/order">Order Now</Link>
           </Button>
 
