@@ -3,65 +3,61 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ===============================
-    // HELPERS
-    // ===============================
+    // Helper functions
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == "abhayrat603@gmail.com";
     }
 
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // ===============================
-    // USERS
-    // ===============================
-    match /users/{userId} {
-      // Users can read and write their own data. Admins can too.
-      allow read, write: if isOwner(userId) || request.auth.token.email == 'abhayrat603@gmail.com';
-
-      match /notifications/{notificationId} {
-        allow read: if isOwner(userId);
-        allow write: if request.auth.token.email == 'abhayrat603@gmail.com'; // Only admin can send notifications
-      }
-
-      match /downloadableProducts/{productId} {
-        allow read: if isOwner(userId);
-        allow write: if request.auth.token.email == 'abhayrat603@gmail.com'; // Only admin can add downloadable products
-      }
+    // Default Deny
+    match /{path=**} {
+      allow read, write: if false;
     }
 
-    // ===============================
-    // PUBLIC COLLECTIONS
-    // ===============================
+    // Public collections
     match /services/{serviceId} {
-      allow read: if true;
-      allow write: if request.auth.token.email == 'abhayrat603@gmail.com';
+      allow get: if true;
+      allow list: if true;
+      allow write: if isAdmin();
     }
-
-    match /comboPackages/{comboId} {
-      allow read: if true;
-      allow write: if request.auth.token.email == 'abhayrat603@gmail.com';
+    match /comboPackages/{pkgId} {
+      allow get: if true;
+      allow list: if true;
+      allow write: if isAdmin();
     }
      match /media/{mediaId} {
-      allow read: if true;
-      allow write: if request.auth.token.email == 'abhayrat603@gmail.com';
+      allow get: if true;
+      allow list: if true;
+      allow write: if isAdmin();
     }
 
-    // ===============================
-    // ORDERS (SECURE)
-    // ===============================
-     match /orders/{orderId} {
-      // Admins can read/list/write any order.
-      allow read, list, write: if request.auth.token.email == 'abhayrat603@gmail.com';
+    // User-specific data
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
 
-      // Users can create orders for themselves.
-      allow create: if isSignedIn()
-        && request.resource.data.userId == request.auth.uid;
-      
-      // Users can read their own orders.
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin();
+      }
+      match /downloadableProducts/{productId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin();
+      }
+    }
+
+    // Orders
+    match /orders/{orderId} {
+      allow read, list, write: if isAdmin();
+      allow create: if isOwner(request.resource.data.userId);
+      allow get: if isOwner(resource.data.userId);
+      allow list: if isSignedIn() && request.query.where[0][2] == request.auth.uid;
     }
   }
 }
