@@ -67,16 +67,11 @@ export default function OrderTable({ orders }: OrderTableProps) {
         return;
     }
     setIsSubmitting(`status-${orderId}`);
-    try {
-        const idToken = await user.getIdToken();
-        const result = await updateOrderStatus(idToken, orderId, newStatus);
-        if (result.success) {
-          toast({ title: "Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-        } else {
-          toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
-        }
-    } catch (e) {
-        toast({ title: "Update Failed", description: "Could not get authentication token.", variant: 'destructive'});
+    const result = await updateOrderStatus(orderId, newStatus);
+    if (result.success) {
+      toast({ title: "Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
+    } else {
+      toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
     }
     setIsSubmitting(null);
   }
@@ -86,17 +81,12 @@ export default function OrderTable({ orders }: OrderTableProps) {
         toast({ title: 'Not Authenticated', description: 'Please login to perform this action.', variant: 'destructive'});
         return;
     }
-     setIsSubmitting(`payment-${orderId}`);
-    try {
-        const idToken = await user.getIdToken();
-        const result = await updatePaymentStatus(idToken, orderId, newStatus);
-        if (result.success) {
-          toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-        } else {
-          toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
-        }
-    } catch (e) {
-         toast({ title: "Update Failed", description: "Could not get authentication token.", variant: 'destructive'});
+    setIsSubmitting(`payment-${orderId}`);
+    const result = await updatePaymentStatus(orderId, newStatus);
+    if (result.success) {
+      toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
+    } else {
+      toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
     }
     setIsSubmitting(null);
   }

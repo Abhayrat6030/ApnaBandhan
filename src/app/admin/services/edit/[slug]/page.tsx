@@ -22,7 +22,6 @@ import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
-  idToken: z.string().optional(),
   itemType: z.enum(['service', 'package']),
   name: z.string().min(3, 'Name is required.'),
   slug: z.string().optional(),
@@ -115,8 +114,7 @@ export default function EditServicePage() {
         return;
     }
     setIsLoading(true);
-    const token = await user.getIdToken();
-    const result = await updateService(slug as string, { ...values, idToken: token });
+    const result = await updateService(slug as string, values);
     
     if (result.success) {
       toast({

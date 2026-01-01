@@ -80,8 +80,7 @@ export default function AdminServicesPage() {
     }
 
     setIsDeleting(itemToDelete.id);
-    const token = await user.getIdToken();
-    const result = await deleteItem(token, itemToDelete.slug || itemToDelete.id, itemToDelete.type);
+    const result = await deleteItem(itemToDelete.slug || itemToDelete.id, itemToDelete.type);
     
     if (result.success) {
       toast({ title: "Success", description: `${itemToDelete.name} has been deleted.` });

@@ -6,34 +6,8 @@ import { collection, addDoc, doc, setDoc, deleteDoc, updateDoc } from 'firebase/
 import { db } from '@/firebase';
 import type { Service, Package } from '@/lib/types';
 import { z } from 'zod';
-import admin from '@/firebase/admin';
-import { getAuth } from 'firebase-admin/auth';
-
-
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
-
-// This is a server-side verification using the Firebase Admin SDK
-async function verifyAdmin(idToken: string | undefined) {
-    if (!admin.apps.length) {
-        console.error("Admin SDK not initialized. Cannot verify admin.");
-        return false;
-    }
-    if (!idToken) {
-        console.warn("Cannot verify admin: No token provided.");
-        return false;
-    }
-
-    try {
-        const decodedToken = await getAuth().verifyIdToken(idToken);
-        return decodedToken.email === ADMIN_EMAIL;
-    } catch (error) {
-        console.error('Error verifying admin token:', error);
-        return false;
-    }
-}
 
 const formSchema = z.object({
-  idToken: z.string().optional(),
   itemType: z.enum(['service', 'package']),
   name: z.string().min(3),
   slug: z.string().optional(),
@@ -52,11 +26,6 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export async function addService(data: FormValues) {
-  const isAdmin = await verifyAdmin(data.idToken);
-  if (!isAdmin) {
-    return { success: false, error: 'Unauthorized' };
-  }
-
   const parseResult = formSchema.safeParse(data);
   if (!parseResult.success) {
     return { success: false, error: 'Invalid data provided.' };
@@ -76,7 +45,6 @@ export async function addService(data: FormValues) {
             inclusions: rest.inclusions?.map(i => i.value).filter(Boolean) || [],
             deliveryTime: rest.deliveryTime || 'N/A',
         };
-        // Use setDoc with a specific ID (slug) to make it queryable and have clean URLs
         await setDoc(doc(db, 'services', newService.slug), newService);
     } else { // package
         const newPackage: Omit<Package, 'id' | 'isBestValue'> = {
@@ -85,7 +53,6 @@ export async function addService(data: FormValues) {
             price: rest.priceString || '₹0',
             features: rest.features?.map(f => f.value).filter(Boolean) || [],
         };
-         // Use setDoc with a specific ID (slug)
         const packageSlug = name.toLowerCase().replace(/\s+/g, '-');
         await setDoc(doc(db, 'comboPackages', packageSlug), newPackage);
     }
@@ -99,11 +66,6 @@ export async function addService(data: FormValues) {
 }
 
 export async function updateService(id: string, data: FormValues) {
-  const isAdmin = await verifyAdmin(data.idToken);
-  if (!isAdmin) {
-    return { success: false, error: 'Unauthorized' };
-  }
-
   const parseResult = formSchema.safeParse(data);
   if (!parseResult.success) {
     return { success: false, error: 'Invalid data provided.' };
@@ -145,12 +107,7 @@ export async function updateService(id: string, data: FormValues) {
 }
 
 
-export async function deleteItem(idToken: string | undefined, itemId: string, itemType: 'Service' | 'Package') {
-    const isAdmin = await verifyAdmin(idToken);
-    if (!isAdmin) {
-      return { success: false, error: 'Unauthorized' };
-    }
-
+export async function deleteItem(itemId: string, itemType: 'Service' | 'Package') {
     try {
         const collectionName = itemType === 'Service' ? 'services' : 'comboPackages';
         await deleteDoc(doc(db, collectionName, itemId));

@@ -5,7 +5,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // =====================================================================
-    // HELPER FUNCTIONS (सहायक फ़ंक्शंस)
+    // HELPER FUNCTIONS
     // =====================================================================
 
     function isSignedIn() {
@@ -15,99 +15,73 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-
-    function isAdmin() {
-      // Use exists() to check for the admin document.
-      // This is more secure and flexible than hardcoding an email.
-      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
-    }
     
-    // Fallback for the original hardcoded admin email, for safety.
-    function isLegacyAdmin() {
+    // Admin check is now based on the email directly.
+    function isAdmin() {
         return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
-    function hasFields(fields) {
-      return request.resource.data.keys().hasAll(fields);
-    }
-    
     function hasOnlyFields(fields) {
       return request.resource.data.keys().removeAll(fields).size() == 0;
     }
 
 
     // =====================================================================
-    // ADMINS COLLECTION
-    // =====================================================================
-    match /admins/{userId} {
-        // Only other admins can read or write the list of admins.
-        allow read, write: if isAdmin() || isLegacyAdmin();
-    }
-
-
-    // =====================================================================
-    // USERS COLLECTION (उपयोगकर्ता संग्रह)
+    // USERS COLLECTION
     // =====================================================================
     match /users/{userId} {
-      
-      allow read, update, delete: if isOwner(userId) || isAdmin() || isLegacyAdmin();
+      allow read, update, delete: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId);
 
-      // --- Users Sub-collections (उप-संग्रह) ---
       match /notifications/{notificationId} {
         allow read: if isOwner(userId);
-        allow write: if isAdmin() || isLegacyAdmin();
+        allow write: if isAdmin();
       }
 
       match /downloadableProducts/{productId} {
         allow read: if isOwner(userId);
-        allow write: if isAdmin() || isLegacyAdmin();
+        allow write: if isAdmin();
       }
     }
 
 
     // =====================================================================
-    // PUBLIC COLLECTIONS (सार्वजनिक संग्रह)
+    // PUBLIC COLLECTIONS
     // =====================================================================
 
     match /services/{serviceId} {
       allow read: if true;
-      allow write: if isAdmin() || isLegacyAdmin();
+      allow write: if isAdmin();
     }
 
     match /comboPackages/{comboId} {
       allow read: if true;
-      allow write: if isAdmin() || isLegacyAdmin();
+      allow write: if isAdmin();
     }
 
     match /media/{mediaId} {
       allow read: if true;
-      allow write: if isAdmin() || isLegacyAdmin();
+      allow write: if isAdmin();
     }
 
     // =====================================================================
-    // ORDERS COLLECTION (ऑर्डर संग्रह)
+    // ORDERS COLLECTION
     // =====================================================================
     match /orders/{orderId} {
     
-      // GET: Admin can get any order. User can get their own.
-      allow get: if isAdmin() || isLegacyAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
+      allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
 
-      // LIST: Admin can list all. User can list their own via query.
-      allow list: if isAdmin() || isLegacyAdmin() || (isSignedIn() && request.query.where[0] == "userId" && request.query.where[1] == "==" && request.query.where[2] == request.auth.uid);
+      allow list: if isAdmin() || (isSignedIn() && request.query.where[0] == "userId" && request.query.where[1] == "==" && request.query.where[2] == request.auth.uid);
 
-      // CREATE: Any signed-in user can create an order for themselves.
       allow create: if isSignedIn()
                       && request.resource.data.userId == request.auth.uid
                       && request.resource.data.status == "Pending"
                       && request.resource.data.paymentStatus == "Pending"
                       && hasOnlyFields(['userId', 'fullName', 'phoneNumber', 'email', 'weddingDate', 'selectedServiceId', 'messageNotes', 'orderDate', 'status', 'paymentStatus']);
                       
-      // UPDATE: Only an admin can update any order. Users cannot.
-      allow update: if isAdmin() || isLegacyAdmin();
+      allow update: if isAdmin();
 
-      // DELETE: Disallowed for safety.
-      allow delete: if false;
+      allow delete: if false; // Deleting orders is disallowed for safety.
     }
   }
 }

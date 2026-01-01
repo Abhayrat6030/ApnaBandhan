@@ -19,7 +19,6 @@ import { addService } from '../actions';
 import { useUser } from '@/firebase';
 
 const formSchema = z.object({
-  idToken: z.string().optional(),
   itemType: z.enum(['service', 'package']),
   // Service fields
   name: z.string().min(3, 'Name is required.'),
@@ -87,8 +86,7 @@ export default function NewServicePage() {
         return;
     }
     setIsLoading(true);
-    const token = await user.getIdToken();
-    const result = await addService({...values, idToken: token });
+    const result = await addService(values);
     
     if (result.success) {
       toast({
