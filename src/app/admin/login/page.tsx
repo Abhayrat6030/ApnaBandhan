@@ -58,9 +58,12 @@ export default function AdminLoginPage() {
                     case 'auth/network-request-failed':
                          errorMessage = "Network error. Please check your internet connection.";
                          break;
+                    default:
+                         errorMessage = error.message;
+                         break;
                 }
-            } else if (error.message.includes("server session")) {
-                errorMessage = "Could not create a server session. Please try again.";
+            } else {
+                errorMessage = error.message;
             }
 
             toast({

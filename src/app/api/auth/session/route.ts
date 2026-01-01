@@ -10,12 +10,12 @@ export async function POST(req: Request) {
         throw new Error("No token provided");
     }
 
-    // Optional: Log environment variables for debugging purposes, but be careful in production
-    // console.log("ENV CHECK", {
-    //   projectId: process.env.FIREBASE_PROJECT_ID,
-    //   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    //   hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
-    // });
+    // Optional: Log environment variables for debugging purposes
+    console.log("ENV CHECK", {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
+    });
 
     const decoded = await admin.auth().verifyIdToken(idToken);
     
@@ -40,8 +40,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (e: any) {
-    console.error("SESSION FAIL:", e.message);
-    return NextResponse.json({ error: "Session creation failed" }, { status: 401 });
+    console.error("SESSION FAIL:", e);
+    // Return a more specific error message if available
+    return NextResponse.json({ error: e.message || "Session creation failed" }, { status: 401 });
   }
 }
 
