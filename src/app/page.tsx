@@ -109,7 +109,7 @@ export default function Home() {
       </section>
 
       {/* Top Rated Videos Section */}
-      {topRatedVideos.length > 0 && <section id="top-videos" className="pt-4 pb-8 bg-secondary/30">
+      {topRatedVideos.length > 0 && <section id="top-videos" className="pt-8 pb-8 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -118,7 +118,7 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mt-1">Stunning videos to announce your special day.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {topRatedVideos.map((service) => (
+            {topRatedVideos.slice(0, 4).map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
@@ -133,7 +133,7 @@ export default function Home() {
       </section>}
       
       {/* Top Rated Cards Section */}
-      {topRatedCards.length > 0 && <section id="top-cards" className="pt-4 pb-8 bg-background">
+      {topRatedCards.length > 0 && <section id="top-cards" className="pt-8 pb-8 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -142,7 +142,7 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mt-1">Elegant digital and printable invitations.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {topRatedCards.map((service) => (
+            {topRatedCards.slice(0, 4).map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
@@ -157,7 +157,7 @@ export default function Home() {
       </section>}
 
        {/* Top Rated Album Designs Section */}
-      {topRatedAlbums.length > 0 && <section id="top-albums" className="pt-4 pb-8 bg-secondary/30">
+      {topRatedAlbums.length > 0 && <section id="top-albums" className="pt-8 pb-8 bg-secondary/30">
         <div className="container mx-auto px-4">
            <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -166,7 +166,7 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mt-1">Timeless designs to preserve your memories.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {topRatedAlbums.map((service) => (
+            {topRatedAlbums.slice(0, 4).map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
@@ -181,7 +181,7 @@ export default function Home() {
       </section>}
 
        {/* Top Rated Video Editing Section */}
-      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="pt-4 pb-8 bg-background">
+      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="pt-8 pb-8 bg-background">
         <div className="container mx-auto px-4">
            <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -190,7 +190,7 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mt-1">Cinematic edits of your precious moments.</p>
           </div>
           <div className="grid grid-cols-2 md-grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {topRatedVideoEditing.map((service) => (
+            {topRatedVideoEditing.slice(0, 4).map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
@@ -205,7 +205,7 @@ export default function Home() {
       </section>}
 
       {/* Combo Packages Section */}
-      {comboPackages.length > 0 && <section id="combo-packages" className="pt-4 pb-8 bg-secondary/30">
+      {comboPackages.length > 0 && <section id="combo-packages" className="pt-8 pb-8 bg-secondary/30">
         <div className="container mx-auto px-4">
            <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -214,7 +214,7 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mt-1">Get the best value with our curated packages.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {comboPackages.map((service) => (
+            {comboPackages.slice(0, 4).map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
@@ -229,7 +229,7 @@ export default function Home() {
       </section>}
       
       {/* CDR Files Section */}
-      {cdrFileServices.length > 0 && <section id="cdr-files" className="pt-4 pb-8 bg-background">
+      {cdrFileServices.length > 0 && <section id="cdr-files" className="pt-8 pb-8 bg-background">
         <div className="container mx-auto px-4">
            <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -238,7 +238,7 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mt-1">Get print-ready source files for your cards.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {cdrFileServices.map((service) => (
+            {cdrFileServices.slice(0, 4).map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
@@ -253,7 +253,7 @@ export default function Home() {
       </section>}
 
       {/* Website Development Section */}
-      <section id="website-development" className="pt-4 pb-8 bg-secondary/30">
+      <section id="website-development" className="pt-8 pb-8 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center bg-card p-8 rounded-2xl shadow-lg">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 text-primary">
