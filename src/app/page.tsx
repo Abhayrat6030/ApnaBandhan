@@ -110,7 +110,7 @@ export default function Home() {
       {topRatedVideos.length > 0 && <section id="top-videos" className="pt-4 pb-12 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight min-h-[2.5em]">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight h-20 flex items-center justify-center">
               Invitation Videos
             </h2>
             <p className="mt-2 text-lg text-muted-foreground">Stunning videos to announce your special day.</p>
@@ -134,7 +134,7 @@ export default function Home() {
       {topRatedCards.length > 0 && <section id="top-cards" className="pt-4 pb-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight min-h-[2.5em]">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight h-20 flex items-center justify-center">
               Invitation Cards
             </h2>
             <p className="mt-2 text-lg text-muted-foreground">Elegant digital and printable invitations.</p>
@@ -158,7 +158,7 @@ export default function Home() {
       {topRatedAlbums.length > 0 && <section id="top-albums" className="pt-4 pb-12 bg-secondary/30">
         <div className="container mx-auto px-4">
            <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight min-h-[2.5em]">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight h-20 flex items-center justify-center">
               Album Designs
             </h2>
             <p className="mt-2 text-lg text-muted-foreground">Timeless designs to preserve your memories.</p>
@@ -182,7 +182,7 @@ export default function Home() {
       {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="pt-4 pb-12 bg-background">
         <div className="container mx-auto px-4">
            <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight min-h-[2.5em]">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight h-20 flex items-center justify-center">
               Wedding Video Editing
             </h2>
             <p className="mt-2 text-lg text-muted-foreground">Cinematic edits of your precious moments.</p>
