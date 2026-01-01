@@ -33,7 +33,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center">
+      <div className="flex h-12 items-center">
         <div className="flex">
           <Link href="/" className="flex items-center space-x-2">
             <Logo className="h-8 w-auto text-primary" />
@@ -42,7 +42,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex flex-1 items-center space-x-6 text-sm font-medium">
+        <nav className="hidden md:flex flex-1 items-center justify-center space-x-6 text-sm font-medium">
           {navItems.map((item) => (
             <Link
               key={item.label}
