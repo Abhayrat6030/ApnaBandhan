@@ -15,10 +15,10 @@ export const initializeAdminApp = () => {
     return admin.app();
   }
 
-  // Initialize the app with the correct project ID to match the client-side config.
-  // The SDK will automatically look for Application Default Credentials for auth.
+  // Initialize the app with the correct project ID and credentials.
   try {
     return admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
       projectId: firebaseConfig.projectId,
     });
   } catch (error: any) {
