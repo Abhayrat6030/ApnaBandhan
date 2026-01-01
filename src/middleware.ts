@@ -5,7 +5,6 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('__session')?.value;
 
   const adminPaths = ['/admin/dashboard', '/admin/orders', '/admin/services', '/admin/ai-enhancer'];
-  const isAuthPage = pathname === '/admin/login';
 
   if (adminPaths.some(path => pathname.startsWith(path))) {
     if (!sessionCookie) {
@@ -21,16 +20,24 @@ export async function middleware(request: NextRequest) {
         }
       });
       
-      const { user } = await response.json();
+      if (!response.ok) {
+        throw new Error('Verification failed');
+      }
 
-      if (!user || user.email !== 'abhayrat603@gmail.com') {
+      const { isAdmin } = await response.json();
+
+      if (!isAdmin) {
          throw new Error('Not an admin');
       }
 
     } catch (error) {
        const url = request.nextUrl.clone();
        url.pathname = '/admin/login';
-       return NextResponse.redirect(url);
+       // Clear the invalid cookie
+       url.cookies.delete('__session');
+       const response = NextResponse.redirect(url);
+       response.cookies.delete('__session');
+       return response;
     }
   }
 
