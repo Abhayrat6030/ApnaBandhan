@@ -59,9 +59,7 @@ function InvitationProductCard({ service }: { service: Service }) {
             </div>
           )}
           {discount > 0 && (
-            <div className="absolute top-4 right-[-5px] bg-red-600 text-white text-xs font-bold px-3 py-1 -rotate-[-45deg] translate-x-[38%] translate-y-[90%] opacity-80">
-            </div>
-             <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-semibold px-2.5 py-1 rounded-full shadow-md">
+            <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-semibold px-2.5 py-1 rounded-full shadow-md">
               {discount}% OFF
             </div>
           )}
