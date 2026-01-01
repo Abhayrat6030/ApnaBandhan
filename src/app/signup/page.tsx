@@ -12,7 +12,7 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Lock, Phone, Gift, Eye, EyeOff } from 'lucide-react';
@@ -22,7 +22,12 @@ import { useAuth } from '@/firebase';
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  password: z.string()
+    .min(8, { message: 'Password must be at least 8 characters.' })
+    .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter.' })
+    .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter.' })
+    .regex(/[0-9]/, { message: 'Password must contain at least one number.' })
+    .regex(/[@$!%*?&]/, { message: 'Password must contain at least one special character (@$!%*?&).' }),
   phone: z.string().optional(),
   referralCode: z.string().optional(),
 });
@@ -75,8 +80,6 @@ function SignupFormComponent() {
           description: "Welcome to ApnaBandhan. You're now being redirected.",
         });
         
-        // Redirect to profile page, passing the referral code if it exists.
-        // The profile page will handle the Firestore document creation.
         const redirectUrl = values.referralCode 
             ? `/profile?ref=${values.referralCode}`
             : '/profile';
@@ -119,6 +122,7 @@ function SignupFormComponent() {
                             <Input placeholder="Your Name" {...field} className="pl-10" />
                         </div>
                     </FormControl>
+                    <FormDescription>Enter your real full name.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -135,6 +139,7 @@ function SignupFormComponent() {
                         <Input placeholder="m@example.com" {...field} className="pl-10" />
                       </div>
                     </FormControl>
+                    <FormDescription>Enter a valid, real email address.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -165,6 +170,9 @@ function SignupFormComponent() {
                         </Button>
                       </div>
                     </FormControl>
+                    <FormDescription>
+                      Min 8 characters, with uppercase, lowercase, number & special symbol.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
