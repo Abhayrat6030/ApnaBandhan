@@ -31,9 +31,9 @@ export default function ShippingPolicyPage() {
                           <h2 className="flex items-center !mb-4"><Truck className="inline-block mr-3 h-6 w-6 text-primary" />Delivery Method</h2>
                           <p>All final products will be delivered electronically. The primary methods of delivery are:</p>
                           <ul className="!my-4">
-                              <li className="flex items-start"><Mail className="inline-block mr-2 h-5 w-5 mt-1 shrink-0 text-accent" /> <span><strong>Email:</strong> A secure download link to your final files will be sent to the email address you provided during the order process.</span></li>
-                              <li className="flex items-start"><MessageSquare className="inline-block mr-2 h-5 w-5 mt-1 shrink-0 text-accent" /> <span><strong>WhatsApp:</strong> For your convenience, we can also deliver the final files or download links directly to your WhatsApp number.</span></li>
-                              <li className="flex items-start"><FolderDown className="inline-block mr-2 h-5 w-5 mt-1 shrink-0 text-accent" /> <span><strong>Google Drive/Cloud Storage:</strong> For larger files, such as full-length edited videos, we will provide a secure link to a cloud storage service like Google Drive from which you can download your files.</span></li>
+                              <li className="flex items-center"><Mail className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span><strong>Email:</strong> A secure download link to your final files will be sent to the email address you provided during the order process.</span></li>
+                              <li className="flex items-center"><MessageSquare className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span><strong>WhatsApp:</strong> For your convenience, we can also deliver the final files or download links directly to your WhatsApp number.</span></li>
+                              <li className="flex items-center"><FolderDown className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span><strong>Google Drive/Cloud Storage:</strong> For larger files, such as full-length edited videos, we will provide a secure link to a cloud storage service like Google Drive from which you can download your files.</span></li>
                           </ul>
                         </div>
 
@@ -82,8 +82,8 @@ export default function ShippingPolicyPage() {
                           <h2 className="flex items-center !mb-4"><MessageSquare className="inline-block mr-3 h-6 w-6 text-primary" />Contact Us</h2>
                           <p>If you have any questions about our Shipping & Delivery Policy, or if you have not received your files within the expected timeframe, please contact us immediately:</p>
                            <ul className="!my-4">
-                              <li className="flex items-start"><Mail className="inline-block mr-2 h-5 w-5 mt-1 shrink-0 text-accent" /> <span>By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></span></li>
-                              <li className="flex items-start"><Phone className="inline-block mr-2 h-5 w-5 mt-1 shrink-0 text-accent" /> <span>By phone/WhatsApp: <a href={`https://wa.me/${siteConfig.phone}`}>{siteConfig.phone}</a></span></li>
+                              <li className="flex items-center"><Mail className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span>By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></span></li>
+                              <li className="flex items-center"><Phone className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span>By phone/WhatsApp: <a href={`https://wa.me/${siteConfig.phone}`}>{siteConfig.phone}</a></span></li>
                           </ul>
                         </div>
                     </div>

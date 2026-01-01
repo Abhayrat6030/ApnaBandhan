@@ -78,8 +78,8 @@ export default function RefundPolicyPage() {
                           <h2 className="flex items-center !mb-4"><MessageSquare className="inline-block mr-3 h-6 w-6 text-primary" />Contact Us</h2>
                           <p>For any questions about our Refund & Cancellation Policy, please contact us before placing an order:</p>
                           <ul className="!my-4">
-                              <li className="flex items-start"><Mail className="inline-block mr-2 h-5 w-5 mt-1 shrink-0 text-accent" /> <span>By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></span></li>
-                              <li className="flex items-start"><Phone className="inline-block mr-2 h-5 w-5 mt-1 shrink-0 text-accent" /> <span>By phone/WhatsApp: <a href={`https://wa.me/${siteConfig.phone}`}>{siteConfig.phone}</a></span></li>
+                              <li className="flex items-center"><Mail className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span>By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></span></li>
+                              <li className="flex items-center"><Phone className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span>By phone/WhatsApp: <a href={`https://wa.me/${siteConfig.phone}`}>{siteConfig.phone}</a></span></li>
                           </ul>
                         </div>
                     </div>
