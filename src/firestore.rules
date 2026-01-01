@@ -4,84 +4,65 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // =====================================================================
-    // HELPER FUNCTIONS
-    // =====================================================================
-
+    // ===============================
+    // HELPERS
+    // ===============================
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-    
     function isAdmin() {
-      return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
+      return isSignedIn()
+        && request.auth.token.email == "abhayrat603@gmail.com";
     }
 
-    // =====================================================================
-    // USERS COLLECTION
-    // =====================================================================
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // ===============================
+    // USERS
+    // ===============================
     match /users/{userId} {
-      // Admins can do anything. Users can read/write their own data.
-      // Using 'write' covers create, update, delete.
+      // Admin has full access. Users can only access their own data if rules are expanded later.
       allow read, write: if isAdmin() || isOwner(userId);
 
-      // Subcollections for user-specific data
-      match /notifications/{notificationId} {
-        allow read: if isOwner(userId);
-        // Only admin can create/update/delete notifications.
-        allow write: if isAdmin();
+      match /notifications/{id} {
+        allow read, write: if isAdmin() || isOwner(userId);
       }
 
-      match /downloadableProducts/{productId} {
-        allow read: if isOwner(userId);
-        // Only admin can add downloadable products.
-        allow write: if isAdmin();
+      match /downloadableProducts/{id} {
+        allow read, write: if isAdmin() || isOwner(userId);
       }
     }
 
-
-    // =====================================================================
-    // PUBLIC COLLECTIONS (READ-ONLY for users, WRITE for Admin)
-    // =====================================================================
-
-    match /services/{serviceId} {
+    // ===============================
+    // PUBLIC DATA (Read for all, Write for Admin)
+    // ===============================
+    match /services/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /comboPackages/{comboId} {
+    match /comboPackages/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /media/{mediaId} {
+    match /media/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // =====================================================================
-    // ORDERS COLLECTION (SECURE)
-    // =====================================================================
+    // ===============================
+    // ORDERS (ADMIN PANEL SAFE)
+    // ===============================
     match /orders/{orderId} {
-    
-      // GET (Single Document Read): Admin can get any order. Users can only get their own.
-      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
-
-      // LIST (Query): Admin can list all orders. Users can list their own orders.
-      allow list: if isAdmin() || (isSignedIn() && request.query.get('userId') == request.auth.uid);
-                      
-      // CREATE: Signed-in users can create orders for themselves.
-      // We can add validation for initial data here.
+      // Admin can read/write any order.
+      // Users can create their own orders and read them.
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-                      
-      // UPDATE: Only Admin can update any order.
-      allow update: if isAdmin();
-
-      // DELETE: Deleting orders is disallowed for safety.
-      allow delete: if false;
+      allow update, delete: if isAdmin();
     }
   }
 }
