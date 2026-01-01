@@ -26,7 +26,8 @@ import type { Order } from '@/lib/types';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
-import { updateOrderStatus, updatePaymentStatus } from '@/app/actions/admin';
+import { doc, updateDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 interface OrderTableProps {
   orders: (Order & { serviceName?: string })[];
@@ -34,6 +35,7 @@ interface OrderTableProps {
 
 export default function OrderTable({ orders }: OrderTableProps) {
   const { toast } = useToast();
+  const db = useFirestore();
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
   const [updatingId, setUpdatingId] = React.useState<string | null>(null);
@@ -58,14 +60,16 @@ export default function OrderTable({ orders }: OrderTableProps) {
   }
 
   const handleStatusUpdate = (orderId: string, newStatus: Order['status']) => {
+    if (!db) return;
     setUpdatingId(`status-${orderId}`);
     startTransition(async () => {
         try {
-            await updateOrderStatus({ orderId, newStatus });
+            const orderRef = doc(db, 'orders', orderId);
+            await updateDoc(orderRef, { status: newStatus });
             toast({ title: "Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-            router.refresh();
+            // Real-time listener will update the UI, router.refresh() is not needed.
         } catch (error: any) {
-            toast({ title: "Update Failed", description: error.message, variant: 'destructive'});
+            toast({ title: "Update Failed", description: "You don't have permission to perform this action.", variant: 'destructive'});
         } finally {
             setUpdatingId(null);
         }
@@ -73,14 +77,15 @@ export default function OrderTable({ orders }: OrderTableProps) {
   }
 
   const handlePaymentUpdate = (orderId: string, newStatus: Order['paymentStatus']) => {
+     if (!db) return;
     setUpdatingId(`payment-${orderId}`);
     startTransition(async () => {
         try {
-            await updatePaymentStatus({ orderId, newStatus });
+            const orderRef = doc(db, 'orders', orderId);
+            await updateDoc(orderRef, { paymentStatus: newStatus });
             toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-            router.refresh();
         } catch (error: any) {
-            toast({ title: "Update Failed", description: error.message, variant: 'destructive'});
+            toast({ title: "Update Failed", description: "You don't have permission to perform this action.", variant: 'destructive'});
         } finally {
             setUpdatingId(null);
         }

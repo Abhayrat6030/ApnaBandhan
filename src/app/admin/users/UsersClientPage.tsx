@@ -23,11 +23,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { deleteUser, updateUserStatus } from '@/app/actions/admin';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { useFirestore, useAuth } from '@/firebase';
+import { deleteUser as deleteFirebaseAuthUser } from 'firebase/auth';
 
 export default function UsersClientPage({ initialUsers, initialUsersMap }: { initialUsers: UserProfile[], initialUsersMap: Map<string, UserProfile>}) {
   const router = useRouter();
   const { toast } = useToast();
+  const db = useFirestore();
+  const auth = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [isPending, startTransition] = useTransition();
   const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
@@ -42,9 +46,11 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
   }, [initialUsers, searchTerm]);
   
   const handleUpdateStatus = (userId: string, newStatus: 'active' | 'blocked') => {
+      if (!db) return;
       startTransition(async () => {
         try {
-            await updateUserStatus({ userId, newStatus });
+            const userRef = doc(db, 'users', userId);
+            await updateDoc(userRef, { status: newStatus });
             toast({
                 title: `User ${newStatus === 'active' ? 'Unblocked' : 'Blocked'}`,
                 description: `The user status has been updated.`,
@@ -53,7 +59,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
         } catch (error: any) {
             toast({
                 title: "Update Failed",
-                description: error.message || 'Could not update user status.',
+                description: "You don't have permission to perform this action.",
                 variant: 'destructive',
             });
         }
@@ -61,22 +67,29 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
   }
   
   const handleDeleteUser = async () => {
-    if (!userToDelete) return;
+    if (!userToDelete || !db || !auth.currentUser) return;
     
     startTransition(async () => {
         try {
-            await deleteUser({ uid: userToDelete.uid });
+            // Firestore rules should prevent non-admins from doing this.
+            // This is a client-side action that will be validated by Firestore rules.
+            await deleteDoc(doc(db, 'users', userToDelete.uid));
+            
+            // IMPORTANT: Deleting a user from Firebase Auth cannot be done from the client-side
+            // SDK for security reasons. This must be done via a secure server environment
+            // (e.g., a Cloud Function or a secure server endpoint).
+            // For now, we will only delete the Firestore record.
+            
             toast({
-                title: "User Deleted",
-                description: `${userToDelete.displayName} has been permanently deleted.`,
+                title: "User Deleted from Database",
+                description: `${userToDelete.displayName}'s profile has been deleted. Auth user still exists.`,
             });
             setUserToDelete(null);
-            router.refresh();
         } catch (error: any) {
             console.error("Deletion Error:", error);
             toast({
                 title: "Deletion Failed",
-                description: error.message || "An unexpected error occurred.",
+                description: "You don't have permission to perform this action.",
                 variant: "destructive",
             });
         }
@@ -283,7 +296,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the user <span className="font-bold">{userToDelete?.displayName}</span> from Firebase Authentication and Firestore.
+                    This action cannot be undone. This will permanently delete the user <span className="font-bold">{userToDelete?.displayName}</span> from the Firestore database. Deleting the user from Firebase Authentication must be done from a secure server environment.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

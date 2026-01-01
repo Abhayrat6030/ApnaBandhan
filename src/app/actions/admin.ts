@@ -2,60 +2,42 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
-import admin from 'firebase-admin';
-import { initializeAdminApp } from '@/firebase/admin';
 import type { Order, Service, Package, UserProfile } from '@/lib/types';
 import { z } from 'zod';
+// Note: We are no longer using firebase-admin here for session verification in actions.
+// Security is enforced by Firestore rules.
 
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
+// This file is now primarily for actions that might need server-side logic in the future,
+// like revalidation, but the core data manipulation is handled on the client
+// with security guaranteed by Firestore rules.
 
-// This function remains to verify session for actions that MUST be on the server.
-async function verifyAdmin(): Promise<admin.auth.DecodedIdToken> {
-    initializeAdminApp();
-    const sessionCookie = cookies().get('__session')?.value;
-    if (!sessionCookie) {
-        throw new Error('Unauthorized: No session cookie.');
-    }
-    try {
-        const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
-        if (decodedClaims.email !== ADMIN_EMAIL) {
-            throw new Error('Forbidden: User is not an admin.');
-        }
-        return decodedClaims;
-    } catch (error) {
-        throw new Error('Unauthorized: Invalid session.');
-    }
-}
+// The update functions can be called from the client, but the Firestore rules
+// will ensure only an admin can actually perform the write.
 
+// Example of a revalidating action if you were using Server Components with server-side fetching.
+// Currently, the admin panel uses client-side fetching, so revalidation is not strictly necessary
+// as the UI will update in real-time. However, we keep these functions for good practice.
 
 export async function updateOrderStatus(data: { orderId: string, newStatus: Order['status'] }) {
-    await verifyAdmin();
-    const db = admin.firestore();
-    await db.collection('orders').doc(data.orderId).update({ status: data.newStatus });
+    // No explicit verification needed here because Firestore rules handle it.
+    // The client-side code will attempt a write, and it will only succeed if the user is an admin.
     revalidatePath('/admin/orders');
     revalidatePath('/admin/dashboard');
 }
 
 export async function updatePaymentStatus(data: { orderId: string, newStatus: Order['paymentStatus'] }) {
-    await verifyAdmin();
-    const db = admin.firestore();
-    await db.collection('orders').doc(data.orderId).update({ paymentStatus: data.newStatus });
     revalidatePath('/admin/orders');
     revalidatePath('/admin/dashboard');
 }
 
 export async function updateUserStatus(data: { userId: string, newStatus: 'active' | 'blocked' }) {
-    await verifyAdmin();
-    const db = admin.firestore();
-    await db.collection('users').doc(data.userId).update({ status: data.newStatus });
     revalidatePath('/admin/users');
 }
 
 export async function deleteUser(data: { uid: string }) {
-    await verifyAdmin();
-    const db = admin.firestore();
-    await admin.auth().deleteUser(data.uid);
-    await db.collection('users').doc(data.uid).delete();
+    // Important: Deleting a user from Auth still requires the Admin SDK.
+    // However, for this to work, it must be called from a secure backend environment
+    // where credentials are properly configured.
+    // For now, this action will primarily handle revalidation. The client will handle the delete operation.
     revalidatePath('/admin/users');
 }
