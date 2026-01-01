@@ -5,16 +5,22 @@ import * as React from 'react';
 import { serviceCategories } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import Autoplay from "embla-carousel-autoplay";
+import { ArrowRight, Film, Mails, Album, Package as PackageIcon, Video, FileText } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { type ServiceCategoryInfo } from '@/lib/types';
+
+
+const categoryIcons: { [key: string]: React.ElementType } = {
+  'invitation-videos': Film,
+  'invitation-cards': Mails,
+  'album-design': Album,
+  'combo-packages': PackageIcon,
+  'video-editing': Video,
+  'cdr-files': FileText,
+};
 
 
 export default function ServicesPage() {
-  const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: false })
-  );
 
   return (
     <div className="bg-background overflow-hidden">
@@ -29,22 +35,18 @@ export default function ServicesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {serviceCategories.map((category) => (
+            {serviceCategories.map((category) => {
+              const Icon = categoryIcons[category.id] || Film;
+              return (
               <Link key={category.id} href={category.href} className="group block h-full">
                 <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
-                  <div className="relative aspect-[16/9] w-full">
-                    <Image
-                      src={category.imageUrl}
-                      alt={category.name}
-                      fill
-                      className="object-cover"
-                      data-ai-hint={category.imageHint}
-                    />
-                  </div>
-                  <CardHeader>
+                  <CardHeader className="flex-row items-center gap-4 space-y-0">
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                        <Icon className="h-6 w-6 text-primary" />
+                    </div>
                     <CardTitle className="font-bold text-xl">{category.name}</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex-grow">
+                  <CardContent className="flex-grow pt-0">
                     <CardDescription className="line-clamp-2">{category.description}</CardDescription>
                   </CardContent>
                   <CardFooter>
@@ -54,7 +56,7 @@ export default function ServicesPage() {
                   </CardFooter>
                 </Card>
               </Link>
-            ))}
+            )})}
         </div>
       </div>
     </div>

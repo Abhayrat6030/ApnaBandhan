@@ -70,7 +70,7 @@ export const services: Service[] = [
     price: 700,
     priceType: 'fixed',
     isFeatured: false,
-    topRated: true,
+    topRated: false,
     rating: 4.7,
     samples: [
       { type: 'image', url: 'https://picsum.photos/seed/bday1/600/800', imageHint: 'birthday invitation' },
@@ -351,7 +351,7 @@ export const serviceCategories: ServiceCategoryInfo[] = [
     },
     {
         id: 'video-editing',
-        name: 'Wedding Video',
+        name: 'Wedding Video Editing',
         description: 'We edit your raw footage into a beautiful, cinematic wedding film.',
         href: '/video-editing',
         imageUrl: 'https://picsum.photos/seed/wedding-video/600/400',
@@ -364,6 +364,14 @@ export const serviceCategories: ServiceCategoryInfo[] = [
       href: '/album-design',
       imageUrl: 'https://picsum.photos/seed/album-design/600/400',
       imageHint: 'album design'
+    },
+    {
+      id: 'cdr-files',
+      name: 'CDR Files',
+      description: 'Get print-ready CorelDRAW source files for your invitation cards.',
+      href: '/invitation-cards?filter=cdr',
+      imageUrl: 'https://picsum.photos/seed/cdr-files/600/400',
+      imageHint: 'design file'
     },
     {
       id: 'combo-packages',
