@@ -64,7 +64,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
                 {siteConfig.phone}
              </a>
           </Button>
-          <Button asChild className="px-8">
+          <Button asChild>
             <Link href="/order">Order Now</Link>
           </Button>
 
