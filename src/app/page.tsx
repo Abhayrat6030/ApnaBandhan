@@ -45,7 +45,7 @@ export default function Home() {
   return (
     <div className="flex flex-col overflow-hidden">
       {/* Hero Section */}
-      <section className="relative h-[50vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
+      <section className="relative h-[45vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
         <Image
           src={placeholderImages.hero.imageUrl}
           alt={placeholderImages.hero.description}
@@ -63,12 +63,12 @@ export default function Home() {
             {siteConfig.tagline}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
-            <Button asChild variant="secondary" size="lg" className="md:size-auto">
+            <Button asChild variant="secondary" className="md:size-auto">
               <Link href="/services">
                 View Samples <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="md:size-auto bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white">
+            <Button asChild variant="outline" className="md:size-auto bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white">
                <Link href={`https://wa.me/${siteConfig.phone.replace(/[\s+]/g, '')}`} target="_blank">
                 WhatsApp Order
               </Link>
