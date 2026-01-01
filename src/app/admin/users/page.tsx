@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -334,7 +335,7 @@ export default function AdminUsersPage() {
             </>
           )}
           </div>
-        </CardFooter>
+        </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
             Showing <strong>{filteredUsers.length}</strong> of <strong>{users?.length || 0}</strong> users.
@@ -348,7 +349,7 @@ export default function AdminUsersPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete the user's data from Firestore <span className="font-bold">{userToDelete?.displayName} ({userToDelete?.email})</span>. This action cannot be undone. Note: The Firebase Auth user will remain.
+                    This action cannot be undone. This will permanently delete the user's account data from Firestore for <span className="font-bold">{userToDelete?.displayName} ({userToDelete?.email})</span>.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
