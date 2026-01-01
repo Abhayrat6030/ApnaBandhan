@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -31,8 +32,8 @@ export interface UseCollectionResult<T> {
 export interface InternalQuery extends Query<DocumentData> {
   _query: {
     path: {
-      canonicalString(): string;
-      toString(): string;
+      canonicalString: () => string;
+      toString: () => string;
     }
   }
 }
@@ -58,11 +59,18 @@ export function useCollection<T = any>(
   type StateDataType = ResultItemType[] | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Start loading by default
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
-    if (!memoizedTargetRefOrQuery) {
+    if (memoizedTargetRefOrQuery === undefined) {
+      // Still determining query, so loading.
+      setIsLoading(true);
+      return;
+    }
+
+    if (memoizedTargetRefOrQuery === null) {
+      // Query is determined to be null (e.g., user not logged in), so not loading, no data.
       setData(null);
       setIsLoading(false);
       setError(null);
@@ -72,7 +80,6 @@ export function useCollection<T = any>(
     setIsLoading(true);
     setError(null);
 
-    // Directly use memoizedTargetRefOrQuery as it's assumed to be the final query
     const unsubscribe = onSnapshot(
       memoizedTargetRefOrQuery,
       (snapshot: QuerySnapshot<DocumentData>) => {
@@ -85,11 +92,16 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        // This logic extracts the path from either a ref or a query
-        const path: string =
-          memoizedTargetRefOrQuery.type === 'collection'
-            ? (memoizedTargetRefOrQuery as CollectionReference).path
-            : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
+        let path = 'unknown/path';
+        try {
+            if (memoizedTargetRefOrQuery.type === 'collection') {
+                path = (memoizedTargetRefOrQuery as CollectionReference).path;
+            } else {
+                path = (memoizedTargetRefOrQuery as any)._query.path.canonicalString();
+            }
+        } catch (e) {
+            console.warn("Could not determine path for useCollection Firestore error.");
+        }
 
         const contextualError = new FirestorePermissionError({
           operation: 'list',
@@ -100,15 +112,16 @@ export function useCollection<T = any>(
         setData(null)
         setIsLoading(false)
 
-        // trigger global error propagation
         errorEmitter.emit('permission-error', contextualError);
       }
     );
 
     return () => unsubscribe();
-  }, [memoizedTargetRefOrQuery]); // Re-run if the target query/reference changes.
+  }, [memoizedTargetRefOrQuery]);
+
   if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
-    throw new Error(memoizedTargetRefOrQuery + ' was not properly memoized using useMemoFirebase');
+    console.warn('useCollection was not properly memoized using useMemoFirebase. This will cause performance issues.', memoizedTargetRefOrQuery);
   }
+
   return { data, isLoading, error };
 }

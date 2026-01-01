@@ -17,24 +17,28 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-        return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
+      return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
     // =====================================================================
     // USERS COLLECTION
     // =====================================================================
     match /users/{userId} {
-      // Admins can do anything. Users can read/update their own data.
+      // Admins can do anything. Users can read/write their own data.
+      // Using 'write' covers create, update, delete.
       allow read, write: if isAdmin() || isOwner(userId);
 
+      // Subcollections for user-specific data
       match /notifications/{notificationId} {
-        allow read: if isAdmin() || isOwner(userId);
-        allow write: if isAdmin(); // Only admin can send notifications
+        allow read: if isOwner(userId);
+        // Only admin can create/update/delete notifications.
+        allow write: if isAdmin();
       }
 
       match /downloadableProducts/{productId} {
-        allow read: if isAdmin() || isOwner(userId);
-        allow write: if isAdmin(); // Only admin can add downloadable products
+        allow read: if isOwner(userId);
+        // Only admin can add downloadable products.
+        allow write: if isAdmin();
       }
     }
 
@@ -63,16 +67,20 @@ service cloud.firestore {
     // =====================================================================
     match /orders/{orderId} {
     
-      // Read access: Admin can read any order. Users can read their own.
-      allow read: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
+      // GET (Single Document Read): Admin can get any order. Users can only get their own.
+      allow get: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
 
-      // Create access: Signed-in users can create orders for themselves.
+      // LIST (Query): Admin can list all orders. Users can list their own orders.
+      allow list: if isAdmin() || (isSignedIn() && request.query.get('userId') == request.auth.uid);
+                      
+      // CREATE: Signed-in users can create orders for themselves.
+      // We can add validation for initial data here.
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
                       
-      // Update access: Only Admin can update any order.
+      // UPDATE: Only Admin can update any order.
       allow update: if isAdmin();
 
-      // Delete access: Deleting orders is disallowed for safety.
+      // DELETE: Deleting orders is disallowed for safety.
       allow delete: if false;
     }
   }

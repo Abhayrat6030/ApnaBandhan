@@ -74,7 +74,7 @@ export default function AdminOrdersPage() {
           <CardDescription>A list of all the orders from your customers.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          {isLoading && !allOrders ? (
+          {isLoading ? (
             renderSkeleton()
           ) : !isAdmin ? (
             <div className="p-6 text-center text-muted-foreground">

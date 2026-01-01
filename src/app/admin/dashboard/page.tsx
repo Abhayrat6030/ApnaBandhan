@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order, Service as ServiceType } from '@/lib/types';
-import { collection, query, orderBy, limit, where } from 'firebase/firestore';
+import type { Order, Service as ServiceType, Package as PackageType } from '@/lib/types';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, db } from '@/firebase';
 import { services as staticServices, packages as staticPackages } from '@/lib/data';
 
@@ -33,7 +33,10 @@ export default function AdminDashboardPage() {
   const { data: allOrders, isLoading: areAllOrdersLoading } = useCollection<Order>(allOrdersQuery);
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
   
-  const allServicesAndPackages = useMemo(() => [...staticServices, ...staticPackages], []);
+  const allServicesAndPackages = useMemo(() => {
+    const combined: (ServiceType | PackageType)[] = [...staticServices, ...staticPackages];
+    return new Map(combined.map(item => [item.id, item]));
+  }, []);
 
   const stats = useMemo(() => {
     if (!allOrders) {
@@ -44,15 +47,13 @@ export default function AdminDashboardPage() {
       ];
     }
     const totalRevenue = allOrders.reduce((acc, order) => {
-        const service = allServicesAndPackages.find(s => s.id === order.selectedServiceId);
+        const service = allServicesAndPackages.get(order.selectedServiceId);
         if (order.paymentStatus === 'Paid' && service) {
             let price = 0;
-            // The price can be a number (for Service) or a string (for Package)
-            const servicePrice = (service as any).price;
-            if (typeof servicePrice === 'number') {
-                price = servicePrice;
-            } else if (typeof servicePrice === 'string') {
-                price = parseFloat(servicePrice.replace(/[^0-9.-]+/g,""));
+            if ('price' in service && typeof service.price === 'number') {
+                price = service.price; // It's a Service
+            } else if ('price' in service && typeof service.price === 'string') {
+                price = parseFloat(service.price.replace(/[^0-9.-]+/g,"")); // It's a Package
             }
             return acc + price;
         }
@@ -127,7 +128,7 @@ export default function AdminDashboardPage() {
               <stat.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {isLoading && stat.value === 'N/A' ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stat.value}</div>}
+              {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stat.value}</div>}
             </CardContent>
           </Card>
         ))}
@@ -139,7 +140,7 @@ export default function AdminDashboardPage() {
         </h2>
         <Card>
           <CardContent className="p-0">
-            {isLoading && !recentOrders ? <div className="p-4"><Skeleton className="h-20 w-full" /></div> :
+            {isLoading ? <div className="p-4"><Skeleton className="h-20 w-full" /></div> :
              recentOrders && recentOrders.length > 0 ? <OrderTable orders={recentOrders} /> : 
              <div className="p-6 text-center text-muted-foreground"><p>No recent orders found.</p></div>}
           </CardContent>
