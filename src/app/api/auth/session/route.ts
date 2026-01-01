@@ -38,7 +38,13 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error("SESSION CREATION FAILED:", error);
-    return NextResponse.json({ error: error.message || "Session creation failed" }, { status: 401 });
+    let errorMessage = "Session creation failed";
+    if (error.code === 'auth/id-token-expired') {
+        errorMessage = "Login session expired, please try again.";
+    } else if (error.message.includes('incorrect "aud" (audience) claim')) {
+        errorMessage = "Project configuration mismatch. Please contact support.";
+    }
+    return NextResponse.json({ error: errorMessage }, { status: 401 });
   }
 }
 
