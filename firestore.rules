@@ -8,9 +8,9 @@ service cloud.firestore {
       return request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
-    // Admin has global access
+    // Admin has global access to read anything
     match /{document=**} {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin();
     }
 
     /* ===============================
@@ -29,8 +29,10 @@ service cloud.firestore {
        /users/{userId}
     =============================== */
     match /users/{userId} {
-      // Users can read and write their own data. Admins can too.
-      allow read, write: if isOwner(userId) || isAdmin();
+      // Users can read their own data.
+      allow read: if isOwner(userId);
+      // Only admins can create, update, or delete user documents.
+      allow write: if isAdmin();
 
       match /notifications/{notificationId} {
         allow read: if isOwner(userId) || isAdmin();

@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useMemo, useState } from 'react';
-import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -72,32 +71,22 @@ export default function AdminUsersPage() {
   }
   
   const handleDeleteUser = async () => {
-    if (!userToDelete) return;
+    if (!userToDelete || !db) return;
     setIsUpdating(`delete-${userToDelete.uid}`);
     
     try {
-        const response = await fetch('/api/users/delete', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ uid: userToDelete.uid }),
+        const userDocRef = doc(db, 'users', userToDelete.uid);
+        await deleteDoc(userDocRef);
+        // Note: This only deletes the Firestore record. The Firebase Auth user is not deleted.
+        // A cloud function would be required to delete the auth user when the doc is deleted.
+        toast({
+            title: "User Deleted",
+            description: `${userToDelete.displayName} (${userToDelete.email})'s data has been deleted from Firestore.`,
         });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            toast({
-                title: "User Deleted",
-                description: `${userToDelete.displayName} (${userToDelete.email}) has been permanently deleted.`,
-            });
-        } else {
-            throw new Error(result.error || "Failed to delete user.");
-        }
     } catch (error: any) {
         toast({
             title: "Deletion Failed",
-            description: error.message,
+            description: error.message || "Could not delete user from Firestore.",
             variant: "destructive",
         });
     }
@@ -329,7 +318,7 @@ export default function AdminUsersPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete the user <span className="font-bold">{userToDelete?.displayName} ({userToDelete?.email})</span>. This action cannot be undone.
+                    This will permanently delete the user's data from Firestore <span className="font-bold">{userToDelete?.displayName} ({userToDelete?.email})</span>. This action cannot be undone. Note: The Firebase Auth user will remain.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
