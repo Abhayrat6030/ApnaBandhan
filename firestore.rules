@@ -44,10 +44,11 @@ service cloud.firestore {
     }
 
     /* ===============================
-       SETTINGS (ADMIN ONLY)
+       SETTINGS (PUBLIC READ, ADMIN WRITE)
     =============================== */
     match /app-settings/{settingId} {
-      allow read, write: if isAdmin();
+      allow read: if true;
+      allow write: if isAdmin();
     }
     
     /* ===============================
