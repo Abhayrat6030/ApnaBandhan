@@ -1,23 +1,35 @@
 
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState } from 'react';
-import { Loader2, Send } from 'lucide-react';
-import { collection, addDoc, doc, writeBatch } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { Loader2, Send, Trash2 } from 'lucide-react';
+import { collection, addDoc, doc, writeBatch, collectionGroup, query, getDocs, deleteDoc, orderBy, limit } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import type { UserProfile } from '@/lib/types';
+import type { UserProfile, Notification } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const formSchema = z.object({
   target: z.enum(['all', 'specific']),
@@ -32,13 +44,26 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+interface SentNotification extends Notification {
+    path: string; // The full path to the document, e.g., users/{userId}/notifications/{notificationId}
+    userName?: string;
+    userEmail?: string;
+}
+
+
 export default function AdminNotificationsPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const [isLoading, setIsLoading] = useState(false);
+  const [sentNotifications, setSentNotifications] = useState<SentNotification[]>([]);
+  const [isFetchingSent, setIsFetchingSent] = useState(true);
+  const [itemToDelete, setItemToDelete] = useState<SentNotification | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
 
   const usersQuery = useMemoFirebase(() => db ? collection(db, 'users') : null, [db]);
   const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersQuery);
+  const usersMap = useMemo(() => new Map(users?.map(u => [u.uid, u])), [users]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -51,6 +76,42 @@ export default function AdminNotificationsPage() {
   });
 
   const watchTarget = form.watch('target');
+  
+  const fetchSentNotifications = async () => {
+        if (!db) return;
+        setIsFetchingSent(true);
+        try {
+            const notificationsQuery = query(
+                collectionGroup(db, 'notifications'),
+                orderBy('date', 'desc'),
+                limit(15)
+            );
+            const querySnapshot = await getDocs(notificationsQuery);
+            const notifs = querySnapshot.docs.map(doc => {
+                const userId = doc.ref.parent.parent?.id;
+                const user = userId ? usersMap.get(userId) : undefined;
+                return {
+                    ...(doc.data() as Notification),
+                    id: doc.id,
+                    path: doc.ref.path,
+                    userName: user?.displayName,
+                    userEmail: user?.email,
+                };
+            });
+            setSentNotifications(notifs);
+        } catch (error) {
+            console.error("Failed to fetch sent notifications:", error);
+            toast({ title: "Error", description: "Could not fetch sent notifications.", variant: 'destructive' });
+        }
+        setIsFetchingSent(false);
+    };
+
+    useMemo(() => {
+        if(users && users.length > 0) {
+            fetchSentNotifications();
+        }
+    }, [users]);
+
 
   async function onSubmit(values: FormValues) {
     if (!db) {
@@ -72,7 +133,6 @@ export default function AdminNotificationsPage() {
             if (!users || users.length === 0) {
                 throw new Error("No users found to send notifications to.");
             }
-            // Batch write for sending to all users
             const batch = writeBatch(db);
             users.forEach(user => {
                 const notificationRef = doc(collection(db, `users/${user.uid}/notifications`));
@@ -92,6 +152,7 @@ export default function AdminNotificationsPage() {
             });
         }
         form.reset({ target: 'all', title: '', description: '', type: 'general' });
+        fetchSentNotifications(); // Refresh the list
     } catch (error: any) {
         toast({
             title: 'Error',
@@ -103,11 +164,27 @@ export default function AdminNotificationsPage() {
     setIsLoading(false);
   }
 
+  const handleDeleteClick = (notification: SentNotification) => {
+    setItemToDelete(notification);
+  };
+  
+  const confirmDelete = async () => {
+    if (!itemToDelete || !db) return;
+    setIsDeleting(true);
+    try {
+        await deleteDoc(doc(db, itemToDelete.path));
+        toast({title: "Notification Deleted"});
+        setSentNotifications(prev => prev.filter(n => n.id !== itemToDelete.id));
+    } catch(error: any) {
+        toast({title: "Error deleting", description: error.message, variant: 'destructive'})
+    }
+    setItemToDelete(null);
+    setIsDeleting(false);
+  }
+
   return (
+    <>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
-      <div className="flex items-center">
-        <h1 className="font-headline text-lg font-semibold md:text-2xl">Send Notification</h1>
-      </div>
       <Card className="max-w-2xl mx-auto w-full">
         <CardHeader>
           <CardTitle>Compose Notification</CardTitle>
@@ -201,6 +278,68 @@ export default function AdminNotificationsPage() {
           </Form>
         </CardContent>
       </Card>
+      
+      <Card className="max-w-4xl mx-auto w-full mt-8">
+        <CardHeader>
+            <CardTitle>Sent Notifications</CardTitle>
+            <CardDescription>A list of the most recent notifications sent to users.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            {isFetchingSent ? <p>Loading...</p> : (
+                sentNotifications.length > 0 ? (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>User</TableHead>
+                                <TableHead>Title</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead><span className="sr-only">Actions</span></TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {sentNotifications.map(notif => (
+                                <TableRow key={notif.path}>
+                                    <TableCell>
+                                        <div className="font-medium">{notif.userName || 'N/A'}</div>
+                                        <div className="text-sm text-muted-foreground">{notif.userEmail}</div>
+                                    </TableCell>
+                                    <TableCell>{notif.title}</TableCell>
+                                    <TableCell>{new Date(notif.date).toLocaleDateString()}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="destructive" size="icon" onClick={() => handleDeleteClick(notif)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : <p>No notifications sent yet.</p>
+            )}
+        </CardContent>
+        <CardFooter>
+            <p className="text-xs text-muted-foreground">Showing last 15 notifications.</p>
+        </CardFooter>
+      </Card>
+
     </main>
+    <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This will permanently delete the notification titled "{itemToDelete?.title}". This action cannot be undone.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

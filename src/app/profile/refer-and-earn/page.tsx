@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -26,7 +25,7 @@ export default function ReferAndEarnPage() {
     const isLoading = isUserLoading || isProfileLoading;
 
     const referralCode = userProfile?.referralCode || '...';
-    const referralLink = `https://apnabandhan.com/refer?code=${referralCode}`;
+    const referralLink = `https://apnabandhan.com/signup?ref=${referralCode}`;
 
     const copyToClipboard = (text: string, type: string) => {
         if (isLoading || text === '...') return;
