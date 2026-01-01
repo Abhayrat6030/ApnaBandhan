@@ -2,39 +2,47 @@
 
 import * as admin from 'firebase-admin';
 import { config } from 'dotenv';
+
+// Ensure environment variables are loaded
 config();
 
-
-const initializeAdminApp = (): admin.app.App => {
+function initializeAdminApp() {
   if (admin.apps.length > 0) {
-    return admin.apps[0]!;
+    return admin.apps[0] as admin.app.App;
+  }
+
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+  if (!projectId || !clientEmail || !privateKey) {
+    const missingVars = [
+        !projectId && "FIREBASE_PROJECT_ID",
+        !clientEmail && "FIREBASE_CLIENT_EMAIL",
+        !privateKey && "FIREBASE_PRIVATE_KEY"
+    ].filter(Boolean).join(', ');
+
+    throw new Error(`Firebase admin initialization failed: Missing environment variables: ${missingVars}`);
   }
 
   try {
-    const adminApp = admin.initializeApp({
+    return admin.initializeApp({
       credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        projectId,
+        clientEmail,
+        privateKey,
       }),
-      databaseURL: `https://studio-5455681471-6a9b7-default-rtdb.firebaseio.com`,
+      databaseURL: `https://${projectId}-default-rtdb.firebaseio.com`,
     });
-    return adminApp;
   } catch (error: any) {
     console.error('Firebase admin initialization error', error);
+    // Re-throw a more specific error to aid debugging.
     throw new Error('Firebase admin initialization failed: ' + error.message);
   }
 };
 
-function getAdminAuth(): admin.auth.Auth {
-    initializeAdminApp();
-    return admin.auth();
-}
+// Initialize app once and export services
+const adminApp = initializeAdminApp();
 
-function getAdminDb(): admin.firestore.Firestore {
-    initializeAdminApp();
-    return admin.firestore();
-}
-
-export const auth = getAdminAuth();
-export const db = getAdminDb();
+export const auth = admin.auth(adminApp);
+export const db = admin.firestore(adminApp);
