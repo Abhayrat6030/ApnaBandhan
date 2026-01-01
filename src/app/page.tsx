@@ -113,7 +113,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight h-20 flex items-center justify-center">
               Invitation Videos
             </h2>
-            <p className="mt-2 text-lg text-muted-foreground">Stunning videos to announce your special day.</p>
+            <p className="text-lg text-muted-foreground">Stunning videos to announce your special day.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedVideos.map((service) => (
@@ -137,7 +137,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight h-20 flex items-center justify-center">
               Invitation Cards
             </h2>
-            <p className="mt-2 text-lg text-muted-foreground">Elegant digital and printable invitations.</p>
+            <p className="text-lg text-muted-foreground">Elegant digital and printable invitations.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedCards.map((service) => (
@@ -161,7 +161,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight h-20 flex items-center justify-center">
               Album Designs
             </h2>
-            <p className="mt-2 text-lg text-muted-foreground">Timeless designs to preserve your memories.</p>
+            <p className="text-lg text-muted-foreground">Timeless designs to preserve your memories.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedAlbums.map((service) => (
@@ -185,7 +185,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight h-20 flex items-center justify-center">
               Wedding Video Editing
             </h2>
-            <p className="mt-2 text-lg text-muted-foreground">Cinematic edits of your precious moments.</p>
+            <p className="text-lg text-muted-foreground">Cinematic edits of your precious moments.</p>
           </div>
           <div className="grid grid-cols-2 md-grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedVideoEditing.map((service) => (
