@@ -18,10 +18,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 
-const topRatedVideos = services.filter(s => s.topRated && s.category === 'invitation-videos');
+const topRatedVideos = services.filter(s => s.category === 'invitation-videos');
 const topRatedCards = services.filter(s => s.category === 'invitation-cards');
-const topRatedAlbums = services.filter(s => s.topRated && s.category === 'album-design');
-const topRatedVideoEditing = services.filter(s => s.topRated && s.category === 'video-editing');
+const topRatedAlbums = services.filter(s => s.category === 'album-design');
+const topRatedVideoEditing = services.filter(s => s.category === 'video-editing');
 const cdrFileServices = services.filter(s => s.id.includes('cdr-file'));
 const comboPackages = services.filter(s => s.category === 'combo-packages');
 
