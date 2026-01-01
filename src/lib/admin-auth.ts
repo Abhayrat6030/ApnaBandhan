@@ -14,6 +14,7 @@ export async function verifyAdmin(): Promise<boolean> {
     const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
     return decodedClaims.email === ADMIN_EMAIL;
   } catch (error) {
+    // We can log the error for debugging, but for security, we just return false.
     console.error('Admin verification failed:', error);
     return false;
   }

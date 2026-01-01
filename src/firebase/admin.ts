@@ -1,5 +1,4 @@
 
-import 'dotenv/config';
 import admin from 'firebase-admin';
 
 // This function ensures we only initialize the app once.
@@ -9,12 +8,13 @@ const initializeAdminApp = () => {
   }
 
   // Construct the service account object from individual environment variables
+  // This approach is more reliable in various deployment environments.
   const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     // The private key must be parsed to handle escaped newlines
     privateKey: process.env.FIREBASE_PRIVATE_KEY
-      ? JSON.parse(`"${process.env.FIREBASE_PRIVATE_KEY}"`)
+      ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
       : undefined,
   };
 
@@ -26,16 +26,13 @@ const initializeAdminApp = () => {
           !serviceAccount.privateKey && 'FIREBASE_PRIVATE_KEY'
       ].filter(Boolean).join(', ');
       
-      throw new Error(`The following Firebase Admin environment variables are missing: ${missingVars}. Please ensure they are set in your .env file.`);
+      // This error indicates a server configuration problem.
+      throw new Error(`The following Firebase Admin environment variables are missing: ${missingVars}. Please ensure they are set for your deployment environment.`);
   }
 
   try {
     return admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: serviceAccount.projectId,
-        clientEmail: serviceAccount.clientEmail,
-        privateKey: serviceAccount.privateKey,
-      }),
+      credential: admin.credential.cert(serviceAccount),
     });
   } catch (e: any) {
     console.error('Firebase Admin SDK initialization error:', e.message);
