@@ -7,7 +7,7 @@ import {
   sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, getDocs, collection, query, where, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collection, query, where, writeBatch, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 
 
@@ -24,7 +24,11 @@ export async function initiateEmailSignUp(
     displayName: string,
     referralCodeInput?: string, // The referral code the new user entered
 ) {
+    const userCredential = await createUserWithEmailAndPassword(authInstance, email, password);
+    const newUser = userCredential.user;
+
     let referrerId: string | null = null;
+    let referrerDocRef: any = null;
 
     // 1. Validate referral code if provided
     if (referralCodeInput) {
@@ -33,59 +37,59 @@ export async function initiateEmailSignUp(
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
+            await newUser.delete(); // Clean up the created user
             throw new Error("Invalid referral code.");
         } else {
-            // It's possible, though unlikely, for multiple users to have the same code if generation isn't atomic.
-            // We'll take the first one.
             const referrerDoc = querySnapshot.docs[0];
+            if (referrerDoc.id === newUser.uid) {
+                await newUser.delete(); // Clean up the created user
+                throw new Error("You cannot use your own referral code.");
+            }
             referrerId = referrerDoc.id;
+            referrerDocRef = referrerDoc.ref;
         }
     }
+    
+    // 2. Create the new user's profile and update the referrer
+    await updateProfile(newUser, { displayName });
+    
+    const newUserDocRef = doc(db, 'users', newUser.uid);
+    
+    // Generate the new user's own referral code
+    const ownReferralCode = `${displayName.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
 
+    const newUserProfile = {
+        uid: newUser.uid,
+        displayName: displayName,
+        email: email,
+        createdAt: new Date().toISOString(),
+        referralCode: ownReferralCode, // Their own code
+        referredBy: referrerId, // The UID of the person who referred them
+        status: 'active' as const,
+        referredUsers: [] // Array to store UIDs of users they refer
+    };
 
-    const userCredential = await createUserWithEmailAndPassword(authInstance, email, password);
-    if (userCredential.user) {
-        await updateProfile(userCredential.user, { displayName });
+    // If there was a referrer, we need to update both the new user and the referrer's document
+    if (referrerId && referrerDocRef) {
+        const batch = writeBatch(db);
+
+        // Set the new user's document
+        batch.set(newUserDocRef, newUserProfile);
         
-        const newUserDocRef = doc(db, 'users', userCredential.user.uid);
+        // Atomically update the referrer's document to add the new user's UID to their `referredUsers` array
+        const referrerDocSnap = await getDoc(referrerDocRef);
+        const referrerData = referrerDocSnap.data();
+        const referredUsers = referrerData?.referredUsers || [];
         
-        // Generate the new user's own referral code
-        const ownReferralCode = `${displayName.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
+        batch.update(referrerDocRef, {
+            referredUsers: [...referredUsers, newUser.uid]
+        });
 
-        const newUserProfile = {
-            uid: userCredential.user.uid,
-            displayName: displayName,
-            email: email,
-            createdAt: new Date().toISOString(),
-            referralCode: ownReferralCode, // Their own code
-            referredBy: referrerId, // The UID of the person who referred them
-            status: 'active' as const,
-            referredUsers: [] // Array to store UIDs of users they refer
-        };
+        await batch.commit();
 
-        // If there was a referrer, we need to update both the new user and the referrer's document
-        if (referrerId) {
-            const batch = writeBatch(db);
-            const referrerDocRef = doc(db, 'users', referrerId);
-
-            // Set the new user's document
-            batch.set(newUserDocRef, newUserProfile);
-            
-            // Atomically update the referrer's document to add the new user's UID to their `referredUsers` array
-            const referrerDoc = (await getDocs(query(collection(db, 'users'), where("uid", "==", referrerId)))).docs[0];
-            const referrerData = referrerDoc.data();
-            const referredUsers = referrerData.referredUsers || [];
-            
-            batch.update(referrerDocRef, {
-                referredUsers: [...referredUsers, userCredential.user.uid]
-            });
-
-            await batch.commit();
-
-        } else {
-            // Otherwise, just create the new user's document
-            await setDoc(newUserDocRef, newUserProfile);
-        }
+    } else {
+        // Otherwise, just create the new user's document
+        await setDoc(newUserDocRef, newUserProfile);
     }
 }
 

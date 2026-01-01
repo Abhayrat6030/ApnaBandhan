@@ -3,11 +3,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,8 +26,9 @@ const formSchema = z.object({
   referralCode: z.string().optional(),
 });
 
-export default function SignupPage() {
+function SignupFormComponent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const auth = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +44,13 @@ export default function SignupPage() {
       referralCode: '',
     },
   });
+
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      form.setValue('referralCode', refCode);
+    }
+  }, [searchParams, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -70,6 +78,8 @@ export default function SignupPage() {
         let description = 'An unexpected error occurred.';
         if (error.code === 'auth/email-already-in-use') {
             description = 'This email is already in use. Please log in instead.';
+        } else if (error.message) {
+            description = error.message;
         }
         toast({
             title: 'Sign Up Failed',
@@ -199,4 +209,13 @@ export default function SignupPage() {
       </Card>
     </div>
   );
+}
+
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SignupFormComponent />
+        </Suspense>
+    )
 }
