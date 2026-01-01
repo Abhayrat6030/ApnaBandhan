@@ -52,7 +52,7 @@ export function ProductCard({ service }: ProductCardProps) {
                     )}
                 </div>
                 
-                <p className="font-bold text-lg mt-2 flex items-center gap-2">
+                <p className="font-bold text-lg flex items-center gap-2">
                     <span>₹{service.price.toLocaleString('en-IN')}</span>
                      {service.originalPrice && (
                         <span className="text-sm text-muted-foreground line-through">
