@@ -45,7 +45,7 @@ export default function Home() {
   return (
     <div className="flex flex-col overflow-hidden">
       {/* Hero Section */}
-      <section className="relative h-[40vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
+      <section className="relative h-[50vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
         <Image
           src={placeholderImages.hero.imageUrl}
           alt={placeholderImages.hero.description}
@@ -56,19 +56,19 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-transparent" />
         <div className="relative z-10 p-4 flex flex-col items-center animate-fade-in-up">
-          <h1 className="font-bold text-3xl md:text-6xl tracking-tight !leading-tight">
+          <h1 className="font-bold text-4xl md:text-5xl lg:text-6xl tracking-tight !leading-tight">
             {siteConfig.name}
           </h1>
           <p className="mt-2 md:mt-4 max-w-2xl text-base md:text-xl text-primary-foreground/90">
             {siteConfig.tagline}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
-            <Button asChild variant="secondary" size="sm">
+            <Button asChild variant="secondary" size="lg" className="md:size-auto">
               <Link href="/services">
                 View Samples <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white">
+            <Button asChild variant="outline" size="lg" className="md:size-auto bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white">
                <Link href={`https://wa.me/${siteConfig.phone.replace(/[\s+]/g, '')}`} target="_blank">
                 WhatsApp Order
               </Link>
@@ -213,11 +213,13 @@ export default function Home() {
             </h2>
             <p className="text-lg text-muted-foreground mt-1">Get the best value with our curated packages.</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {comboPackages.slice(0, 4).map((pkg) => {
-              const service = services.find(s => s.id === pkg.id);
-              if (!service) return null;
-              return <ProductCard key={service.id} service={service} />;
+                const service = services.find(s => s.id === pkg.id);
+                if (!service) return null;
+                // A bit of a hack to show package price
+                const serviceWithPackagePrice = {...service, price: parseFloat(pkg.price.replace(/[^0-9.]/g, '')), originalPrice: undefined};
+                return <ProductCard key={service.id} service={serviceWithPackagePrice} />;
             })}
           </div>
            <div className="text-center mt-4">
@@ -246,8 +248,8 @@ export default function Home() {
           </div>
           <div className="text-center mt-4">
             <Button asChild variant="outline">
-              <Link href="/invitation-cards">
-                View All Cards <ArrowRight className="ml-2 h-4 w-4" />
+              <Link href="/invitation-cards?filter=cdr-file">
+                View All CDR Files <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -278,3 +280,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
