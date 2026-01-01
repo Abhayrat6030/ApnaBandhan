@@ -1,48 +1,23 @@
 'use server';
 
 import * as admin from 'firebase-admin';
-import { config } from 'dotenv';
 
-// Ensure environment variables are loaded
-config();
-
-function initializeAdminApp() {
-  if (admin.apps.length > 0) {
-    return admin.apps[0] as admin.app.App;
-  }
-
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
-  if (!projectId || !clientEmail || !privateKey) {
-    const missingVars = [
-        !projectId && "FIREBASE_PROJECT_ID",
-        !clientEmail && "FIREBASE_CLIENT_EMAIL",
-        !privateKey && "FIREBASE_PRIVATE_KEY"
-    ].filter(Boolean).join(', ');
-
-    throw new Error(`Firebase admin initialization failed: Missing environment variables: ${missingVars}`);
-  }
-
+if (!admin.apps.length) {
   try {
-    return admin.initializeApp({
+    admin.initializeApp({
       credential: admin.credential.cert({
-        projectId,
-        clientEmail,
-        privateKey,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
       }),
-      databaseURL: `https://${projectId}-default-rtdb.firebaseio.com`,
+      databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`,
     });
   } catch (error: any) {
-    console.error('Firebase admin initialization error', error);
-    // Re-throw a more specific error to aid debugging.
-    throw new Error('Firebase admin initialization failed: ' + error.message);
+     if (!/already exists/u.test(error.message)) {
+      console.error('Firebase admin initialization error', error.stack);
+    }
   }
-};
+}
 
-// Initialize app once and export services
-const adminApp = initializeAdminApp();
-
-export const auth = admin.auth(adminApp);
-export const db = admin.firestore(adminApp);
+export const auth = admin.auth();
+export const db = admin.firestore();
