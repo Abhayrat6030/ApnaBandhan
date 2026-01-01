@@ -8,7 +8,6 @@ const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export async function POST(req: NextRequest) {
   try {
-    initializeAdminApp();
     const body = await req.json();
     const { idToken } = body;
     
@@ -16,8 +15,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "ID token is required." }, { status: 400 });
     }
 
+    initializeAdminApp();
+    
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     
+    // Ensure the user trying to create a session is the admin
     if (decodedToken.email !== ADMIN_EMAIL) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }

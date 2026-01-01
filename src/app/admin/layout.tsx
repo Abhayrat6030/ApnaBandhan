@@ -1,7 +1,9 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 import AdminNav from "@/components/admin/AdminNav";
 import Logo from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
@@ -13,10 +15,65 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/lib/constants";
-import { PanelLeft } from "lucide-react";
+import { PanelLeft, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUser } from '@/firebase';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
+
+function AdminAuthGuard({ children }: { children: React.ReactNode }) {
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (!isUserLoading) {
+      if (user?.email === ADMIN_EMAIL) {
+        setIsAuthorized(true);
+      } else {
+        setIsAuthorized(false);
+        // Optional: redirect to a more graceful "access-denied" page
+        // For now, we'll just show the unauthorized message.
+      }
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-muted/40">
+        <div className="p-8">
+            <Skeleton className="h-32 w-full max-w-md" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 p-4">
+        <Card className="max-w-md text-center">
+            <CardHeader>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 mb-4">
+                  <ShieldAlert className="h-8 w-8 text-destructive" />
+                </div>
+                <CardTitle>Access Denied</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground mb-6">You do not have permission to view this page. Please log in with an administrator account.</p>
+                <Button asChild>
+                    <Link href="/login">Login</Link>
+                </Button>
+            </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 
 export default function AdminLayout({
   children,
@@ -27,6 +84,7 @@ export default function AdminLayout({
   const [isSheetOpen, setSheetOpen] = useState(false);
 
   return (
+    <AdminAuthGuard>
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <aside className="hidden border-r bg-muted/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
@@ -87,5 +145,6 @@ export default function AdminLayout({
           </main>
         </div>
       </div>
+    </AdminAuthGuard>
   );
 }
