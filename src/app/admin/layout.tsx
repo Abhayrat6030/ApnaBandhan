@@ -65,7 +65,7 @@ export default function AdminLayout({
             </div>
             <div className="flex-1">
               <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-                <AdminNav />
+                <AdminNav onLinkClick={() => isSheetOpen && setSheetOpen(false)} />
               </nav>
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function AdminLayout({
             </Avatar>
 
           </header>
-          <main className="flex flex-1 flex-col">
+          <main className="flex flex-1 flex-col bg-muted/20">
             {children}
           </main>
         </div>

@@ -81,3 +81,11 @@ export type DownloadableProduct = {
     downloadUrl: string;
     orderId: string;
 };
+
+export type UserProfile = {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  createdAt: string;
+}

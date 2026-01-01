@@ -22,6 +22,9 @@ export const adminNavItems: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard' },
   { label: 'Orders', href: '/admin/orders' },
   { label: 'Services', href: '/admin/services' },
+  { label: 'Users', href: '/admin/users'},
+  { label: 'Notifications', href: '/admin/notifications' },
+  { label: 'Downloads', href: '/admin/downloads' },
   { label: 'AI Enhancer', href: '/admin/ai-enhancer' },
 ];
 
