@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import admin from "firebase-admin";
 import { initializeAdminApp } from "@/firebase/admin";
 import { cookies } from "next/headers";
+import 'dotenv/config';
 
 // Initialize admin app safely
 initializeAdminApp();

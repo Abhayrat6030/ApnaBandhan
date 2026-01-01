@@ -1,8 +1,7 @@
+
 'use server';
 
-import { config } from 'dotenv';
-config();
-
+import 'dotenv/config';
 import admin from 'firebase-admin';
 
 // Helper function to initialize the admin app safely
