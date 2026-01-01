@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, MessageSquare } from 'lucide-react';
+import { MoreHorizontal, MessageSquare, Loader2 } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import Link from 'next/link';
 import { updateOrderStatus, updatePaymentStatus } from '@/app/admin/orders/actions';
@@ -130,7 +130,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isSubmitting}>
-                        <MoreHorizontal className="h-4 w-4" />
+                         {isSubmitting?.endsWith(order.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
                         <span className="sr-only">Toggle menu</span>
                       </Button>
                     </DropdownMenuTrigger>

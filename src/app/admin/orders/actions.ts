@@ -1,7 +1,6 @@
 
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import type { Order } from '@/lib/types';
@@ -11,8 +10,6 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
     try {
         const orderRef = doc(db, 'orders', orderId);
         await updateDoc(orderRef, { status });
-        revalidatePath('/admin/orders');
-        revalidatePath('/admin/dashboard');
         return { success: true };
     } catch (error: any) {
         console.error("Firestore update error:", error);
@@ -24,8 +21,6 @@ export async function updatePaymentStatus(orderId: string, paymentStatus: Order[
     try {
         const orderRef = doc(db, 'orders', orderId);
         await updateDoc(orderRef, { paymentStatus });
-        revalidatePath('/admin/orders');
-        revalidatePath('/admin/dashboard');
         return { success: true };
     } catch (error: any) {
         console.error("Firestore update error:", error);

@@ -1,7 +1,6 @@
 
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import type { Service, Package } from '@/lib/types';
@@ -57,7 +56,6 @@ export async function addService(data: FormValues) {
         await setDoc(doc(db, 'comboPackages', packageSlug), newPackage);
     }
 
-    revalidatePath('/admin/services');
     return { success: true };
   } catch (error: any) {
     console.error("Error adding document: ", error);
@@ -97,8 +95,6 @@ export async function updateService(id: string, data: FormValues) {
       await updateDoc(packageRef, packageData);
     }
 
-    revalidatePath('/admin/services');
-    revalidatePath(`/admin/services/edit/${id}`);
     return { success: true };
   } catch (error: any) {
     console.error("Error updating document: ", error);
@@ -111,7 +107,6 @@ export async function deleteItem(itemId: string, itemType: 'Service' | 'Package'
     try {
         const collectionName = itemType === 'Service' ? 'services' : 'comboPackages';
         await deleteDoc(doc(db, collectionName, itemId));
-        revalidatePath('/admin/services');
         return { success: true };
     } catch (error: any) {
         console.error("Error deleting document: ", error);
