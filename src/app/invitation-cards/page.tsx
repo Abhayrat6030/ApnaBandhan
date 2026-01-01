@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { services } from '@/lib/data';
 import { Service } from '@/lib/types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/carousel"
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { ProductCard } from '@/components/shared/ProductCard';
 
 const cardServices = services.filter(s => s.category === 'invitation-cards');
 
@@ -34,23 +33,23 @@ const cardFilters = [
 ];
 
 const premiumSellers = cardServices.filter(s => s.isFeatured).slice(0, 5);
-const topRatedServices = cardServices.filter(s => s.topRated).slice(0,4);
 
-
-// New component for the new card design
-function InvitationProductCard({ service }: { service: Service }) {
+// New component for the new card design from the user's latest image
+function NewInvitationProductCard({ service }: { service: Service }) {
   const discount = service.originalPrice && service.originalPrice > service.price
     ? Math.round(((service.originalPrice - service.price) / service.originalPrice) * 100)
     : 0;
   
   const primaryImage = service.samples.find(s => s.type === 'image');
+  const isTrending = service.topRated;
+  const isHot = service.isFeatured;
 
   return (
     <Link href={`/services/${service.slug}`} className="group block">
-      <Card className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full">
+      <Card className="overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:shadow-lg h-full border">
         <CardContent className="p-0 relative">
           {primaryImage && (
-            <div className="relative aspect-[3/4] w-full bg-muted/30 rounded-t-2xl">
+            <div className="relative aspect-[3/4] w-full bg-muted/20">
               <Image 
                 src={primaryImage.url}
                 alt={service.name}
@@ -58,20 +57,33 @@ function InvitationProductCard({ service }: { service: Service }) {
                 className="object-contain"
                 data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
               />
-            </div>
-          )}
-          {discount > 0 && (
-             <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-semibold px-2.5 py-1 rounded-full shadow-md">
-              {discount}% OFF
+               {isTrending && (
+                <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                  Trending
+                </div>
+              )}
+              {isHot && !isTrending && (
+                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                  Hot
+                </div>
+              )}
             </div>
           )}
         </CardContent>
-        <div className="p-4 flex flex-col flex-grow">
-          <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors flex-grow">
+        <div className="p-3 flex flex-col flex-grow bg-white">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">{service.tags?.[0] || service.category.replace('-', ' ')}</p>
+          <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors flex-grow my-1">
             {service.name}
           </h3>
+          {service.rating && (
+            <div className="flex items-center gap-1.5 text-sm">
+                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                <span className="font-bold">{service.rating.toFixed(1)}</span>
+                <span className="text-muted-foreground">(1k+)</span>
+            </div>
+          )}
           <div className="mt-2 flex items-baseline gap-2">
-            <p className="font-bold text-lg text-blue-500">
+            <p className="font-bold text-base text-foreground">
               ₹{service.price.toLocaleString('en-IN')}
             </p>
             {service.originalPrice && (
@@ -80,6 +92,13 @@ function InvitationProductCard({ service }: { service: Service }) {
               </p>
             )}
           </div>
+           {discount > 0 && (
+             <div className="mt-1">
+                <div className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-md inline-block">
+                    {discount}% OFF
+                </div>
+            </div>
+          )}
         </div>
       </Card>
     </Link>
@@ -183,7 +202,7 @@ export default function InvitationCardsPage() {
         {/* Main content grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
           {filteredServices.map(service => (
-            <InvitationProductCard key={service.id} service={service} />
+            <NewInvitationProductCard key={service.id} service={service} />
           ))}
         </div>
          {filteredServices.length === 0 && (
