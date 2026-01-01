@@ -14,27 +14,22 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // This is the single source of truth for admin access.
-    function isAdmin() {
-      return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
-    }
-
     /* ===============================
        USERS
        /users/{userId}
     =============================== */
     match /users/{userId} {
       // Users can read and write their own data. Admins can too.
-      allow read, write: if isOwner(userId) || isAdmin();
+      allow read, write: if isOwner(userId) || request.auth.token.email == 'abhayrat603@gmail.com';
 
       match /notifications/{notificationId} {
         allow read: if isOwner(userId);
-        allow write: if isAdmin(); // Only admin can send notifications
+        allow write: if request.auth.token.email == 'abhayrat603@gmail.com'; // Only admin can send notifications
       }
 
       match /downloadableProducts/{productId} {
         allow read: if isOwner(userId);
-        allow write: if isAdmin(); // Only admin can add downloadable products
+        allow write: if request.auth.token.email == 'abhayrat603@gmail.com'; // Only admin can add downloadable products
       }
     }
 
@@ -43,16 +38,16 @@ service cloud.firestore {
     =============================== */
     match /services/{serviceId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
     match /comboPackages/{comboId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if request.auth.token.email == 'abhayrat603@gmail.com';
     }
      match /media/{mediaId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
     /* ===============================
@@ -60,10 +55,10 @@ service cloud.firestore {
     =============================== */
      match /orders/{orderId} {
       // Admins can get any order. Users can only get their own.
-      allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
+      allow get: if request.auth.token.email == 'abhayrat603@gmail.com' || (resource.data.userId != null && isOwner(resource.data.userId));
 
       // Admins can update any order.
-      allow update: if isAdmin();
+      allow update: if request.auth.token.email == 'abhayrat603@gmail.com';
 
       // Users can create orders for themselves with specific initial data.
       allow create: if isSignedIn()
@@ -75,7 +70,7 @@ service cloud.firestore {
       allow delete: if false;
 
       // Admins can LIST all orders. Users can LIST their own orders.
-      allow list: if isAdmin() || (isSignedIn() && request.query.where[0][2] == request.auth.uid);
+      allow list: if request.auth.token.email == 'abhayrat603@gmail.com' || (isSignedIn() && request.query.where[0][2] == request.auth.uid);
     }
   }
 }
