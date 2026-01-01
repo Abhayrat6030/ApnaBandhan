@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { initializeAdminApp } from '@/firebase/admin';
 import admin from 'firebase-admin';
+import { getDocs, query, where } from 'firebase-admin/firestore';
 
 const signupSchema = z.object({
   name: z.string().min(2),
