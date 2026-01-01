@@ -2,8 +2,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
+import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';

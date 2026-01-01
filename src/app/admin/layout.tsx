@@ -27,7 +27,7 @@ function AdminAuthGuard({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!isUserLoading && (!user || user.email !== ADMIN_EMAIL)) {
-            router.replace('/login');
+            router.replace('/admin/login');
         }
     }, [user, isUserLoading, router]);
 
