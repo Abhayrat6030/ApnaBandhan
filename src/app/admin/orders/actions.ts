@@ -1,7 +1,7 @@
 
 'use server';
 
-import { updateDoc } from 'firebase/firestore';
+import 'dotenv/config';
 import { db } from '@/firebase/admin';
 import type { Order } from '@/lib/types';
 import { verifyAdmin } from '@/lib/admin-auth';
@@ -19,6 +19,7 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
         
         return { success: true };
     } catch (error: any) {
+        console.error("Error updating order status:", error);
         return { success: false, error: error.message || 'Failed to update status.' };
     }
 }
@@ -35,6 +36,7 @@ export async function updatePaymentStatus(orderId: string, paymentStatus: Order[
         
         return { success: true };
     } catch (error: any) {
+        console.error("Error updating payment status:", error);
         return { success: false, error: error.message || 'Failed to update payment status.' };
     }
 }

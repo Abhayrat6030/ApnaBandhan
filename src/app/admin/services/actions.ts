@@ -1,6 +1,7 @@
 
 'use server';
 
+import 'dotenv/config';
 import { z } from 'zod';
 import { db } from '@/firebase/admin';
 import type { Service, Package } from '@/lib/types';
@@ -63,6 +64,7 @@ export async function addService(data: FormValues) {
 
     return { success: true };
   } catch (error: any) {
+    console.error("Error adding service:", error);
     return { success: false, error: error.message };
   }
 }
@@ -106,6 +108,7 @@ export async function updateService(id: string, data: FormValues) {
 
     return { success: true };
   } catch (error: any) {
+    console.error("Error updating service:", error);
     return { success: false, error: error.message };
   }
 }
@@ -121,6 +124,7 @@ export async function deleteItem(itemId: string, itemType: 'Service' | 'Package'
         await db.collection(collectionName).doc(itemId).delete();
         return { success: true };
     } catch (error: any) {
+        console.error("Error deleting item:", error);
         return { success: false, error: error.message || 'Failed to delete item.' };
     }
 }
