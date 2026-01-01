@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import admin from "firebase-admin";
 import { cookies } from "next/headers";
+import 'dotenv/config';
 
-// Helper function to initialize the admin app safely, ensuring env vars are read
+// Helper function to initialize the admin app safely
 const initializeAdminApp = () => {
-    // This function will now be called within the action, where process.env is available.
     if (admin.apps.length > 0) {
         return;
     }
@@ -40,10 +40,10 @@ const initializeAdminApp = () => {
 };
 
 export async function POST(req: Request) {
-  // Initialize admin app safely
-  initializeAdminApp();
-
   try {
+    // Initialize admin app safely
+    initializeAdminApp();
+
     const { idToken } = await req.json();
     if (!idToken) {
         console.log("SESSION FAIL: No ID token provided.");
@@ -52,8 +52,6 @@ export async function POST(req: Request) {
 
     const decoded = await admin.auth().verifyIdToken(idToken);
     
-    console.log("DECODED EMAIL:", decoded.email);
-
     if (decoded.email !== "abhayrat603@gmail.com") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

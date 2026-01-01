@@ -1,9 +1,8 @@
-'use server';
-
 import { NextRequest, NextResponse } from 'next/server';
 import admin from 'firebase-admin';
+import 'dotenv/config';
 
-// Helper function to initialize the admin app safely
+// Helper function to initialize the admin app safely, ensuring env vars are read
 const initializeAdminApp = () => {
     if (admin.apps.length > 0) {
         return;
@@ -22,6 +21,7 @@ const initializeAdminApp = () => {
     ].filter(Boolean).join(', ');
 
     if (missingVars) {
+        // This error will now correctly report which variables are missing.
         throw new Error(`Firebase admin initialization failed: Missing environment variables: ${missingVars}`);
     }
 
@@ -30,6 +30,7 @@ const initializeAdminApp = () => {
             credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
         });
     } catch (error: any) {
+        // Catch cases where the app might already be initialized in a concurrent request.
         if (!/already exists/u.test(error.message)) {
             console.error('Firebase admin initialization error', error);
             throw new Error('Firebase admin initialization failed: ' + error.message);
