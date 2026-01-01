@@ -31,6 +31,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -50,6 +58,13 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const editFormSchema = z.object({
+  title: z.string().min(5, 'Title must be at least 5 characters.'),
+  description: z.string().min(10, 'Description is required.'),
+});
+type EditFormValues = z.infer<typeof editFormSchema>;
+
+
 interface SentNotification extends Notification {
     path: string; // The full path to the document, e.g., users/{userId}/notifications/{notificationId}
     userName?: string;
@@ -63,8 +78,12 @@ export default function AdminNotificationsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [sentNotifications, setSentNotifications] = useState<SentNotification[]>([]);
   const [isFetchingSent, setIsFetchingSent] = useState(true);
+  
   const [itemToDelete, setItemToDelete] = useState<SentNotification | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  const [itemToEdit, setItemToEdit] = useState<SentNotification | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
 
   const usersQuery = useMemoFirebase(() => db ? collection(db, 'users') : null, [db]);
@@ -79,6 +98,10 @@ export default function AdminNotificationsPage() {
       description: '',
       type: 'general',
     },
+  });
+
+  const editForm = useForm<EditFormValues>({
+    resolver: zodResolver(editFormSchema),
   });
 
   const watchTarget = form.watch('target');
@@ -174,6 +197,25 @@ export default function AdminNotificationsPage() {
     setIsLoading(false);
   }
 
+  async function onEditSubmit(values: EditFormValues) {
+      if (!itemToEdit || !db) return;
+      setIsEditing(true);
+
+      const notifRef = doc(db, itemToEdit.path);
+      try {
+          await updateDoc(notifRef, {
+              title: values.title,
+              description: values.description,
+          });
+          toast({ title: "Notification updated successfully" });
+          setSentNotifications(prev => prev.map(n => n.path === itemToEdit.path ? {...n, ...values} : n));
+          setItemToEdit(null);
+      } catch (error: any) {
+          toast({ title: "Error updating notification", description: error.message, variant: 'destructive' });
+      }
+      setIsEditing(false);
+  }
+
   const handleDeleteClick = (notification: SentNotification) => {
     setItemToDelete(notification);
   };
@@ -193,8 +235,11 @@ export default function AdminNotificationsPage() {
   }
   
   const handleEditClick = (notification: SentNotification) => {
-    // For now, this is a placeholder. A real implementation would open a modal.
-    toast({title: "Edit Clicked", description: "Edit functionality coming soon."})
+    setItemToEdit(notification);
+    editForm.reset({
+      title: notification.title,
+      description: notification.description,
+    });
   }
 
   return (
@@ -326,15 +371,10 @@ export default function AdminNotificationsPage() {
                                             <TableCell>{notif.title}</TableCell>
                                             <TableCell>{new Date(notif.date).toLocaleDateString()}</TableCell>
                                             <TableCell className="text-right">
-                                               <DropdownMenu>
-                                                  <DropdownMenuTrigger asChild>
-                                                      <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                                                  </DropdownMenuTrigger>
-                                                  <DropdownMenuContent>
-                                                      <DropdownMenuItem onClick={() => handleEditClick(notif)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>
-                                                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(notif)}><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
-                                                  </DropdownMenuContent>
-                                               </DropdownMenu>
+                                               <div className="flex gap-2 justify-end">
+                                                  <Button variant="outline" size="icon" onClick={() => handleEditClick(notif)}><Edit className="h-4 w-4" /></Button>
+                                                  <Button variant="destructive" size="icon" onClick={() => handleDeleteClick(notif)}><Trash2 className="h-4 w-4" /></Button>
+                                               </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -345,24 +385,16 @@ export default function AdminNotificationsPage() {
                         <div className="block md:hidden p-4 space-y-4">
                             {sentNotifications.map(notif => (
                                 <Card key={notif.path}>
-                                    <CardHeader className="flex flex-row items-start justify-between p-4 pb-2">
-                                        <div>
-                                            <CardTitle className="text-base">{notif.title}</CardTitle>
-                                            <CardDescription>{notif.userName}</CardDescription>
-                                        </div>
-                                         <DropdownMenu>
-                                              <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="-mt-2 -mr-2"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                              <DropdownMenuContent>
-                                                  <DropdownMenuItem onClick={() => handleEditClick(notif)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>
-                                                  <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClick(notif)}><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
-                                              </DropdownMenuContent>
-                                           </DropdownMenu>
+                                    <CardHeader className="p-4">
+                                        <CardTitle className="text-base">{notif.title}</CardTitle>
+                                        <CardDescription>{notif.userName} - {new Date(notif.date).toLocaleString()}</CardDescription>
                                     </CardHeader>
                                     <CardContent className="p-4 pt-0">
                                         <p className="text-sm text-muted-foreground">{notif.description}</p>
                                     </CardContent>
-                                    <CardFooter className="p-4 pt-0 text-xs text-muted-foreground">
-                                        {new Date(notif.date).toLocaleString()}
+                                    <CardFooter className="p-4 flex gap-2">
+                                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEditClick(notif)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDeleteClick(notif)}><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
                                     </CardFooter>
                                 </Card>
                             ))}
@@ -394,6 +426,53 @@ export default function AdminNotificationsPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
+    <Dialog open={!!itemToEdit} onOpenChange={(open) => !open && setItemToEdit(null)}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Edit Notification</DialogTitle>
+                <DialogDescription>
+                    Update the title and description for this notification.
+                </DialogDescription>
+            </DialogHeader>
+            <Form {...editForm}>
+                <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                    <FormField
+                        control={editForm.control}
+                        name="title"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Title</FormLabel>
+                                <FormControl>
+                                    <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={editForm.control}
+                        name="description"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Description</FormLabel>
+                                <FormControl>
+                                    <Textarea {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setItemToEdit(null)}>Cancel</Button>
+                        <Button type="submit" disabled={isEditing}>
+                            {isEditing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Save Changes
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </Form>
+        </DialogContent>
+    </Dialog>
     </>
   );
 }
