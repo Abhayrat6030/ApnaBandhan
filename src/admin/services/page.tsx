@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import { collection } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
+import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -35,22 +35,18 @@ import { deleteItem } from './actions';
 
 type CombinedService = (Partial<Service> & Partial<Package>) & { id: string; name: string; type: 'Service' | 'Package', slug?: string };
 
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
-
 export default function AdminServicesPage() {
-  const { user } = useUser();
-  const isAdmin = user?.email === ADMIN_EMAIL;
   const db = useFirestore();
 
   const servicesQuery = useMemoFirebase(() => {
-    if (!isAdmin || !db) return null;
+    if (!db) return null;
     return collection(db, 'services');
-  }, [isAdmin, db]);
+  }, [db]);
 
   const packagesQuery = useMemoFirebase(() => {
-    if (!isAdmin || !db) return null;
+    if (!db) return null;
     return collection(db, 'comboPackages');
-  }, [isAdmin, db]);
+  }, [db]);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
@@ -75,8 +71,8 @@ export default function AdminServicesPage() {
   };
   
   const confirmDelete = async () => {
-    if (!itemToDelete || !user) {
-        toast({ title: "Error", description: "Could not delete item. User not found.", variant: 'destructive' });
+    if (!itemToDelete) {
+        toast({ title: "Error", description: "Could not delete item.", variant: 'destructive' });
         return;
     }
 

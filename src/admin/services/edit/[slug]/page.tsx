@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { updateService } from '../../actions';
-import { useDoc, useMemoFirebase, useFirestore, useUser } from '@/firebase';
+import { useDoc, useMemoFirebase, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -55,7 +55,6 @@ export default function EditServicePage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [itemType, setItemType] = useState<'service' | 'package' | null>(null);
-  const { user } = useUser();
   const db = useFirestore();
 
   // Try fetching as a service first
@@ -110,10 +109,6 @@ export default function EditServicePage() {
   }, [serviceData, packageData, form]);
 
   async function onSubmit(values: FormValues) {
-    if (!user) {
-        toast({ title: 'Authentication Error', description: 'You must be logged in.', variant: 'destructive' });
-        return;
-    }
     setIsLoading(true);
     const result = await updateService(slug as string, values);
     

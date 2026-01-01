@@ -29,8 +29,6 @@ import type { Order } from '@/lib/types';
 import Link from 'next/link';
 import { updateOrderStatus, updatePaymentStatus } from '@/app/admin/orders/actions';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase';
-
 
 interface OrderTableProps {
   orders: (Order & { serviceName?: string })[];
@@ -39,8 +37,6 @@ interface OrderTableProps {
 export default function OrderTable({ orders }: OrderTableProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState<string | null>(null);
-  const { user } = useUser();
-
 
   const getStatusVariant = (status: Order['status']) => {
     switch (status) {
@@ -62,10 +58,6 @@ export default function OrderTable({ orders }: OrderTableProps) {
   }
 
   const handleStatusUpdate = async (orderId: string, newStatus: Order['status']) => {
-    if (!user) {
-        toast({ title: 'Not Authenticated', description: 'Please login to perform this action.', variant: 'destructive'});
-        return;
-    }
     setIsSubmitting(`status-${orderId}`);
     const result = await updateOrderStatus(orderId, newStatus);
     if (result.success) {
@@ -77,10 +69,6 @@ export default function OrderTable({ orders }: OrderTableProps) {
   }
 
   const handlePaymentUpdate = async (orderId: string, newStatus: Order['paymentStatus']) => {
-    if (!user) {
-        toast({ title: 'Not Authenticated', description: 'Please login to perform this action.', variant: 'destructive'});
-        return;
-    }
     setIsSubmitting(`payment-${orderId}`);
     const result = await updatePaymentStatus(orderId, newStatus);
     if (result.success) {
@@ -94,7 +82,6 @@ export default function OrderTable({ orders }: OrderTableProps) {
   const isUpdating = (type: 'status' | 'payment', orderId: string) => {
       return isSubmitting === `${type}-${orderId}`;
   }
-
 
   return (
     <div className="relative w-full overflow-auto">

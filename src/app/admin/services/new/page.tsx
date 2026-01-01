@@ -16,7 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { addService } from '../actions';
-import { useUser } from '@/firebase';
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
@@ -48,7 +47,6 @@ export default function NewServicePage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [itemType, setItemType] = useState('service');
-  const { user } = useUser();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -81,10 +79,6 @@ export default function NewServicePage() {
   }
 
   async function onSubmit(values: FormValues) {
-    if (!user) {
-        toast({ title: 'Authentication Error', description: 'You must be logged in.', variant: 'destructive' });
-        return;
-    }
     setIsLoading(true);
     const result = await addService(values);
     

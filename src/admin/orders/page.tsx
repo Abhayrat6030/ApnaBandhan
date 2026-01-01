@@ -14,17 +14,13 @@ import { packages, services as staticServices } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
-
 export default function AdminOrdersPage() {
-  const { user, isUserLoading } = useUser();
-  const isAdmin = user?.email === ADMIN_EMAIL;
   const db = useFirestore();
 
   const ordersQuery = useMemoFirebase(() => {
-      if (!isAdmin || !db) return null;
+      if (!db) return null;
       return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
-  }, [isAdmin, db]);
+  }, [db]);
 
   const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
 
@@ -43,7 +39,7 @@ export default function AdminOrdersPage() {
     }));
   }, [allOrders, allServicesMap]);
   
-  const isLoading = isUserLoading || areOrdersLoading;
+  const isLoading = areOrdersLoading;
 
   const renderSkeleton = () => (
     <div className="p-4">
@@ -77,10 +73,6 @@ export default function AdminOrdersPage() {
         <CardContent className="p-0">
           {isLoading ? (
             renderSkeleton()
-          ) : !isAdmin ? (
-            <div className="p-6 text-center text-muted-foreground">
-              <p>You do not have permission to view this page.</p>
-            </div>
           ) : allOrders && allOrders.length > 0 ? (
             <OrderTable orders={ordersWithServiceNames} />
           ) : (
