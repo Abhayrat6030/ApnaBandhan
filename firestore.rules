@@ -34,6 +34,13 @@ service cloud.firestore {
     }
 
     /* ===============================
+       SETTINGS (ADMIN ONLY)
+    =============================== */
+    match /app-settings/{settingId} {
+      allow read, write: if request.auth.token.email == 'abhayrat603@gmail.com';
+    }
+    
+    /* ===============================
        PUBLIC COLLECTIONS
     =============================== */
     match /services/{serviceId} {
