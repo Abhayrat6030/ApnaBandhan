@@ -9,11 +9,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useUser, useDoc, useCollection, useMemoFirebase, useAuth, useFirestore } from "@/firebase";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { collection, query, where, doc, setDoc, getDocs, writeBatch } from "firebase/firestore";
+import { collection, query, where, doc } from "firebase/firestore";
 import type { Notification, AppSettings, UserProfile } from "@/lib/types";
-import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const primaryMenuItems = [
@@ -42,7 +41,6 @@ export default function ProfilePage() {
     const router = useRouter();
     const auth = useAuth();
     const db = useFirestore();
-    const searchParams = useSearchParams();
     const { toast } = useToast();
 
     const userProfileRef = useMemoFirebase(() => {
@@ -60,70 +58,6 @@ export default function ProfilePage() {
     const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
     const { data: unreadNotifications, isLoading: areNotificationsLoading } = useCollection<Notification>(notificationsQuery);
     const { data: appSettings, isLoading: areSettingsLoading } = useDoc<AppSettings>(settingsRef);
-
-    // Effect to create user profile document if it doesn't exist (for new sign-ups)
-    useEffect(() => {
-        const createUserProfileIfNeeded = async () => {
-            // Conditions to run: user is loaded and authenticated, profile is checked and doesn't exist, and we have a DB connection.
-            if (user && !user.isAnonymous && !isUserLoading && !isProfileLoading && !userProfile && userProfileRef && db) {
-                console.log("User profile doesn't exist, creating one...");
-
-                const displayName = user.displayName || "New User";
-                const referralCodeInput = searchParams.get('ref');
-
-                const newUserProfileData: UserProfile = {
-                    uid: user.uid,
-                    displayName: displayName,
-                    email: user.email || "",
-                    createdAt: new Date().toISOString(),
-                    referralCode: `${displayName.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`,
-                    referredBy: null,
-                    status: 'active',
-                    referredUsers: []
-                };
-
-                // Check for a valid referral code first
-                if (referralCodeInput) {
-                    const usersRef = collection(db, 'users');
-                    const q = query(usersRef, where("referralCode", "==", referralCodeInput));
-                    const querySnapshot = await getDocs(q);
-
-                    if (!querySnapshot.empty) {
-                        const referrerDoc = querySnapshot.docs[0];
-                        // Ensure user is not referring themselves
-                        if (referrerDoc.id !== user.uid) {
-                            newUserProfileData.referredBy = referrerDoc.id;
-
-                            // Use a batch to update both documents atomically
-                            const batch = writeBatch(db);
-                            batch.set(userProfileRef, newUserProfileData); // Create new user doc
-                            
-                            const referredUsers = referrerDoc.data().referredUsers || [];
-                            batch.update(referrerDoc.ref, { // Update referrer doc
-                                referredUsers: [...referredUsers, user.uid]
-                            });
-
-                            await batch.commit();
-                            toast({ title: "Welcome!", description: "Your account and referral have been registered." });
-                            return; // Exit after successful batch commit
-                        }
-                    }
-                }
-                
-                // If there was no referral code, or it was invalid/self-referral, just create the new user's document.
-                try {
-                    await setDoc(userProfileRef, newUserProfileData);
-                    toast({ title: "Welcome!", description: "Your account has been created." });
-                } catch (error) {
-                    console.error("Error creating user profile:", error);
-                    toast({ title: "Error", description: "Could not save user profile.", variant: "destructive" });
-                }
-            }
-        };
-
-        createUserProfileIfNeeded();
-    }, [user, isUserLoading, isProfileLoading, userProfile, userProfileRef, db, searchParams, toast]);
-
 
     const handleLogout = async () => {
         if (!auth) return;
