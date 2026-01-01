@@ -52,7 +52,7 @@ export default function InvitationCardsPage() {
         <section className="mb-12">
             <h2 className="font-bold text-2xl tracking-tight mb-4">Browse by Category</h2>
             <Tabs value={filter} onValueChange={setFilter} className="w-full">
-              <TabsList className="flex-wrap h-auto justify-start">
+              <TabsList className="h-auto justify-start flex-wrap">
                 {cardFilters.map(f => (
                     <TabsTrigger key={f.value} value={f.value} className="m-1">{f.label}</TabsTrigger>
                 ))}
