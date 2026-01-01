@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const isAdmin = decodedClaims.email === ADMIN_EMAIL;
     return NextResponse.json({ isAdmin });
   } catch (error) {
+    // This will catch expired or invalid cookies
     return NextResponse.json({ isAdmin: false }, { status: 401 });
   }
 }
