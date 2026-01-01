@@ -19,30 +19,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
-
-function AdminAuthGuard({ children }: { children: React.ReactNode }) {
-    const { user, isUserLoading } = useUser();
-    const router = useRouter();
-
-    useEffect(() => {
-        if (!isUserLoading && (!user || user.email !== ADMIN_EMAIL)) {
-            router.replace('/admin/login');
-        }
-    }, [user, isUserLoading, router]);
-
-    if (isUserLoading || !user || user.email !== ADMIN_EMAIL) {
-        return (
-            <div className="flex h-screen items-center justify-center">
-                <p>Loading...</p>
-            </div>
-        );
-    }
-    
-    return <>{children}</>;
-}
-
-
 export default function AdminLayout({
   children,
 }: {
@@ -51,8 +27,10 @@ export default function AdminLayout({
   const { user } = useUser();
   const [isSheetOpen, setSheetOpen] = useState(false);
 
+  // Since middleware handles the auth guard, this component is now simpler.
+  // We just render the layout.
+
   return (
-    <AdminAuthGuard>
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         {/* DESKTOP SIDEBAR */}
         <aside className="hidden border-r bg-muted/40 md:block">
@@ -115,6 +93,5 @@ export default function AdminLayout({
           </main>
         </div>
       </div>
-    </AdminAuthGuard>
   );
 }
