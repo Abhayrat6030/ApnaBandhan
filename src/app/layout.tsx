@@ -12,7 +12,7 @@ import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import BottomNav from '@/components/layout/BottomNav';
-import { FirebaseClientProvider, initiateAnonymousSignIn, useUser, auth } from '@/firebase';
+import { FirebaseClientProvider, initiateAnonymousSignIn, useUser, useAuth } from '@/firebase';
 
 const fontInter = Inter({
   subsets: ['latin'],
@@ -26,12 +26,13 @@ const fontPlayfair = Playfair_Display({
 
 function AuthHandler({ children }: { children: React.ReactNode }) {
   const { isUserLoading, user } = useUser();
+  const auth = useAuth();
 
   React.useEffect(() => {
-    if (!isUserLoading && !user) {
+    if (!isUserLoading && !user && auth) {
       initiateAnonymousSignIn(auth);
     }
-  }, [isUserLoading, user]);
+  }, [isUserLoading, user, auth]);
 
   return <>{children}</>;
 }

@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, Film, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { useUser, useCollection, useMemoFirebase, db } from '@/firebase';
+import { useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { DownloadableProduct } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,11 +17,12 @@ const iconMap = {
 
 export default function DownloadsPage() {
     const { user, isUserLoading } = useUser();
+    const db = useFirestore();
 
     const downloadsQuery = useMemoFirebase(() => {
-        if (!user) return null;
+        if (!user || !db) return null;
         return collection(db, 'users', user.uid, 'downloadableProducts');
-    }, [user]);
+    }, [user, db]);
 
     const { data: downloadableItems, isLoading: areDownloadsLoading } = useCollection<DownloadableProduct>(downloadsQuery);
 

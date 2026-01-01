@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import { collection } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, db, useUser } from '@/firebase';
+import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -40,16 +40,17 @@ const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 export default function AdminServicesPage() {
   const { user } = useUser();
   const isAdmin = user?.email === ADMIN_EMAIL;
+  const db = useFirestore();
 
   const servicesQuery = useMemoFirebase(() => {
-    if (!isAdmin) return null;
+    if (!isAdmin || !db) return null;
     return collection(db, 'services');
-  }, [isAdmin]);
+  }, [isAdmin, db]);
 
   const packagesQuery = useMemoFirebase(() => {
-    if (!isAdmin) return null;
+    if (!isAdmin || !db) return null;
     return collection(db, 'comboPackages');
-  }, [isAdmin]);
+  }, [isAdmin, db]);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);

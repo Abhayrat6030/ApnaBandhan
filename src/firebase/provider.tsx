@@ -1,12 +1,11 @@
 'use client';
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
-import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { FirebaseApp, initializeApp, getApps, getApp } from 'firebase/app';
+import { Firestore, getFirestore } from 'firebase/firestore';
+import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
-import { auth as authInstance, db as firestoreInstance } from './config';
-import { getApp } from 'firebase/app';
+import { firebaseConfig } from './config';
 
 interface UserAuthState {
   user: User | null;
@@ -15,13 +14,18 @@ interface UserAuthState {
 }
 
 export interface FirebaseContextState {
-  firebaseApp: FirebaseApp | null;
-  firestore: Firestore | null;
-  auth: Auth | null;
+  firebaseApp: FirebaseApp;
+  firestore: Firestore;
+  auth: Auth;
   user: User | null;
   isUserLoading: boolean;
   userError: Error | null;
 }
+
+// Initialize Firebase App
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+export const db = getFirestore(app);
+
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
@@ -34,9 +38,9 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({
     userError: null,
   });
 
-  const firebaseApp = useMemo(() => getApp(), []);
-  const auth = useMemo(() => authInstance, []);
-  const firestore = useMemo(() => firestoreInstance, []);
+  const firebaseApp = useMemo(() => app, []);
+  const auth = useMemo(() => getAuth(firebaseApp), [firebaseApp]);
+  const firestore = useMemo(() => db, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -75,25 +79,16 @@ export const useFirebase = (): FirebaseContextState => {
 
 export const useAuth = (): Auth => {
   const context = useFirebase();
-  if (!context.auth) {
-    throw new Error('Auth service not available.');
-  }
   return context.auth;
 };
 
 export const useFirestore = (): Firestore => {
   const context = useFirebase();
-  if (!context.firestore) {
-    throw new Error('Firestore service not available.');
-  }
   return context.firestore;
 };
 
 export const useFirebaseApp = (): FirebaseApp => {
   const context = useFirebase();
-  if (!context.firebaseApp) {
-    throw new Error('Firebase App not available.');
-  }
   return context.firebaseApp;
 };
 

@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { collection, query, where } from 'firebase/firestore';
-import { useUser, useCollection, useMemoFirebase, db } from '@/firebase';
+import { useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -36,13 +36,14 @@ const getPaymentStatusVariant = (status: Order['paymentStatus']) => {
 
 export default function OrderHistoryPage() {
     const { user, isUserLoading } = useUser();
+    const db = useFirestore();
 
     const ordersQuery = useMemoFirebase(() => {
-        if (!user) {
+        if (!user || !db) {
           return null;
         }
         return query(collection(db, 'orders'), where('userId', '==', user.uid));
-    }, [user]);
+    }, [user, db]);
 
     const { data: userOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
 

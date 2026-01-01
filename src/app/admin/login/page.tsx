@@ -26,6 +26,16 @@ export default function AdminLoginPage() {
         e.preventDefault();
         setIsLoading(true);
 
+        if (!auth) {
+            toast({
+                title: "Login Failed",
+                description: "Firebase authentication service is not available. Please try again later.",
+                variant: "destructive",
+            });
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken(true);

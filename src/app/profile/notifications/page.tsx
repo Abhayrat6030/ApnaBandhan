@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Bell, CheckCircle, Gift, Loader2 } from 'lucide-react';
-import { useUser, useCollection, useMemoFirebase, db } from '@/firebase';
+import { useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Notification } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,11 +16,12 @@ const iconMap = {
 
 export default function NotificationsPage() {
     const { user, isUserLoading } = useUser();
+    const db = useFirestore();
 
     const notificationsQuery = useMemoFirebase(() => {
-        if (!user) return null;
+        if (!user || !db) return null;
         return query(collection(db, 'users', user.uid, 'notifications'), orderBy('date', 'desc'));
-    }, [user]);
+    }, [user, db]);
 
     const { data: notifications, isLoading: areNotificationsLoading } = useCollection<Notification>(notificationsQuery);
     

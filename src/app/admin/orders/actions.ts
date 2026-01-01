@@ -1,9 +1,13 @@
+
 'use server';
 
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestore } from 'firebase-admin/firestore';
+import admin from '@/firebase/admin';
 import type { Order } from '@/lib/types';
 import { verifyAdmin } from '@/lib/admin-auth';
+
+const db = getFirestore(admin.app());
 
 export async function updateOrderStatus(orderId: string, status: Order['status']) {
     try {
@@ -12,8 +16,8 @@ export async function updateOrderStatus(orderId: string, status: Order['status']
             return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };
         }
         
-        const orderRef = doc(db, 'orders', orderId);
-        await updateDoc(orderRef, { status });
+        const orderRef = db.collection('orders').doc(orderId);
+        await orderRef.update({ status });
         
         return { success: true };
     } catch (error: any) {
@@ -28,8 +32,8 @@ export async function updatePaymentStatus(orderId: string, paymentStatus: Order[
             return { success: false, error: 'Unauthorized. You do not have permission to perform this action.' };
         }
         
-        const orderRef = doc(db, 'orders', orderId);
-        await updateDoc(orderRef, { paymentStatus });
+        const orderRef = db.collection('orders').doc(orderId);
+        await orderRef.update({ paymentStatus });
         
         return { success: true };
     } catch (error: any) {

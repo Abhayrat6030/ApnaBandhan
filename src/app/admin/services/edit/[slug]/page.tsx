@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { updateService } from '../../actions';
-import { useDoc, useMemoFirebase, db, useUser } from '@/firebase';
+import { useDoc, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -56,13 +56,14 @@ export default function EditServicePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [itemType, setItemType] = useState<'service' | 'package' | null>(null);
   const { user } = useUser();
+  const db = useFirestore();
 
   // Try fetching as a service first
-  const serviceRef = useMemoFirebase(() => slug ? doc(db, 'services', slug as string) : null, [slug]);
+  const serviceRef = useMemoFirebase(() => slug && db ? doc(db, 'services', slug as string) : null, [slug, db]);
   const { data: serviceData, isLoading: isServiceLoading } = useDoc<Service>(serviceRef);
   
   // Then try fetching as a package
-  const packageRef = useMemoFirebase(() => slug ? doc(db, 'comboPackages', slug as string) : null, [slug]);
+  const packageRef = useMemoFirebase(() => slug && db ? doc(db, 'comboPackages', slug as string) : null, [slug, db]);
   const { data: packageData, isLoading: isPackageLoading } = useDoc<Package>(packageRef);
 
   const form = useForm<FormValues>({

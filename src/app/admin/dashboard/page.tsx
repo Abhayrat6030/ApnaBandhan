@@ -9,7 +9,7 @@ import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service as ServiceType, Package as PackageType } from '@/lib/types';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, db } from '@/firebase';
+import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { services as staticServices, packages as staticPackages } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
@@ -19,16 +19,17 @@ const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const isAdmin = user?.email === ADMIN_EMAIL;
+  const db = useFirestore();
 
   const allOrdersQuery = useMemoFirebase(() => {
-    if (!isAdmin) return null;
+    if (!isAdmin || !db) return null;
     return collection(db, 'orders');
-  }, [isAdmin]);
+  }, [isAdmin, db]);
   
   const recentOrdersQuery = useMemoFirebase(() => {
-    if (!isAdmin) return null;
+    if (!isAdmin || !db) return null;
     return query(collection(db, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [isAdmin]);
+  }, [isAdmin, db]);
 
   const { data: allOrders, isLoading: areAllOrdersLoading } = useCollection<Order>(allOrdersQuery);
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);

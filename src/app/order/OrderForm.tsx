@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -20,7 +21,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, db, errorEmitter } from '@/firebase';
+import { useUser, useFirestore, errorEmitter } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 
@@ -46,6 +47,7 @@ function OrderFormComponent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { user } = useUser();
+  const db = useFirestore();
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -75,10 +77,10 @@ function OrderFormComponent() {
   async function onSubmit(data: OrderFormValues) {
     setIsSubmitting(true);
 
-    if (!user) {
+    if (!user || !db) {
         toast({
             title: "Authentication Error",
-            description: "You must be logged in to place an order.",
+            description: "You must be logged in to place an order. Please wait a moment for services to load.",
             variant: "destructive",
         });
         setIsSubmitting(false);
@@ -284,7 +286,7 @@ function OrderFormComponent() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={isSubmitting || !user} className="w-full" size="lg" variant="secondary">
+              <Button type="submit" disabled={isSubmitting || !user || !db} className="w-full" size="lg" variant="secondary">
                 {isSubmitting ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -1,10 +1,14 @@
+
 'use server';
 
 import { doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { getFirestore } from 'firebase-admin/firestore';
+import admin from '@/firebase/admin';
 import type { Service, Package } from '@/lib/types';
 import { z } from 'zod';
 import { verifyAdmin } from '@/lib/admin-auth';
+
+const db = getFirestore(admin.app());
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
@@ -49,7 +53,7 @@ export async function addService(data: FormValues) {
             inclusions: rest.inclusions?.map(i => i.value).filter(Boolean) || [],
             deliveryTime: rest.deliveryTime || 'N/A',
         };
-        await setDoc(doc(db, 'services', newService.slug), newService);
+        await db.collection('services').doc(newService.slug).set(newService);
     } else { // package
         const newPackage: Omit<Package, 'id' | 'isBestValue'> = {
             name,
@@ -58,7 +62,7 @@ export async function addService(data: FormValues) {
             features: rest.features?.map(f => f.value).filter(Boolean) || [],
         };
         const packageSlug = name.toLowerCase().replace(/\s+/g, '-');
-        await setDoc(doc(db, 'comboPackages', packageSlug), newPackage);
+        await db.collection('comboPackages').doc(packageSlug).set(newPackage);
     }
 
     return { success: true };
@@ -82,7 +86,7 @@ export async function updateService(id: string, data: FormValues) {
     const { itemType, name, slug, description, ...rest } = parseResult.data;
 
     if (itemType === 'service') {
-      const serviceRef = doc(db, 'services', id);
+      const serviceRef = db.collection('services').doc(id);
       const serviceData: Partial<Service> = {
         name,
         description,
@@ -92,16 +96,16 @@ export async function updateService(id: string, data: FormValues) {
         deliveryTime: rest.deliveryTime,
         inclusions: rest.inclusions?.map(i => i.value).filter(Boolean),
       };
-      await updateDoc(serviceRef, serviceData);
+      await serviceRef.update(serviceData);
     } else { // package
-      const packageRef = doc(db, 'comboPackages', id);
+      const packageRef = db.collection('comboPackages').doc(id);
        const packageData: Partial<Package> = {
         name,
         description,
         price: rest.priceString,
         features: rest.features?.map(f => f.value).filter(Boolean),
       };
-      await updateDoc(packageRef, packageData);
+      await packageRef.update(packageData);
     }
 
     return { success: true };
@@ -118,7 +122,7 @@ export async function deleteItem(itemId: string, itemType: 'Service' | 'Package'
         }
 
         const collectionName = itemType === 'Service' ? 'services' : 'comboPackages';
-        await deleteDoc(doc(db, collectionName, itemId));
+        await db.collection(collectionName).doc(itemId).delete();
         return { success: true };
     } catch (error: any) {
         return { success: false, error: error.message || 'Failed to delete item.' };

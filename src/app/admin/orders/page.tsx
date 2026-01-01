@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, useUser, db } from '@/firebase';
+import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
@@ -19,11 +19,12 @@ const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 export default function AdminOrdersPage() {
   const { user, isUserLoading } = useUser();
   const isAdmin = user?.email === ADMIN_EMAIL;
+  const db = useFirestore();
 
   const ordersQuery = useMemoFirebase(() => {
-      if (!isAdmin) return null;
+      if (!isAdmin || !db) return null;
       return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
-  }, [isAdmin]);
+  }, [isAdmin, db]);
 
   const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
 
