@@ -117,8 +117,8 @@ export default function EditServicePage() {
 
     try {
         if (values.itemType === 'service') {
-            const serviceRef = doc(db, 'services', slug as string);
-            await updateDoc(serviceRef, {
+            const serviceDocRef = doc(db, 'services', slug as string);
+            await updateDoc(serviceDocRef, {
                 name: values.name,
                 description: values.description,
                 category: values.category,
@@ -128,8 +128,8 @@ export default function EditServicePage() {
                 inclusions: values.inclusions?.map(i => i.value).filter(Boolean),
             });
         } else { // package
-            const packageRef = doc(db, 'comboPackages', slug as string);
-            await updateDoc(packageRef, {
+            const packageDocRef = doc(db, 'comboPackages', slug as string);
+            await updateDoc(packageDocRef, {
                 name: values.name,
                 description: values.description,
                 price: values.priceString,
@@ -142,6 +142,7 @@ export default function EditServicePage() {
             description: `${values.itemType === 'service' ? 'Service' : 'Package'} updated successfully.`,
         });
         router.push('/admin/services');
+        router.refresh();
     } catch (error: any) {
         toast({
             title: 'Error',
