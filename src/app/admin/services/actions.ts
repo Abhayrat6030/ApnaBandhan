@@ -2,7 +2,7 @@
 'use server';
 
 import { doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { db, auth } from '@/firebase';
 import type { Service, Package } from '@/lib/types';
 import { z } from 'zod';
 
@@ -24,7 +24,14 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const checkAdmin = () => {
+    const user = auth.currentUser;
+    return user?.email === 'abhayrat603@gmail.com';
+}
+
 export async function addService(data: FormValues) {
+  if (!checkAdmin()) return { success: false, error: 'Unauthorized' };
+  
   const parseResult = formSchema.safeParse(data);
   if (!parseResult.success) {
     return { success: false, error: 'Invalid data provided.' };
@@ -64,6 +71,8 @@ export async function addService(data: FormValues) {
 }
 
 export async function updateService(id: string, data: FormValues) {
+  if (!checkAdmin()) return { success: false, error: 'Unauthorized' };
+
   const parseResult = formSchema.safeParse(data);
   if (!parseResult.success) {
     return { success: false, error: 'Invalid data provided.' };
@@ -104,6 +113,8 @@ export async function updateService(id: string, data: FormValues) {
 
 
 export async function deleteItem(itemId: string, itemType: 'Service' | 'Package') {
+    if (!checkAdmin()) return { success: false, error: 'Unauthorized' };
+
     try {
         const collectionName = itemType === 'Service' ? 'services' : 'comboPackages';
         await deleteDoc(doc(db, collectionName, itemId));

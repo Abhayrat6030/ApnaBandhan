@@ -7,45 +7,45 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-
+    
     function isAdmin() {
-      return isSignedIn() && request.auth.token.email == "abhayrat603@gmail.com";
+        return request.auth != null && request.auth.token.email == "abhayrat603@gmail.com";
     }
 
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Default Deny
+    // Default Deny all
     match /{path=**} {
       allow read, write: if false;
     }
 
-    // Public collections
+    // Public collections can be read by anyone
     match /services/{serviceId} {
-      allow get: if true;
-      allow list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
     match /comboPackages/{pkgId} {
-      allow get: if true;
-      allow list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
      match /media/{mediaId} {
-      allow get: if true;
-      allow list: if true;
+      allow read: if true;
       allow write: if isAdmin();
     }
 
     // User-specific data
     match /users/{userId} {
+      // User can read/write their own profile, Admins can read/write any profile
       allow read, write: if isOwner(userId) || isAdmin();
 
+      // Notifications: Only admin can write, owner and admin can read
       match /notifications/{notificationId} {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if isAdmin();
       }
+      // Downloads: Only admin can write, owner and admin can read
       match /downloadableProducts/{productId} {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if isAdmin();
@@ -54,10 +54,14 @@ service cloud.firestore {
 
     // Orders
     match /orders/{orderId} {
+      // Admin has full read/write access to all orders
       allow read, list, write: if isAdmin();
-      allow create: if isOwner(request.resource.data.userId);
-      allow get: if isOwner(resource.data.userId);
-      allow list: if isSignedIn() && request.query.where[0][2] == request.auth.uid;
+      
+      // Signed-in users can create an order for themselves
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      
+      // Signed-in users can get their own orders
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
   }
 }
