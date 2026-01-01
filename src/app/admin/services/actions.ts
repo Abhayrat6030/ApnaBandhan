@@ -1,7 +1,6 @@
 
 'use server';
 
-import 'dotenv/config';
 import { z } from 'zod';
 import { db } from '@/firebase/admin';
 import type { Service, Package } from '@/lib/types';

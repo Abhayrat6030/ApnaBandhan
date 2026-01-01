@@ -1,7 +1,6 @@
 
 'use server';
 
-import 'dotenv/config';
 import { db } from '@/firebase/admin';
 import type { Order } from '@/lib/types';
 import { verifyAdmin } from '@/lib/admin-auth';
