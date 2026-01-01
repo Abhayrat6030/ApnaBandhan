@@ -57,30 +57,6 @@ export default function AdminNav({ onLinkClick }: AdminNavProps) {
             );
         })}
       </div>
-
-      <Separator className="my-2" />
-      
-      <div className="py-2">
-        <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Main App</h3>
-        {mainNavItems.map((item) => {
-            const Icon = icons[item.href as keyof typeof icons] || Home;
-            const isActive = pathname === item.href;
-            return (
-            <Button
-                key={item.label}
-                asChild
-                variant={isActive ? "secondary" : "ghost"}
-                className="justify-start w-full"
-                onClick={onLinkClick}
-            >
-                <Link href={item.href} >
-                <Icon className="mr-2 h-4 w-4" />
-                {item.label}
-                </Link>
-            </Button>
-            );
-        })}
-      </div>
     </>
   );
 }
