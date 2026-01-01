@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
 export default function AdminUsersPage() {
   const db = useFirestore();
@@ -29,7 +30,8 @@ export default function AdminUsersPage() {
     if (!users) return [];
     return users.filter(user =>
       user.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.referralCode?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
 
@@ -42,6 +44,7 @@ export default function AdminUsersPage() {
           <TableRow>
             <TableHead>User</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Referral Code</TableHead>
             <TableHead>Joined</TableHead>
             <TableHead><span className="sr-only">Actions</span></TableHead>
           </TableRow>
@@ -51,6 +54,7 @@ export default function AdminUsersPage() {
             <TableRow key={i}>
               <TableCell className="flex items-center gap-2"><Skeleton className="h-10 w-10 rounded-full" /><Skeleton className="h-4 w-32" /></TableCell>
               <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
               <TableCell><Skeleton className="h-4 w-24" /></TableCell>
               <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
             </TableRow>
@@ -77,7 +81,7 @@ export default function AdminUsersPage() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search by name or email..."
+                  placeholder="Search by name, email, or referral..."
                   className="pl-8 sm:w-[300px]"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -91,6 +95,7 @@ export default function AdminUsersPage() {
                 <TableRow>
                   <TableHead>User</TableHead>
                   <TableHead className="hidden sm:table-cell">Email</TableHead>
+                  <TableHead>Referral Code</TableHead>
                   <TableHead className="hidden md:table-cell">Joined</TableHead>
                   <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
@@ -108,6 +113,9 @@ export default function AdminUsersPage() {
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">{user.email}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
+                    </TableCell>
                     <TableCell className="hidden md:table-cell">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -123,7 +131,7 @@ export default function AdminUsersPage() {
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">No users found.</TableCell>
+                    <TableCell colSpan={5} className="h-24 text-center">No users found.</TableCell>
                   </TableRow>
                 )}
               </TableBody>

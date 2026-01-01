@@ -88,4 +88,5 @@ export type UserProfile = {
   displayName: string;
   photoURL?: string;
   createdAt: string;
+  referralCode?: string;
 }

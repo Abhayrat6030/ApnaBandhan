@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Auth,
@@ -28,11 +29,15 @@ export async function initiateEmailSignUp(
         await updateProfile(userCredential.user, { displayName });
         const userDocRef = doc(db, 'users', userCredential.user.uid);
         
+        // Generate a referral code
+        const referralCode = `${displayName.replace(/\s+/g, '').toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
+
         const userProfile = {
             uid: userCredential.user.uid,
             displayName: displayName,
             email: email,
             createdAt: new Date().toISOString(),
+            referralCode: referralCode,
         };
 
         await setDoc(userDocRef, userProfile);
