@@ -1,13 +1,11 @@
 
 'use server';
 
-import { doc, updateDoc } from 'firebase/firestore';
-import { getFirestore } from 'firebase-admin/firestore';
-import admin from '@/firebase/admin';
+import { updateDoc } from 'firebase/firestore';
+import { db } from '@/firebase/admin';
 import type { Order } from '@/lib/types';
 import { verifyAdmin } from '@/lib/admin-auth';
 
-const db = getFirestore(admin.app());
 
 export async function updateOrderStatus(orderId: string, status: Order['status']) {
     try {

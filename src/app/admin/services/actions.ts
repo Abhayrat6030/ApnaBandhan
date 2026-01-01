@@ -1,14 +1,10 @@
 
 'use server';
 
-import { doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { getFirestore } from 'firebase-admin/firestore';
-import admin from '@/firebase/admin';
-import type { Service, Package } from '@/lib/types';
 import { z } from 'zod';
+import { db } from '@/firebase/admin';
+import type { Service, Package } from '@/lib/types';
 import { verifyAdmin } from '@/lib/admin-auth';
-
-const db = getFirestore(admin.app());
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),

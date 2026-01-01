@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import admin from '@/firebase/admin';
+import { auth } from '@/firebase/admin';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
@@ -11,7 +11,7 @@ export async function verifyAdmin(): Promise<boolean> {
   }
 
   try {
-    const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
+    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
     return decodedClaims.email === ADMIN_EMAIL;
   } catch (error) {
     console.error('Admin verification failed:', error);

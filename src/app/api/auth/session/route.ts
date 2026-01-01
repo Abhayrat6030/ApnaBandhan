@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import admin from "@/firebase/admin";
+import { auth } from "@/firebase/admin";
 import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
     });
 
-    const decoded = await admin.auth().verifyIdToken(idToken);
+    const decoded = await auth.verifyIdToken(idToken);
     
     console.log("DECODED EMAIL:", decoded.email);
 
@@ -28,14 +28,14 @@ export async function POST(req: Request) {
     // Set session expiration to 5 days.
     const expiresIn = 60 * 60 * 24 * 5 * 1000;
     
-    const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
+    const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
 
     cookies().set("__session", sessionCookie, {
       httpOnly: true,
       secure: process.env.NODE_ENV !== 'development', // Use secure cookies in production
       sameSite: "lax",
       path: "/",
-      maxAge: expiresIn,
+      maxAge: expiresIn / 1000, // maxAge is in seconds
     });
 
     return NextResponse.json({ success: true });

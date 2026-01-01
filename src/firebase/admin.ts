@@ -1,29 +1,37 @@
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 
-// This ensures we only initialize the app once, preventing errors on hot reloads.
-if (!admin.apps.length) {
+// This function ensures we only initialize the app once.
+const initializeAdminApp = () => {
+  if (admin.apps.length > 0) {
+    return admin.app();
+  }
+
   try {
     const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-
     if (!serviceAccountString) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set. This is required for server-side admin operations.');
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set.');
     }
     
-    // The environment variable is a string, so we need to parse it into a JSON object.
     const serviceAccount = JSON.parse(serviceAccountString);
 
-    admin.initializeApp({
+    return admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
-    console.log("Firebase Admin SDK initialized successfully.");
-
   } catch (e: any) {
     console.error('Firebase Admin SDK initialization error:', e.message);
-    // Provide a more helpful error if JSON parsing fails.
     if (e instanceof SyntaxError) {
-        console.error('The FIREBASE_SERVICE_ACCOUNT_KEY might be improperly formatted. Ensure it is a valid JSON string.');
+      console.error('The FIREBASE_SERVICE_ACCOUNT_KEY might be improperly formatted. Ensure it is a valid JSON string.');
     }
+    // Re-throw the error to make it clear that initialization failed.
+    throw new Error('Could not initialize Firebase Admin SDK.');
   }
-}
+};
 
-export default admin;
+// Initialize the app and export the initialized services.
+// This pattern ensures that initialization happens only once.
+const adminApp = initializeAdminApp();
+const db = admin.firestore(adminApp);
+const auth = admin.auth(adminApp);
+
+export { db, auth };
+export default adminApp;

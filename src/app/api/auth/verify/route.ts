@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
-import admin from '@/firebase/admin';
+import { auth } from '@/firebase/admin';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
+    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
     const isAdmin = decodedClaims.email === ADMIN_EMAIL;
     return NextResponse.json({ isAdmin });
   } catch (error) {
