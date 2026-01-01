@@ -39,10 +39,10 @@ const initializeAdminApp = () => {
     }
 };
 
-// Initialize admin app safely
-initializeAdminApp();
-
 export async function POST(req: Request) {
+  // Initialize admin app safely
+  initializeAdminApp();
+
   try {
     const { idToken } = await req.json();
     if (!idToken) {
