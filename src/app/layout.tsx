@@ -47,16 +47,6 @@ export default function RootLayout({
   const isAuthRoute = ['/admin/login', '/login', '/signup', '/forgot-password'].includes(pathname);
   const [isMenuOpen, setMenuOpen] = React.useState(false);
 
-  const AppContent = () => (
-    <>
-      {!isAdminRoute && <Header isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />}
-      <main className="flex-1">{children}</main>
-      {!isAdminRoute && <Footer isHomePage={pathname === '/'} />}
-      {!isAdminRoute && <BottomNav setMenuOpen={setMenuOpen} />}
-      <Toaster />
-    </>
-  );
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -74,15 +64,21 @@ export default function RootLayout({
       >
         <FirebaseClientProvider>
           {isAuthRoute ? (
-             <AppContent />
+             <>
+              <main className="flex-1">{children}</main>
+              <Toaster />
+             </>
           ) : (
             <AuthHandler>
               <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">
-                  <AppContent />
+                  {!isAdminRoute && <Header isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />}
+                  <main className="flex-1">{children}</main>
+                  {!isAdminRoute && <Footer isHomePage={pathname === '/'} />}
+                  {!isAdminRoute && <BottomNav setMenuOpen={setMenuOpen} />}
+                  <Toaster />
               </div>
             </AuthHandler>
           )}
-           <Toaster />
         </FirebaseClientProvider>
       </body>
     </html>
