@@ -63,7 +63,7 @@ export default function Home() {
             {siteConfig.tagline}
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
-            <Button asChild variant="secondary" className="md:size-auto">
+            <Button asChild className="md:size-auto">
               <Link href="/services">
                 View Samples <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
@@ -280,5 +280,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
