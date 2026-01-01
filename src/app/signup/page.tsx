@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -57,7 +58,7 @@ export default function SignupPage() {
     }
     
     try {
-        await initiateEmailSignUp(auth, values.email, values.password, values.name);
+        await initiateEmailSignUp(auth, values.email, values.password, values.name, values.referralCode);
         setIsLoading(false);
         toast({
           title: "Account Created!",
@@ -79,7 +80,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/30 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-secondary/30 p-4 animate-fade-in-up">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Create an Account</CardTitle>

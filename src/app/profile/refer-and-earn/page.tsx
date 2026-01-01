@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -55,11 +56,11 @@ export default function ReferAndEarnPage() {
     )
 
     if (isLoading) {
-        return <div className="container mx-auto px-4 py-8 md:py-16">{renderSkeleton()}</div>;
+        return <div className="container mx-auto px-4 py-8 md:py-16 animate-fade-in-up">{renderSkeleton()}</div>;
     }
 
     return (
-        <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="container mx-auto px-4 py-8 md:py-16 animate-fade-in-up">
             <Card className="max-w-2xl mx-auto">
                 <CardHeader className="text-center">
                     <Gift className="mx-auto h-12 w-12 text-primary mb-4" />
@@ -67,7 +68,7 @@ export default function ReferAndEarnPage() {
                     <CardDescription>Share ApnaBandhan with your friends and earn rewards!</CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
-                    <p className="text-muted-foreground mb-4">Share your unique referral code with your friends. When they place their first order, you both get a 20% discount!</p>
+                    <p className="text-muted-foreground mb-4">Share your unique referral code. When they place their first order using your code, **you both get a 20% discount** on your next order!</p>
                     <div className="p-4 bg-muted rounded-lg flex items-center justify-center gap-4">
                         {isLoading ? <Loader2 className="animate-spin" /> : <span className="text-2xl font-bold tracking-widest">{referralCode}</span>}
                         <Button variant="ghost" size="icon" onClick={() => copyToClipboard(referralCode, 'Referral Code')}>

@@ -1,11 +1,12 @@
 
+
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { adminNavItems, navItems as mainNavItems } from '@/lib/constants';
+import { adminNavItems } from '@/lib/constants';
 import { Separator } from '@/components/ui/separator';
-import { LayoutDashboard, ShoppingCart, List, Sparkles, Home, Gift, Info, Mail, Package, Users, Bell, Download, FileText, Award } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, List, Sparkles, Home, Gift, Info, Mail, Package, Users, Bell, Download, FileText, Award, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 
@@ -20,6 +21,7 @@ const icons: { [key: string]: React.ElementType } = {
   '/admin/requests': FileText,
   '/admin/rewards': Award,
   '/admin/referrals': Gift,
+  '/admin/settings': Settings,
   '/': Home,
   '/services': Gift,
   '/packages': Package,

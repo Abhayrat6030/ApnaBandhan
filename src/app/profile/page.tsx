@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { useUser, useDoc, useCollection, useMemoFirebase, useAuth, useFirestore 
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { collection, query, where, doc } from "firebase/firestore";
-import type { Notification } from "@/lib/types";
+import type { Notification, AppSettings } from "@/lib/types";
 
 const primaryMenuItems = [
     { label: "Profile", icon: User, href: "/profile/settings" },
@@ -25,7 +26,6 @@ const primaryMenuItems = [
 const secondaryMenuItems = [
     { label: "Refer & Earn", icon: Gift, href: "/profile/refer-and-earn" },
     { label: "My Rewards", icon: Award, href: "/profile/rewards" },
-    { label: "Download App", icon: Smartphone, href: "#" },
 ];
 
 const tertiaryMenuItems = [
@@ -52,8 +52,12 @@ export default function ProfilePage() {
         return query(collection(db, 'users', user.uid, 'notifications'), where('read', '==', false));
     }, [user, db]);
     
+    const settingsRef = useMemoFirebase(() => db ? doc(db, 'app-settings', 'links') : null, [db]);
+
     const { data: userProfile, isLoading: isProfileLoading } = useDoc(userProfileQuery);
     const { data: unreadNotifications, isLoading: areNotificationsLoading } = useCollection<Notification>(notificationsQuery);
+    const { data: appSettings, isLoading: areSettingsLoading } = useDoc<AppSettings>(settingsRef);
+
 
     const handleLogout = async () => {
         if (!auth) return;
@@ -61,11 +65,11 @@ export default function ProfilePage() {
         router.push('/login');
     };
     
-    const isLoading = isUserLoading || areNotificationsLoading || isProfileLoading;
+    const isLoading = isUserLoading || areNotificationsLoading || isProfileLoading || areSettingsLoading;
 
     if (isLoading) {
         return (
-             <div className="container mx-auto px-4 py-8 md:py-16 overflow-hidden">
+             <div className="container mx-auto px-4 py-8 md:py-16 overflow-hidden animate-fade-in-up">
                  <Card className="max-w-2xl mx-auto animate-pulse">
                      <CardHeader className="text-center">
                          <Skeleton className="w-24 h-24 rounded-full bg-muted mx-auto mb-4" />
@@ -86,7 +90,7 @@ export default function ProfilePage() {
 
     if (!user || user.isAnonymous) {
         return (
-            <div className="container mx-auto px-4 py-8 md:py-16 overflow-hidden">
+            <div className="container mx-auto px-4 py-8 md:py-16 overflow-hidden animate-fade-in-up">
                 <Card className="max-w-md mx-auto text-center">
                     <CardHeader>
                         <CardTitle>Welcome!</CardTitle>
@@ -110,7 +114,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8 md:py-16 overflow-hidden">
+        <div className="container mx-auto px-4 py-8 md:py-16 overflow-hidden animate-fade-in-up">
              <Card className="max-w-2xl mx-auto">
                 <CardHeader className="text-center">
                     <Avatar className="w-24 h-24 mx-auto mb-4 border-4 border-primary/20">
@@ -159,6 +163,12 @@ export default function ProfilePage() {
                                 </Link>
                             </Button>
                         ))}
+                        <Button variant="ghost" className="w-full justify-start text-base py-6" asChild>
+                            <Link href={appSettings?.downloadAppLink || '#'}>
+                                <Smartphone className="mr-4 h-5 w-5 text-muted-foreground" />
+                                Download App
+                            </Link>
+                        </Button>
                     </div>
 
                     <Separator className="my-2" />

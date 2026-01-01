@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -44,7 +45,8 @@ export default function AdminUsersPage() {
           <TableRow>
             <TableHead>User</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Referral Code</TableHead>
+            <TableHead>Referred By</TableHead>
+            <TableHead>Own Referral Code</TableHead>
             <TableHead>Joined</TableHead>
             <TableHead><span className="sr-only">Actions</span></TableHead>
           </TableRow>
@@ -54,6 +56,7 @@ export default function AdminUsersPage() {
             <TableRow key={i}>
               <TableCell className="flex items-center gap-2"><Skeleton className="h-10 w-10 rounded-full" /><Skeleton className="h-4 w-32" /></TableCell>
               <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
               <TableCell><Skeleton className="h-4 w-24" /></TableCell>
               <TableCell><Skeleton className="h-4 w-24" /></TableCell>
               <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
@@ -94,8 +97,8 @@ export default function AdminUsersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>
-                  <TableHead className="hidden sm:table-cell">Email</TableHead>
-                  <TableHead>Referral Code</TableHead>
+                  <TableHead className="hidden sm:table-cell">Referred By</TableHead>
+                  <TableHead>Own Referral Code</TableHead>
                   <TableHead className="hidden md:table-cell">Joined</TableHead>
                   <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
@@ -109,10 +112,19 @@ export default function AdminUsersPage() {
                           <AvatarImage src={user.photoURL || `https://avatar.vercel.sh/${user.email}.png`} />
                           <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                         </Avatar>
-                        <div className="font-medium">{user.displayName}</div>
+                        <div className="grid">
+                           <div className="font-medium">{user.displayName}</div>
+                           <div className="text-xs text-muted-foreground">{user.email}</div>
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{user.email}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {user.referredBy ? (
+                        <Badge variant="outline">{user.referredBy}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">N/A</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
                     </TableCell>

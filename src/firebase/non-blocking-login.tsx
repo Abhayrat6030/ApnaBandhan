@@ -1,4 +1,5 @@
 
+
 'use client';
 import {
   Auth,
@@ -23,21 +24,23 @@ export async function initiateEmailSignUp(
     email: string, 
     password: string, 
     displayName: string,
+    referralCodeInput?: string, // The referral code the new user entered
 ) {
     const userCredential = await createUserWithEmailAndPassword(authInstance, email, password);
     if (userCredential.user) {
         await updateProfile(userCredential.user, { displayName });
         const userDocRef = doc(db, 'users', userCredential.user.uid);
         
-        // Generate a referral code
-        const referralCode = `${displayName.replace(/\s+/g, '').toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
+        // Generate the new user's own referral code
+        const ownReferralCode = `${displayName.replace(/\s+/g, '').toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
 
         const userProfile = {
             uid: userCredential.user.uid,
             displayName: displayName,
             email: email,
             createdAt: new Date().toISOString(),
-            referralCode: referralCode,
+            referralCode: ownReferralCode, // Their own code
+            referredBy: referralCodeInput || null, // The code they used
         };
 
         await setDoc(userDocRef, userProfile);

@@ -88,5 +88,10 @@ export type UserProfile = {
   displayName: string;
   photoURL?: string;
   createdAt: string;
-  referralCode?: string;
+  referralCode?: string; // The user's own referral code
+  referredBy?: string; // The code they used to sign up
 }
+
+export type AppSettings = {
+    downloadAppLink: string;
+};
