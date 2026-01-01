@@ -54,23 +54,17 @@ service cloud.firestore {
        ORDERS (SECURE)
     =============================== */
      match /orders/{orderId} {
-      // Admins can get any order. Users can only get their own.
-      allow get: if request.auth.token.email == 'abhayrat603@gmail.com' || (resource.data.userId != null && isOwner(resource.data.userId));
-
-      // Admins can update any order.
-      allow update: if request.auth.token.email == 'abhayrat603@gmail.com';
-
+      // Admins can read/write any order. Users can only get their own.
+      allow read, write: if request.auth.token.email == 'abhayrat603@gmail.com';
+      
       // Users can create orders for themselves with specific initial data.
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
         && request.resource.data.paymentStatus == "Pending";
-
-      // Deleting orders is disallowed for safety.
-      allow delete: if false;
-
-      // Admins can LIST all orders. Users can LIST their own orders.
-      allow list: if request.auth.token.email == 'abhayrat603@gmail.com' || (isSignedIn() && request.query.where[0][2] == request.auth.uid);
+      
+      // Allow users to read their own orders.
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
   }
 }
