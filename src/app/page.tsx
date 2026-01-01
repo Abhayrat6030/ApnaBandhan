@@ -252,10 +252,27 @@ export default function Home() {
         </div>
       </section>}
 
+      {/* Website Development Section */}
+      <section id="website-development" className="pt-4 pb-8 bg-secondary/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center bg-card p-8 rounded-2xl shadow-lg">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 text-primary">
+              Full Professional Website
+            </h2>
+            <p className="text-lg text-muted-foreground mt-1 max-w-2xl mx-auto">
+              Need a complete website for your business or personal brand? We can create a stunning, professional, and fast website tailored to your needs.
+            </p>
+            <div className="text-center mt-6">
+              <Button asChild variant="secondary" size="lg">
+                <Link href="/contact">
+                  Contact Us For A Quote <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }
-
-    
-
-    
