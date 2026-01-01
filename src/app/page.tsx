@@ -43,9 +43,9 @@ export default function Home() {
   );
 
   return (
-    <div className="flex flex-col overflow-hidden">
+    <div className="flex flex-col overflow-hidden animate-fade-in-up">
       {/* Hero Section */}
-      <section className="relative h-[45vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
+      <section className="relative h-[40vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
         <Image
           src={placeholderImages.hero.imageUrl}
           alt={placeholderImages.hero.description}
@@ -55,7 +55,7 @@ export default function Home() {
           data-ai-hint={placeholderImages.hero.imageHint}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-transparent" />
-        <div className="relative z-10 p-4 flex flex-col items-center animate-fade-in-up">
+        <div className="relative z-10 p-4 flex flex-col items-center">
           <h1 className="font-bold text-4xl md:text-5xl lg:text-6xl tracking-tight !leading-tight">
             {siteConfig.name}
           </h1>
