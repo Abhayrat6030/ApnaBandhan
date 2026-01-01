@@ -105,7 +105,7 @@ export default function Home() {
       </section>
 
       {/* Top Rated Videos Section */}
-      {topRatedVideos.length > 0 && <section id="top-videos" className="pt-8 pb-12 bg-secondary/30">
+      {topRatedVideos.length > 0 && <section id="top-videos" className="pt-4 pb-12 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
@@ -129,7 +129,7 @@ export default function Home() {
       </section>}
       
       {/* Top Rated Cards Section */}
-      {topRatedCards.length > 0 && <section id="top-cards" className="pt-8 pb-12 bg-background">
+      {topRatedCards.length > 0 && <section id="top-cards" className="pt-4 pb-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
@@ -153,7 +153,7 @@ export default function Home() {
       </section>}
 
        {/* Top Rated Album Designs Section */}
-      {topRatedAlbums.length > 0 && <section id="top-albums" className="pt-8 pb-12 bg-secondary/30">
+      {topRatedAlbums.length > 0 && <section id="top-albums" className="pt-4 pb-12 bg-secondary/30">
         <div className="container mx-auto px-4">
            <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
@@ -177,7 +177,7 @@ export default function Home() {
       </section>}
 
        {/* Top Rated Video Editing Section */}
-      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="pt-8 pb-12 bg-background">
+      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="pt-4 pb-12 bg-background">
         <div className="container mx-auto px-4">
            <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
