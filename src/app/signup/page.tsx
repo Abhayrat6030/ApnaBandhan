@@ -15,7 +15,6 @@ import { Loader2, User, Mail, Lock, Gift, Eye, EyeOff } from 'lucide-react';
 import { signUpUser } from '@/app/actions/auth';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
-import { FormDescription } from '@/components/ui/form';
 
 const initialState = {
   message: '',
@@ -100,7 +99,7 @@ function SignupFormComponent() {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input id="name" name="name" placeholder="Your Name" required className="pl-10" />
                 </div>
-                <FormDescription className="text-xs mt-1">Enter your real full name.</FormDescription>
+                <p className="text-xs text-muted-foreground mt-1">Enter your real full name.</p>
               </div>
               
               <div>
@@ -109,7 +108,7 @@ function SignupFormComponent() {
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input id="email" name="email" type="email" placeholder="m@example.com" required className="pl-10" />
                 </div>
-                 <FormDescription className="text-xs mt-1">Enter a valid, real email address.</FormDescription>
+                 <p className="text-xs text-muted-foreground mt-1">Enter a valid, real email address.</p>
               </div>
 
               <div>
@@ -134,9 +133,9 @@ function SignupFormComponent() {
                         {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                     </Button>
                 </div>
-                 <FormDescription className="text-xs mt-1">
+                 <p className="text-xs text-muted-foreground mt-1">
                       Use a strong password. Min 8 characters.
-                 </FormDescription>
+                 </p>
               </div>
 
                <div>
