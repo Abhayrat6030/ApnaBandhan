@@ -30,23 +30,23 @@ service cloud.firestore {
     // USERS COLLECTION
     // =====================================================================
     match /users/{userId} {
-      allow read, update, delete: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId);
+      // Admins can do anything. Users can read/update their own data.
+      allow read, write: if isAdmin() || isOwner(userId);
 
       match /notifications/{notificationId} {
-        allow read: if isOwner(userId);
-        allow write: if isAdmin();
+        allow read: if isAdmin() || isOwner(userId);
+        allow write: if isAdmin(); // Only admin can send notifications
       }
 
       match /downloadableProducts/{productId} {
-        allow read: if isOwner(userId);
-        allow write: if isAdmin();
+        allow read: if isAdmin() || isOwner(userId);
+        allow write: if isAdmin(); // Only admin can add downloadable products
       }
     }
 
 
     // =====================================================================
-    // PUBLIC COLLECTIONS
+    // PUBLIC COLLECTIONS (READ-ONLY for users, WRITE for Admin)
     // =====================================================================
 
     match /services/{serviceId} {
@@ -65,23 +65,28 @@ service cloud.firestore {
     }
 
     // =====================================================================
-    // ORDERS COLLECTION
+    // ORDERS COLLECTION (SECURE)
     // =====================================================================
     match /orders/{orderId} {
     
+      // Admin can get any order. Users can only get their own.
       allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
 
+      // Admin can list all orders. Users can list their own orders.
       allow list: if isAdmin() || (isSignedIn() && request.query.where[0] == "userId" && request.query.where[1] == "==" && request.query.where[2] == request.auth.uid);
 
+      // Users can create orders for themselves with specific initial data.
       allow create: if isSignedIn()
                       && request.resource.data.userId == request.auth.uid
                       && request.resource.data.status == "Pending"
                       && request.resource.data.paymentStatus == "Pending"
                       && hasOnlyFields(['userId', 'fullName', 'phoneNumber', 'email', 'weddingDate', 'selectedServiceId', 'messageNotes', 'orderDate', 'status', 'paymentStatus']);
                       
+      // Only Admin can update any order.
       allow update: if isAdmin();
 
-      allow delete: if false; // Deleting orders is disallowed for safety.
+      // Deleting orders is disallowed for safety.
+      allow delete: if false;
     }
   }
 }
