@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,6 +17,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { ProductCard } from '@/components/shared/ProductCard';
 
 const cardServices = services.filter(s => s.category === 'invitation-cards');
 
@@ -33,6 +34,7 @@ const cardFilters = [
 ];
 
 const premiumSellers = cardServices.filter(s => s.isFeatured).slice(0, 5);
+const topRatedServices = cardServices.filter(s => s.topRated).slice(0,4);
 
 
 // New component for the new card design
@@ -53,13 +55,13 @@ function InvitationProductCard({ service }: { service: Service }) {
                 src={primaryImage.url}
                 alt={service.name}
                 fill
-                className="object-contain" // Changed to contain to show full image
+                className="object-contain"
                 data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
               />
             </div>
           )}
           {discount > 0 && (
-            <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-semibold px-2.5 py-1 rounded-full shadow-md">
+             <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-semibold px-2.5 py-1 rounded-full shadow-md">
               {discount}% OFF
             </div>
           )}
@@ -87,34 +89,6 @@ function InvitationProductCard({ service }: { service: Service }) {
 
 export default function InvitationCardsPage() {
   const [filter, setFilter] = useState('all');
-  const [timeLeft, setTimeLeft] = useState({ h: 14, m: 42, s: 5 });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        let { h, m, s } = prev;
-        if (s > 0) {
-          s--;
-        } else {
-          s = 59;
-          if (m > 0) {
-            m--;
-          } else {
-            m = 59;
-            if (h > 0) {
-              h--;
-            } else {
-              // Timer ended
-              clearInterval(timer);
-              return { h: 0, m: 0, s: 0 };
-            }
-          }
-        }
-        return { h, m, s };
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const filteredServices = filter === 'all'
     ? cardServices
@@ -125,27 +99,86 @@ export default function InvitationCardsPage() {
   return (
     <div className="bg-slate-50 overflow-hidden">
       <div className="container mx-auto px-4 py-8 md:py-12">
-        
-        <div className="text-center mb-8 bg-white p-6 rounded-2xl shadow-sm">
-            <div className="inline-flex items-center gap-2 bg-red-500 text-white font-bold text-sm px-4 py-1.5 rounded-full mb-2">
-                🔥 END OF SEASON SALE
-            </div>
-            <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
-                Hot Deals on Invitation Cards
+        <div className="text-center mb-8">
+            <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-orange-500">
+                InviteCards
             </h1>
-            <p className="mt-2 max-w-3xl mx-auto text-muted-foreground text-md">
-                Limited time offer - Don't miss out!
+            <p className="mt-1 max-w-3xl mx-auto text-muted-foreground text-md">
+                Beautiful Invitation Cards for Every Occasion
             </p>
-            <div className="flex items-center justify-center gap-2 md:gap-4 mt-4 text-gray-600">
-                <span className="font-medium">Ends in:</span>
-                <div className="flex items-center gap-2">
-                    <span className="font-bold text-lg bg-gray-100 text-gray-800 rounded-md px-3 py-1.5">{String(timeLeft.h).padStart(2, '0')}</span> h
-                    <span className="font-bold text-lg bg-gray-100 text-gray-800 rounded-md px-3 py-1.5">{String(timeLeft.m).padStart(2, '0')}</span> m
-                    <span className="font-bold text-lg bg-gray-100 text-gray-800 rounded-md px-3 py-1.5">{String(timeLeft.s).padStart(2, '0')}</span> s
-                </div>
-            </div>
         </div>
 
+        <div className="mb-8">
+            <h2 className="text-lg font-semibold mb-3">Browse by Category</h2>
+            <Tabs value={filter} onValueChange={setFilter} className="w-full">
+              <TabsList className="h-auto justify-start flex-wrap bg-transparent p-0 gap-2">
+                {cardFilters.map(f => (
+                    <TabsTrigger 
+                        key={f.value} 
+                        value={f.value}
+                        className={cn(
+                            "rounded-full border-transparent transition-all duration-300",
+                             filter === f.value
+                                ? "bg-purple-600 text-white shadow-md"
+                                : "bg-white text-gray-700 hover:bg-gray-100"
+                        )}
+                    >
+                        {f.label}
+                    </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+        </div>
+        
+        {premiumSellers.length > 0 && (
+          <div className="mb-12">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Premium Sellers</h2>
+              <Button variant="ghost" size="sm">
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+            <Carousel
+              opts={{
+                align: "center",
+                loop: true,
+              }}
+              className="w-full max-w-sm mx-auto"
+            >
+              <CarouselContent className="-ml-1">
+                {premiumSellers.map((service, index) => (
+                  <CarouselItem key={index} className="pl-1 basis-3/4">
+                    <div className="p-1">
+                       <Link href={`/services/${service.slug}`} className="group block">
+                        <Card className="overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full">
+                           <CardContent className="p-0 relative">
+                             {service.samples[0] && (
+                               <div className="relative aspect-[3/4] w-full bg-muted/30 rounded-t-2xl">
+                                 <Image 
+                                   src={service.samples[0].url}
+                                   alt={service.name}
+                                   fill
+                                   className="object-contain"
+                                   data-ai-hint={service.samples[0].imageHint || 'wedding invitation'}
+                                 />
+                               </div>
+                             )}
+                           </CardContent>
+                         </Card>
+                       </Link>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
+          </div>
+        )}
+        
+        <div className="mb-8">
+           <h2 className="text-lg font-semibold mb-3">Top Rated</h2>
+        </div>
 
         {/* Main content grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
