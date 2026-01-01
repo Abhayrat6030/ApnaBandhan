@@ -4,32 +4,18 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useActionState, useFormStatus } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useState, useEffect, Suspense } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Lock, Gift, Eye, EyeOff } from 'lucide-react';
 import { signUpUser } from '@/app/actions/auth';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
-
-const formSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  email: z.string().email({ message: 'Please enter a valid email.' }),
-  password: z.string()
-    .min(8, { message: 'Password must be at least 8 characters.' })
-    .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter.' })
-    .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter.' })
-    .regex(/[0-9]/, { message: 'Password must contain at least one number.' })
-    .regex(/[@$!%*?&]/, { message: 'Password must contain at least one special character (@$!%*?&).' }),
-  referralCode: z.string().optional(),
-});
+import { FormDescription } from '@/components/ui/form';
 
 const initialState = {
   message: '',
@@ -54,36 +40,36 @@ function SignupFormComponent() {
   const [showPassword, setShowPassword] = useState(false);
   const auth = useAuth();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-      referralCode: searchParams.get('ref') || '',
-    },
-  });
-
   useEffect(() => {
     if (formState.message) {
       if (formState.success) {
-        toast({
-          title: "Account Created!",
-          description: "Welcome! Please log in to continue.",
-        });
-        
         // Auto-login the user after successful sign-up
-        const values = form.getValues();
-        if (auth) {
-            signInWithEmailAndPassword(auth, values.email, values.password)
+        const formData = new FormData();
+        const email = (document.getElementById('email') as HTMLInputElement)?.value;
+        const password = (document.getElementById('password') as HTMLInputElement)?.value;
+
+        if (auth && email && password) {
+            signInWithEmailAndPassword(auth, email, password)
                 .then(() => {
+                    toast({
+                      title: "Account Created & Logged In!",
+                      description: "Welcome to ApnaBandhan.",
+                    });
                     router.push('/profile');
                 })
                 .catch((error) => {
                      console.error("Auto-login failed:", error);
+                     toast({
+                       title: "Account Created!",
+                       description: "Please log in to continue.",
+                     });
                      router.push('/login'); // Fallback to manual login
                 });
         } else {
+             toast({
+               title: "Account Created!",
+               description: "Please log in to continue.",
+             });
              router.push('/login');
         }
 
@@ -95,7 +81,7 @@ function SignupFormComponent() {
         });
       }
     }
-  }, [formState, toast, router, form, auth]);
+  }, [formState, toast, router, auth]);
 
 
   return (
@@ -149,7 +135,7 @@ function SignupFormComponent() {
                     </Button>
                 </div>
                  <FormDescription className="text-xs mt-1">
-                      Min 8 characters, with uppercase, lowercase, number & special symbol.
+                      Use a strong password. Min 8 characters.
                  </FormDescription>
               </div>
 
