@@ -1,22 +1,17 @@
 'use server';
 
-import { auth } from '@/firebase/admin';
-import { db as adminDb } from '@/firebase/admin';
+import { auth, db } from '@/firebase/admin';
 
 export async function deleteUserAction(uid: string): Promise<{ success: boolean, error?: string }> {
   try {
-    // Check if the user is an admin before proceeding (important for security)
-    // This is a placeholder for actual admin verification logic
-    
-    // Delete from Firebase Authentication
+    // Firebase Authentication से उपयोगकर्ता हटाएं
     await auth.deleteUser(uid);
     
-    // Delete from Firestore
-    const userDocRef = adminDb.collection('users').doc(uid);
+    // Firestore से उपयोगकर्ता दस्तावेज़ हटाएं
+    const userDocRef = db.collection('users').doc(uid);
     await userDocRef.delete();
 
-    // Optionally: Delete sub-collections like 'notifications', etc.
-    // This would require a recursive delete function. For now, we'll delete the main doc.
+    // वैकल्पिक: आप यहां 'notifications' जैसी उप-संग्रहों को हटाने के लिए एक रिकर्सिव डिलीट फ़ंक्शन भी जोड़ सकते हैं।
     
     return { success: true };
   } catch (error: any) {
