@@ -21,7 +21,7 @@ export default function InvitationVideosPage() {
     : videoServices.filter(service => service.id.includes(filter) || service.slug.includes(filter));
 
   return (
-    <div className="container mx-auto px-4 py-16 md:py-24 overflow-hidden">
+    <div className="container mx-auto px-4 py-16 md:py-24 overflow-hidden animate-fade-in-up">
       <div className="text-center mb-12">
         <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
           Wedding Invitation Videos

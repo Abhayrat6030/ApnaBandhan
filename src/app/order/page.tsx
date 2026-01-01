@@ -1,5 +1,10 @@
+
 import OrderForm from './OrderForm';
 
 export default function OrderPage() {
-  return <OrderForm />;
+  return (
+    <div className="animate-fade-in-up">
+        <OrderForm />
+    </div>
+  );
 }

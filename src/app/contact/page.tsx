@@ -38,7 +38,7 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="bg-secondary/30 overflow-hidden">
+    <div className="bg-secondary/30 overflow-hidden animate-fade-in-up">
         <div className="container mx-auto px-4 py-16 md:py-24">
         <div className="text-center mb-16">
             <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-primary">

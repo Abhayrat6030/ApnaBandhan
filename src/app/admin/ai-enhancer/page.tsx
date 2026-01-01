@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -69,7 +70,7 @@ export default function AiEnhancerPage() {
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
       <h1 className="font-headline text-2xl md:text-3xl font-bold">AI Photo Enhancer</h1>
       <Card>
         <CardHeader>

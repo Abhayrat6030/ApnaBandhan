@@ -49,7 +49,7 @@ function NewInvitationProductCard({ service }: { service: Service }) {
   const isHot = service.isFeatured;
 
   return (
-    <Link href={`/services/${service.slug}`} className="group block">
+    <Link href={`/services/${service.slug}`} className="group block animate-fade-in-up">
       <Card className="overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:shadow-lg h-full border">
         <CardContent className="p-0 relative">
           {primaryImage && (
@@ -213,7 +213,7 @@ export default function InvitationCardsPage() {
     );
 
   return (
-    <div className="bg-slate-50 overflow-hidden">
+    <div className="bg-slate-50 overflow-hidden animate-fade-in-up">
       <div className="container mx-auto px-4 py-8 md:py-12 space-y-12">
         <div className="text-center">
             <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-orange-500">

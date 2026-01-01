@@ -1,13 +1,13 @@
 
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
-import { doc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,17 +16,15 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useDoc, useMemoFirebase, useFirestore, useUser } from '@/firebase';
-import type { Service, Package } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useFirestore, useUser } from '@/firebase';
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
-  name: z.string().min(3, 'Name is required.'),
-  slug: z.string().optional(),
-  description: z.string().min(10, 'Description is required.'),
   // Service fields
+  name: z.string().min(3, 'Name is required.'),
+  slug: z.string().min(3, 'Slug is required. Use format: "your-service-name"').optional(),
   category: z.string().optional(),
+  description: z.string().min(10, 'Description is required.'),
   price: z.coerce.number().positive('Price must be a positive number.').optional(),
   priceType: z.enum(['starting', 'fixed']).optional(),
   deliveryTime: z.string().optional(),
@@ -45,28 +43,28 @@ const serviceCategories = [
     'album-design'
 ];
 
-type CombinedDoc = Service | Package;
-
-export default function EditServicePage() {
+export default function NewServicePage() {
   const router = useRouter();
-  const params = useParams();
-  const { slug } = params;
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [itemType, setItemType] = useState<'service' | 'package' | null>(null);
+  const [itemType, setItemType] = useState('service');
   const { user } = useUser();
   const db = useFirestore();
 
-  // Try fetching as a service first
-  const serviceRef = useMemoFirebase(() => slug && db ? doc(db, 'services', slug as string) : null, [slug, db]);
-  const { data: serviceData, isLoading: isServiceLoading } = useDoc<Service>(serviceRef);
-  
-  // Then try fetching as a package
-  const packageRef = useMemoFirebase(() => slug && db ? doc(db, 'comboPackages', slug as string) : null, [slug, db]);
-  const { data: packageData, isLoading: isPackageLoading } = useDoc<Package>(packageRef);
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      itemType: 'service',
+      name: '',
+      slug: '',
+      description: '',
+      price: 0,
+      priceType: 'fixed',
+      deliveryTime: '',
+      inclusions: [{ value: '' }],
+      priceString: '₹',
+      features: [{ value: '' }],
+    },
   });
 
   const { fields: inclusionFields, append: appendInclusion, remove: removeInclusion } = useFieldArray({
@@ -77,72 +75,50 @@ export default function EditServicePage() {
     control: form.control,
     name: "features",
   });
-  
-  useEffect(() => {
-    let itemData: CombinedDoc | null = null;
-    let type: 'service' | 'package' | null = null;
 
-    if (serviceData) {
-      itemData = serviceData;
-      type = 'service';
-    } else if (packageData) {
-      itemData = packageData;
-      type = 'package';
-    }
-
-    if (itemData && type) {
-        setItemType(type);
-        form.reset({
-            itemType: type,
-            name: itemData.name || '',
-            slug: (itemData as Service).slug || '',
-            description: itemData.description || '',
-            category: (itemData as Service).category || undefined,
-            price: (itemData as Service).price || undefined,
-            priceType: (itemData as Service).priceType || 'fixed',
-            deliveryTime: (itemData as Service).deliveryTime || undefined,
-            inclusions: (itemData as Service).inclusions?.map(value => ({ value })) || [{ value: '' }],
-            priceString: (itemData as Package).price || undefined,
-            features: (itemData as Package).features?.map(value => ({ value })) || [{ value: '' }],
-        });
-    }
-  }, [serviceData, packageData, form]);
+  const handleItemTypeChange = (value: string) => {
+    setItemType(value);
+    form.setValue('itemType', value as 'service' | 'package');
+  }
 
   async function onSubmit(values: FormValues) {
     if (!user || !db) {
-        toast({ title: 'Authentication Error', description: 'You must be logged in.', variant: 'destructive' });
+        toast({ title: 'Error', description: 'You must be logged in to perform this action.', variant: 'destructive' });
         return;
     }
     setIsLoading(true);
 
     try {
-        if (values.itemType === 'service') {
-            const serviceRef = doc(db, 'services', slug as string);
-            await updateDoc(serviceRef, {
+        if (values.itemType === 'service' && values.slug) {
+            const serviceRef = doc(db, 'services', values.slug);
+            await setDoc(serviceRef, {
                 name: values.name,
+                slug: values.slug,
                 description: values.description,
                 category: values.category,
                 price: values.price,
                 priceType: values.priceType,
                 deliveryTime: values.deliveryTime,
-                inclusions: values.inclusions?.map(i => i.value).filter(Boolean),
+                inclusions: values.inclusions?.map(i => i.value).filter(Boolean)
             });
-        } else { // package
-            const packageRef = doc(db, 'comboPackages', slug as string);
-            await updateDoc(packageRef, {
+        } else if (values.itemType === 'package') {
+            const slug = values.name.toLowerCase().replace(/\s+/g, '-');
+            const packageRef = doc(db, 'comboPackages', slug);
+            await setDoc(packageRef, {
                 name: values.name,
                 description: values.description,
                 price: values.priceString,
                 features: values.features?.map(f => f.value).filter(Boolean),
             });
         }
-
         toast({
             title: 'Success!',
-            description: `${values.itemType === 'service' ? 'Service' : 'Package'} updated successfully.`,
+            description: `${values.itemType === 'service' ? 'Service' : 'Package'} added successfully.`,
         });
         router.push('/admin/services');
+
     } catch (error: any) {
+        console.error("Error adding service:", error);
         toast({
             title: 'Error',
             description: error.message || 'Something went wrong.',
@@ -150,30 +126,49 @@ export default function EditServicePage() {
         });
     }
 
+
     setIsLoading(false);
-  }
-
-  if (isServiceLoading || isPackageLoading) {
-    return <div className="p-4 md:p-8"><Card className="max-w-3xl mx-auto"><CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader><CardContent><div className="space-y-4"><Skeleton className="h-10 w-full" /><Skeleton className="h-20 w-full" /><Skeleton className="h-10 w-full" /></div></CardContent></Card></div>
-  }
-
-  if (!itemType) {
-    return <div className="p-4 md:p-8 text-center">Item not found.</div>
   }
 
   return (
     <div className="p-4 md:p-8 animate-fade-in-up">
       <Card className="max-w-3xl mx-auto">
         <CardHeader>
-          <CardTitle>Edit {itemType === 'service' ? 'Service' : 'Package'}</CardTitle>
-          <CardDescription>Update the details for "{form.getValues('name')}".</CardDescription>
+          <CardTitle>Add New Item</CardTitle>
+          <CardDescription>Add a new service or combo package to your website.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="itemType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Item Type</FormLabel>
+                    <Select onValueChange={handleItemTypeChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select item type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="service">Service</SelectItem>
+                        <SelectItem value="package">Combo Package</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
               <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem><FormLabel>Name</FormLabel><FormControl><Input placeholder="e.g. Elegant Wedding E-Invite" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
+              
+              {itemType === 'service' && <FormField control={form.control} name="slug" render={({ field }) => (
+                <FormItem><FormLabel>Slug</FormLabel><FormControl><Input placeholder="e.g. elegant-wedding-e-invite" {...field} /></FormControl><FormMessage /></FormItem>
+              )}/>}
               
               <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the item..." {...field} /></FormControl><FormMessage /></FormItem>
@@ -212,7 +207,7 @@ export default function EditServicePage() {
                         </Button>
                     </div>
                 </>
-              ) : ( // Package fields
+              ) : (
                 <>
                     <FormField control={form.control} name="priceString" render={({ field }) => (
                         <FormItem><FormLabel>Price (Text)</FormLabel><FormControl><Input placeholder="e.g. ₹2,999" {...field} /></FormControl><FormMessage /></FormItem>
@@ -234,7 +229,7 @@ export default function EditServicePage() {
 
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
+                Add Item
               </Button>
             </form>
           </Form>

@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 
 export default function PackagesPage() {
   return (
-    <div className="bg-secondary/30 overflow-hidden">
+    <div className="bg-secondary/30 overflow-hidden animate-fade-in-up">
         <div className="container mx-auto px-4 py-16 md:py-24">
         <div className="text-center mb-12">
             <h1 className="font-bold text-4xl md:text-5xl tracking-tight">

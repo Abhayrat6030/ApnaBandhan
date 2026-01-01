@@ -33,13 +33,22 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-12 items-center">
-        <div className="flex pl-2">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
           <Link href="/" className="flex items-center space-x-2">
             <Logo className="h-8 w-auto text-primary" />
             <span className="font-bold sm:inline-block text-lg">{siteConfig.name}</span>
           </Link>
         </div>
+
+        {/* Mobile Nav - This is now triggered by the BottomNav */}
+         <div className="flex items-center md:hidden">
+            <Link href="/" className="flex items-center space-x-2">
+                 <Logo className="h-8 w-auto text-primary" />
+                 <span className="font-bold text-lg">{siteConfig.name}</span>
+            </Link>
+         </div>
+
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex flex-1 items-center justify-center space-x-6 text-sm font-medium">
@@ -57,7 +66,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
           ))}
         </nav>
 
-        <div className="flex flex-1 items-center justify-end space-x-2 pr-4">
+        <div className="flex flex-1 items-center justify-end space-x-2">
           <Button asChild variant="ghost" className="hidden lg:flex items-center">
              <a href={`tel:${siteConfig.phone.replace(/[\s+]/g, '')}`}>
                 <Phone className="mr-2 h-4 w-4" />

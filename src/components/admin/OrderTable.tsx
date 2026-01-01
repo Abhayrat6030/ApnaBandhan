@@ -98,7 +98,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
               <TableHead className="hidden sm:table-cell">Service</TableHead>
               <TableHead className="hidden md:table-cell">Order Date</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Payment</TableHead>
+              <TableHead className="hidden sm:table-cell">Payment</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -109,6 +109,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
               <TableRow key={order.id}>
                 <TableCell className="font-medium">
                   <div className="truncate max-w-[120px] sm:max-w-none">{order.fullName}</div>
+                  <div className="text-sm text-muted-foreground md:hidden">{order.serviceName || order.selectedServiceId}</div>
                   <div className="text-sm text-muted-foreground">{order.phoneNumber}</div>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">{order.serviceName || order.selectedServiceId}</TableCell>
@@ -116,7 +117,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
                 <TableCell>
                   <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                 </TableCell>
-                 <TableCell>
+                 <TableCell className="hidden sm:table-cell">
                   <Badge variant={getPaymentStatusVariant(order.paymentStatus)}>{order.paymentStatus}</Badge>
                 </TableCell>
                 <TableCell>
