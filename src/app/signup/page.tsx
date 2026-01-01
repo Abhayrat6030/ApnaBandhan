@@ -3,84 +3,90 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useActionState, useFormStatus, useState, useEffect, Suspense } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useState, useEffect, Suspense } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Mail, Lock, Gift, Eye, EyeOff } from 'lucide-react';
-import { signUpUser } from '@/app/actions/auth';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { Loader2, User, Mail, Lock, Phone, Gift, Eye, EyeOff } from 'lucide-react';
+import { initiateEmailSignUp, useAuth } from '@/firebase';
 
-const initialState = {
-  message: '',
-  success: false,
-};
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full" disabled={pending}>
-       {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      Create Account
-    </Button>
-  );
-}
+const formSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email.' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+  phone: z.string().optional(),
+  referralCode: z.string().optional(),
+});
 
 function SignupFormComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const [formState, formAction] = useActionState(signUpUser, initialState);
-  const [showPassword, setShowPassword] = useState(false);
   const auth = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      phone: '',
+      referralCode: searchParams.get('ref') || '',
+    },
+  });
 
   useEffect(() => {
-    if (formState.message) {
-      if (formState.success) {
-        // Auto-login the user after successful sign-up
-        const formData = new FormData();
-        const email = (document.getElementById('email') as HTMLInputElement)?.value;
-        const password = (document.getElementById('password') as HTMLInputElement)?.value;
-
-        if (auth && email && password) {
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    toast({
-                      title: "Account Created & Logged In!",
-                      description: "Welcome to ApnaBandhan.",
-                    });
-                    router.push('/profile');
-                })
-                .catch((error) => {
-                     console.error("Auto-login failed:", error);
-                     toast({
-                       title: "Account Created!",
-                       description: "Please log in to continue.",
-                     });
-                     router.push('/login'); // Fallback to manual login
-                });
-        } else {
-             toast({
-               title: "Account Created!",
-               description: "Please log in to continue.",
-             });
-             router.push('/login');
-        }
-
-      } else {
-        toast({
-          title: 'Sign Up Failed',
-          description: formState.message,
-          variant: 'destructive',
-        });
-      }
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      form.setValue('referralCode', refCode);
     }
-  }, [formState, toast, router, auth]);
+  }, [searchParams, form]);
 
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+
+    if (!auth) {
+      toast({
+        title: "Authentication service not ready",
+        description: "Please wait a moment and try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+        await initiateEmailSignUp(auth, values.email, values.password, values.name, values.referralCode);
+        setIsLoading(false);
+        toast({
+          title: "Account Created!",
+          description: "Welcome to ApnaBandhan. You're now logged in.",
+        });
+        router.push('/profile');
+    } catch (error: any) {
+        setIsLoading(false);
+        let description = 'An unexpected error occurred.';
+        if (error.code === 'auth/email-already-in-use') {
+            description = 'This email is already in use. Please log in instead.';
+        } else if (error.message && error.message.includes("referral code")) {
+            description = error.message;
+        }
+        toast({
+            title: 'Sign Up Failed',
+            description: description,
+            variant: 'destructive',
+        });
+    }
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 p-4 animate-fade-in-up">
@@ -90,64 +96,108 @@ function SignupFormComponent() {
           <CardDescription>Enter your details to get started.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <form action={formAction}>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="name" name="name" placeholder="Your Name" required className="pl-10" />
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Enter your real full name.</p>
-              </div>
-              
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="email" name="email" type="email" placeholder="m@example.com" required className="pl-10" />
-                </div>
-                 <p className="text-xs text-muted-foreground mt-1">Enter a valid, real email address.</p>
-              </div>
-
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        required
-                        className="pl-10 pr-10"
-                    />
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                        onClick={() => setShowPassword(!showPassword)}
-                    >
-                        {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                    </Button>
-                </div>
-                 <p className="text-xs text-muted-foreground mt-1">
-                      Use a strong password. Min 8 characters.
-                 </p>
-              </div>
-
-               <div>
-                <Label htmlFor="referralCode">Referral Code</Label>
-                <div className="relative">
-                    <Gift className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input id="referralCode" name="referralCode" placeholder="Enter referral code (optional)" defaultValue={searchParams.get('ref') || ''} className="pl-10" />
-                </div>
-              </div>
-
-              <SubmitButton />
-            </div>
-          </form>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                        <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="Your Name" {...field} className="pl-10" />
+                        </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="m@example.com" {...field} className="pl-10" />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            {...field}
+                            className="pl-10 pr-10"
+                        />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number (Optional)</FormLabel>
+                    <FormControl>
+                        <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="+91 98765 43210" {...field} className="pl-10" />
+                        </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="referralCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Referral Code (Optional)</FormLabel>
+                    <FormControl>
+                        <div className="relative">
+                            <Gift className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input placeholder="Enter referral code" {...field} className="pl-10" />
+                        </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={isLoading || !auth}>
+                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Account
+              </Button>
+            </form>
+          </Form>
         </CardContent>
         <div className="mb-6 text-center text-sm">
             Already have an account?{' '}

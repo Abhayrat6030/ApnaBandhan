@@ -8,8 +8,6 @@ import {
   sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
-import { signUpUser } from '@/app/actions/auth';
-
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
@@ -39,21 +37,11 @@ export function initiatePasswordReset(authInstance: Auth, email: string) {
 
 /** Initiate email/password sign-up (non-blocking). */
 export async function initiateEmailSignUp(auth: Auth, email: string, password: string, name: string, referralCode?: string) {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('password', password);
-    if (referralCode) {
-      formData.append('referralCode', referralCode);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    if (userCredential.user) {
+        await updateProfile(userCredential.user, { displayName: name });
+        // The logic to create the user profile in Firestore is now handled
+        // in the /profile page component for robustness.
     }
-    const result = await signUpUser(null, formData);
-
-    if (!result.success) {
-      throw new Error(result.message);
-    }
-
-    // After successful sign-up via server action, sign in the user on the client
-    await signInWithEmailAndPassword(auth, email, password);
-
-    return result;
+    return userCredential;
 }
