@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { services } from '@/lib/data';
 import { Service } from '@/lib/types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Star } from 'lucide-react';
+import { ChevronRight, Star, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Autoplay from "embla-carousel-autoplay"
+import useEmblaCarousel, { type EmblaCarouselType, type EmblaOptionsType } from 'embla-carousel-react'
 
 import {
   Carousel,
@@ -108,12 +109,97 @@ function NewInvitationProductCard({ service }: { service: Service }) {
 }
 
 
+const OPTIONS: EmblaOptionsType = { loop: true }
+
+const HotSellersSection = () => {
+  const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS, [Autoplay({delay: 3000, stopOnInteraction: false})])
+  const [selectedIndex, setSelectedIndex] = useState(0)
+
+  const updateSelectedIndex = useCallback((api: EmblaCarouselType) => {
+    if (!api) return
+    setSelectedIndex(api.selectedScrollSnap())
+  }, [])
+
+  useEffect(() => {
+    if (!emblaApi) return
+    updateSelectedIndex(emblaApi)
+    emblaApi.on('select', updateSelectedIndex)
+    emblaApi.on('reInit', updateSelectedIndex)
+  }, [emblaApi, updateSelectedIndex])
+
+  const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi])
+  const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi])
+
+  if (hotSellers.length === 0) return null;
+
+  return (
+    <div className="py-12 bg-gradient-to-br from-rose-50 to-orange-50 rounded-3xl shadow-inner-soft overflow-hidden">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center mb-6 px-4">
+          <h2 className="text-2xl font-bold text-gray-800">Hot Sellers</h2>
+          <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+            View All <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        </div>
+        <div className="relative">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex -ml-4" style={{backfaceVisibility: 'hidden'}}>
+              {hotSellers.map((service, index) => {
+                 const primaryImage = service.samples.find(s => s.type === 'image');
+                 if (!primaryImage) return null;
+                 const isActive = index === selectedIndex;
+
+                return (
+                  <div 
+                    key={service.id} 
+                    className={cn(
+                      "relative flex-shrink-0 flex-grow-0 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/3 pl-4 transition-all duration-500 ease-out",
+                    )}
+                  >
+                    <div className={cn(
+                      "transform transition-transform duration-500",
+                      isActive ? "scale-100" : "scale-85 opacity-50"
+                    )}>
+                      <Link href={`/services/${service.slug}`} className="group block cursor-pointer">
+                        <Card className="overflow-hidden rounded-2xl bg-white/50 backdrop-blur-md shadow-lg transition-all duration-300 w-full hover:shadow-2xl hover:-translate-y-1 border border-white/30">
+                            <CardContent className="p-0 relative">
+                                <div className="relative aspect-[3/4] w-full bg-transparent rounded-2xl">
+                                  <Image 
+                                    src={primaryImage.url}
+                                    alt={service.name}
+                                    fill
+                                    className="object-contain rounded-2xl"
+                                    data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
+                                  />
+                                   {service.isFeatured && (
+                                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+                                         <div className="bg-gradient-to-r from-orange-400 to-rose-400 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg transform transition-transform group-hover:scale-110">
+                                             HOT
+                                         </div>
+                                     </div>
+                                  )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+            <div className="hidden md:block">
+                <CarouselPrevious onClick={scrollPrev} className="absolute left-0 top-1/2 -translate-y-1/2 z-10" />
+                <CarouselNext onClick={scrollNext} className="absolute right-0 top-1/2 -translate-y-1/2 z-10" />
+            </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function InvitationCardsPage() {
   const [filter, setFilter] = useState('all');
-  
-  const hotSellersPlugin = useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
-  );
 
   const filteredServices = filter === 'all'
     ? cardServices
@@ -123,8 +209,8 @@ export default function InvitationCardsPage() {
 
   return (
     <div className="bg-slate-50 overflow-hidden">
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        <div className="text-center mb-8">
+      <div className="container mx-auto px-4 py-8 md:py-12 space-y-12">
+        <div className="text-center">
             <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-orange-500">
                 InviteCards
             </h1>
@@ -133,8 +219,8 @@ export default function InvitationCardsPage() {
             </p>
         </div>
 
-        <div className="mb-8">
-            <h2 className="text-lg font-semibold mb-3">Browse by Category</h2>
+        <div className="space-y-3">
+            <h2 className="text-lg font-semibold">Browse by Category</h2>
             <Tabs value={filter} onValueChange={setFilter} className="w-full">
               <TabsList className="h-auto justify-start flex-wrap bg-transparent p-0 gap-2">
                 {cardFilters.map(f => (
@@ -156,7 +242,7 @@ export default function InvitationCardsPage() {
         </div>
         
         {premiumSellers.length > 0 && (
-          <div className="mb-12">
+          <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Premium Sellers</h2>
               <Button variant="ghost" size="sm">
@@ -201,77 +287,21 @@ export default function InvitationCardsPage() {
           </div>
         )}
 
-        {hotSellers.length > 0 && (
-          <div className="mb-12">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Hot Sellers</h2>
-               <Button variant="ghost" size="sm">
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </div>
-            <Carousel
-              plugins={[hotSellersPlugin.current]}
-              onMouseEnter={hotSellersPlugin.current.stop}
-              onMouseLeave={hotSellersPlugin.current.reset}
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-4">
-                {hotSellers.map((service, index) => {
-                   const primaryImage = service.samples.find(s => s.type === 'image');
-                   if (!primaryImage) return null;
-
-                  return (
-                    <CarouselItem key={service.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
-                       <Link href={`/services/${service.slug}`} className="group block">
-                        <Card className="overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 w-full group-hover:scale-105">
-                            <CardContent className="p-0 relative">
-                                <div className="relative aspect-[3/4] w-full bg-muted/30">
-                                  <Image 
-                                    src={primaryImage.url}
-                                    alt={service.name}
-                                    fill
-                                    className="object-contain"
-                                    data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
-                                  />
-                                   {service.isFeatured && (
-                                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                                         <div className="bg-red-500 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg transform transition-transform group-hover:scale-110">
-                                             HOT
-                                         </div>
-                                     </div>
-                                  )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                      </Link>
-                    </CarouselItem>
-                  )
-                })}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
-          </div>
-        )}
+        {hotSellers.length > 0 && <HotSellersSection />}
         
-        <div className="mb-8">
+        <div>
            <h2 className="text-lg font-semibold mb-3">Top Rated</h2>
+           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
+              {filteredServices.map(service => (
+                <NewInvitationProductCard key={service.id} service={service} />
+              ))}
+            </div>
+             {filteredServices.length === 0 && (
+              <div className="text-center col-span-full py-16">
+                  <p className="text-muted-foreground text-lg">No designs found for this category.</p>
+              </div>
+            )}
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
-          {filteredServices.map(service => (
-            <NewInvitationProductCard key={service.id} service={service} />
-          ))}
-        </div>
-         {filteredServices.length === 0 && (
-          <div className="text-center col-span-full py-16">
-              <p className="text-muted-foreground text-lg">No designs found for this category.</p>
-          </div>
-        )}
       </div>
     </div>
   );
