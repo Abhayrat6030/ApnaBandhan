@@ -26,6 +26,9 @@ export const adminNavItems: NavItem[] = [
   { label: 'Notifications', href: '/admin/notifications' },
   { label: 'Downloads', href: '/admin/downloads' },
   { label: 'AI Enhancer', href: '/admin/ai-enhancer' },
+  { label: 'Requests', href: '/admin/requests' },
+  { label: 'Rewards', href: '/admin/rewards' },
+  { label: 'Referrals', href: '/admin/referrals' },
 ];
 
 export const footerLinks = {
