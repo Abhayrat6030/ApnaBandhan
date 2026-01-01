@@ -35,7 +35,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-20 items-center">
         <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <Logo className="h-10 w-auto text-primary" />
             <span className="font-bold sm:inline-block text-xl">{siteConfig.name}</span>
           </Link>
