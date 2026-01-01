@@ -7,22 +7,8 @@ import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { firebaseConfig } from './config';
 
-// VERY IMPORTANT: prevent re-initialization
-const app = getApps().length === 0
-  ? initializeApp(firebaseConfig)
-  : getApp();
-
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-
-
-interface UserAuthState {
-  user: User | null;
-  isUserLoading: boolean;
-  userError: Error | null;
-}
-
-export interface FirebaseContextState {
+// Define the shape of the context
+interface FirebaseContextState {
   firebaseApp: FirebaseApp;
   firestore: Firestore;
   auth: Auth;
@@ -31,13 +17,32 @@ export interface FirebaseContextState {
   userError: Error | null;
 }
 
+// Create the context
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
-export const FirebaseProvider: React.FC<{children: ReactNode}> = ({
-  children
-}) => {
-  const [userAuthState, setUserAuthState] = useState<UserAuthState>({
-    user: null,
+// Memoized initialization function
+const initializeFirebaseApp = () => {
+  const apps = getApps();
+  if (apps.length > 0) {
+    return getApp();
+  }
+  return initializeApp(firebaseConfig);
+};
+
+// Initialize app and services once
+const app = initializeFirebaseApp();
+const auth = getAuth(app);
+export const db = getFirestore(app);
+
+
+export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) => {
+  
+  const [userAuthState, setUserAuthState] = useState<{
+    user: User | null;
+    isUserLoading: boolean;
+    userError: Error | null;
+  }>({
+    user: auth.currentUser, // Initialize with current user if available
     isUserLoading: true,
     userError: null,
   });
@@ -69,6 +74,8 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({
   );
 };
 
+// --- Hooks for easy access ---
+
 export const useFirebase = (): FirebaseContextState => {
   const context = useContext(FirebaseContext);
   if (context === undefined) {
@@ -78,11 +85,13 @@ export const useFirebase = (): FirebaseContextState => {
 };
 
 export const useAuth = (): Auth => {
-  return auth;
+  const context = useFirebase();
+  return context.auth;
 };
 
 export const useFirestore = (): Firestore => {
-  return db;
+  const context = useFirebase();
+  return context.firestore;
 };
 
 export const useFirebaseApp = (): FirebaseApp => {
