@@ -2,61 +2,30 @@
 import 'dotenv/config';
 import { NextRequest, NextResponse } from "next/server";
 import admin from "firebase-admin";
-import { cookies } from "next/headers";
 
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
-
-// Helper function to initialize the admin app safely
-const initializeAdminApp = () => {
-    if (admin.apps.length > 0) {
-        return admin.app();
+// The admin app is initialized in middleware.ts, so we can assume it's available here.
+// A check is added just in case for safety.
+const ensureAdminApp = () => {
+    if (admin.apps.length === 0) {
+        throw new Error("Firebase admin app is not initialized. This should not happen if middleware is correct.");
     }
-
-    const serviceAccount = {
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    };
-
-    const missingVars = Object.entries(serviceAccount)
-        .filter(([, value]) => !value)
-        .map(([key]) => key)
-        .join(', ');
-
-    if (missingVars) {
-        throw new Error(`Firebase admin initialization failed: Missing environment variables: ${missingVars}`);
-    }
-
-    return admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    });
 };
 
-
 export async function DELETE(req: NextRequest) {
+    // The middleware has already verified that this request is from an authenticated admin.
+    // We can proceed with the deletion logic.
     try {
-        const sessionCookie = cookies().get("__session")?.value || "";
-        if (!sessionCookie) {
-            return NextResponse.json({ error: "Unauthorized: No session cookie." }, { status: 401 });
-        }
-        
-        initializeAdminApp();
-
-        const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
-
-        if (decodedClaims.email !== ADMIN_EMAIL) {
-             return NextResponse.json({ error: "Unauthorized: Not an admin." }, { status: 403 });
-        }
+        ensureAdminApp();
 
         const { uid } = await req.json();
         if (!uid) {
             return NextResponse.json({ error: "User ID is required." }, { status: 400 });
         }
 
-        // Delete from Firebase Authentication
+        // 1. Delete from Firebase Authentication
         await admin.auth().deleteUser(uid);
         
-        // Delete from Firestore
+        // 2. Delete from Firestore
         const firestore = admin.firestore();
         await firestore.collection('users').doc(uid).delete();
 

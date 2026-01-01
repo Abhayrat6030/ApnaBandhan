@@ -22,7 +22,6 @@ const initializeAdminApp = () => {
     ].filter(Boolean).join(', ');
 
     if (missingVars) {
-        // This error will now correctly report which variables are missing.
         throw new Error(`Firebase admin initialization failed: Missing environment variables: ${missingVars}`);
     }
 
@@ -31,7 +30,6 @@ const initializeAdminApp = () => {
             credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
         });
     } catch (error: any) {
-        // Catch cases where the app might already be initialized in a concurrent request.
         if (!/already exists/u.test(error.message)) {
             console.error('Firebase admin initialization error', error);
             throw new Error('Firebase admin initialization failed: ' + error.message);
@@ -41,19 +39,18 @@ const initializeAdminApp = () => {
 
 export async function POST(req: Request) {
   try {
-    // Initialize admin app safely
     initializeAdminApp();
 
     const { idToken } = await req.json();
     if (!idToken) {
-        console.log("SESSION FAIL: No ID token provided.");
-        throw new Error("No token provided");
+        return NextResponse.json({ error: "ID token is required." }, { status: 400 });
     }
 
     const decoded = await admin.auth().verifyIdToken(idToken);
     
+    // The middleware will handle the non-admin case, but this is an extra layer of security.
     if (decoded.email !== "abhayrat603@gmail.com") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized: Not an admin." }, { status: 403 });
     }
     
     // Set session expiration to 5 days.
@@ -63,22 +60,25 @@ export async function POST(req: Request) {
 
     cookies().set("__session", sessionCookie, {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development', // Use secure cookies in production
+      secure: process.env.NODE_ENV !== 'development',
       sameSite: "lax",
       path: "/",
-      maxAge: expiresIn / 1000, // maxAge is in seconds
+      maxAge: expiresIn / 1000,
     });
 
     return NextResponse.json({ success: true });
   } catch (e: any) {
-    console.error("SESSION FAIL:", e);
-    // Return a more specific error message if available
+    console.error("SESSION CREATION FAIL:", e);
     return NextResponse.json({ error: e.message || "Session creation failed" }, { status: 401 });
   }
 }
 
-// Handles session termination (logout)
 export async function DELETE() {
-  cookies().delete('__session');
-  return NextResponse.json({ success: true });
+  try {
+    cookies().delete('__session');
+    return NextResponse.json({ success: true });
+  } catch (e: any) {
+    console.error("SESSION DELETION FAIL:", e);
+    return NextResponse.json({ error: "Session deletion failed" }, { status: 500 });
+  }
 }

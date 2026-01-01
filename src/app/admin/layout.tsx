@@ -14,8 +14,7 @@ import {
 import { siteConfig } from "@/lib/constants";
 import { PanelLeft } from "lucide-react";
 import { useUser } from "@/firebase";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -27,8 +26,8 @@ export default function AdminLayout({
   const { user } = useUser();
   const [isSheetOpen, setSheetOpen] = useState(false);
 
-  // Since middleware handles the auth guard, this component is now simpler.
-  // We just render the layout.
+  // Since middleware.ts now handles the auth guard, this layout component's only role
+  // is to render the UI for authenticated admins.
 
   return (
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -66,7 +65,7 @@ export default function AdminLayout({
               <SheetContent side="left" className="flex flex-col">
                 <SheetHeader>
                   <SheetTitle>
-                    <Link href="/" className="flex items-center gap-2 font-semibold">
+                    <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setSheetOpen(false)}>
                       <Logo className="h-6 w-6 text-primary" />
                       <span className="">{siteConfig.name}</span>
                     </Link>

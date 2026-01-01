@@ -16,9 +16,7 @@ async function verifySession(sessionCookie: string | undefined) {
   if (!sessionCookie) {
     return null;
   }
-
   try {
-    // Check if admin app is initialized
     if (admin.apps.length === 0) {
       console.error("Middleware: Firebase admin app is not initialized.");
       return null;
@@ -26,46 +24,49 @@ async function verifySession(sessionCookie: string | undefined) {
     const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
     return decodedClaims;
   } catch (error) {
-    console.error('Middleware: Error verifying session cookie:', error);
+    // Session cookie is invalid or expired.
     return null;
   }
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('__session')?.value;
+  const decodedClaims = await verifySession(sessionCookie);
+  const isAdmin = decodedClaims?.email === ADMIN_EMAIL;
+  const { pathname } = request.nextUrl;
 
-  // If trying to access admin login page
-  if (pathname.startsWith('/admin/login')) {
-    const decodedClaims = await verifySession(sessionCookie);
-    // If user is already a logged-in admin, redirect to dashboard
-    if (decodedClaims && decodedClaims.email === ADMIN_EMAIL) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/admin/dashboard';
-      return NextResponse.redirect(url);
+  // If user is an authenticated admin...
+  if (isAdmin) {
+    // and they are trying to access the login page, redirect to dashboard.
+    if (pathname.startsWith('/admin/login')) {
+      return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
-    // Otherwise, let them access the login page
+    // Otherwise, allow them to proceed.
     return NextResponse.next();
   }
 
-  // For all other admin routes
-  if (pathname.startsWith('/admin')) {
-    const decodedClaims = await verifySession(sessionCookie);
-
-    // If no valid session OR the user is not an admin, redirect to login
-    if (!decodedClaims || decodedClaims.email !== ADMIN_EMAIL) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/admin/login';
-      url.searchParams.set('redirectedFrom', pathname); // Optional: remember where they were going
-      return NextResponse.redirect(url);
-    }
+  // If user is NOT an admin...
+  // and they are trying to access any protected admin route (UI or API),
+  // redirect them to the admin login page.
+  if (pathname.startsWith('/admin/') && !pathname.startsWith('/admin/login')) {
+     const url = new URL('/admin/login', request.url);
+     url.searchParams.set('redirectedFrom', pathname);
+     return NextResponse.redirect(url);
+  }
+  
+  if (pathname.startsWith('/api/admin/') || pathname.startsWith('/api/auth/session')) {
+      if(pathname === '/api/auth/session' && request.method === 'POST') {
+          // Allow login attempts to proceed to the API route to be verified.
+          return NextResponse.next();
+      }
+       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // For all other routes, do nothing
+  // For all other cases, allow the request to proceed.
   return NextResponse.next();
 }
 
 export const config = {
-  // Match all admin routes except for the API routes used for login/logout
-  matcher: ['/admin/:path*'],
+  // Protect all admin UI and API routes, except the login page itself.
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/auth/session'],
 };
