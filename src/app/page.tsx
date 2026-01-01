@@ -52,7 +52,7 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-transparent" />
         <div className="relative z-10 p-4 flex flex-col items-center animate-fade-in-up">
-          <h1 className="font-bold text-4xl md:text-6xl tracking-tight !leading-tight mt-8">
+          <h1 className="font-bold text-4xl md:text-6xl tracking-tight !leading-tight">
             {siteConfig.name}
           </h1>
           <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90">
