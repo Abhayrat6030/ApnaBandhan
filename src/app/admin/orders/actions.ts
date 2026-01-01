@@ -32,7 +32,7 @@ export async function updatePaymentStatus(orderId: string, paymentStatus: Order[
         const orderRef = doc(db, 'orders', orderId);
         await updateDoc(orderRef, { paymentStatus });
         return { success: true };
-    } catch (error: any)
+    } catch (error: any) {
         console.error("Firestore update error:", error);
         return { success: false, error: error.message || 'Failed to update payment status.' };
     }
