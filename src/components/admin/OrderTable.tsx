@@ -108,11 +108,11 @@ export default function OrderTable({ orders }: OrderTableProps) {
             {orders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">
-                  <div className="truncate max-w-[120px] sm:max-w-none">{order.fullName}</div>
-                  <div className="text-sm text-muted-foreground md:hidden">{order.serviceName || order.selectedServiceId}</div>
+                  <div className="truncate max-w-[120px]">{order.fullName}</div>
+                  <div className="text-sm text-muted-foreground md:hidden truncate max-w-[120px]">{order.serviceName || order.selectedServiceId}</div>
                   <div className="text-sm text-muted-foreground">{order.phoneNumber}</div>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">{order.serviceName || order.selectedServiceId}</TableCell>
+                <TableCell className="hidden sm:table-cell truncate max-w-[150px]">{order.serviceName || order.selectedServiceId}</TableCell>
                 <TableCell className="hidden md:table-cell">{new Date(order.orderDate).toLocaleDateString('en-CA')}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>

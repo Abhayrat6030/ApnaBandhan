@@ -186,7 +186,7 @@ export default function EditServicePage() {
                             {serviceCategories.map(cat => <SelectItem key={cat} value={cat}>{cat.replace('-', ' ')}</SelectItem>)}
                         </SelectContent></Select><FormMessage /></FormItem>
                     )}/>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField control={form.control} name="price" render={({ field }) => (
                             <FormItem><FormLabel>Price (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g. 800" {...field} /></FormControl><FormMessage /></FormItem>
                         )}/>

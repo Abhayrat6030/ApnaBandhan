@@ -154,7 +154,7 @@ export default function AdminServicesPage() {
                 <TableBody>
                   {allItems.map(item => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell className="font-medium truncate max-w-[150px]">{item.name}</TableCell>
                       <TableCell className="hidden md:table-cell capitalize">
                         <Badge variant={item.type === 'Package' ? 'secondary' : 'outline'}>
                             {item.category?.replace('-', ' ') || 'Package'}
