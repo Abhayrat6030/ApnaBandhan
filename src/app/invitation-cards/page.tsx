@@ -33,8 +33,9 @@ const cardFilters = [
 ];
 
 const premiumSellers = cardServices.filter(s => s.isFeatured).slice(0, 5);
+const hotSellers = cardServices.filter(s => s.topRated).slice(0, 5);
 
-// New component for the new card design from the user's latest image
+// This is the newer card design
 function NewInvitationProductCard({ service }: { service: Service }) {
   const discount = service.originalPrice && service.originalPrice > service.price
     ? Math.round(((service.originalPrice - service.price) / service.originalPrice) * 100)
@@ -194,12 +195,58 @@ export default function InvitationCardsPage() {
             </Carousel>
           </div>
         )}
+
+        {hotSellers.length > 0 && (
+          <div className="mb-12">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Hot Sellers</h2>
+               <Button variant="ghost" size="sm">
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+             <div className="relative h-[400px] flex items-center justify-center">
+              {hotSellers.map((service, index) => {
+                const primaryImage = service.samples.find(s => s.type === 'image');
+                if (!primaryImage) return null;
+                
+                const zIndex = hotSellers.length - index;
+                const scale = 1 - (index * 0.05);
+                const translateY = -index * 10;
+                const isFront = index === 0;
+
+                return (
+                  <Link href={`/services/${service.slug}`} key={service.id} className="group block absolute transition-all duration-300 ease-out" style={{ zIndex, transform: `scale(${scale}) translateY(${translateY}px)` }}>
+                     <Card className="overflow-hidden rounded-xl bg-white shadow-2xl transition-all duration-300 w-64 group-hover:scale-105">
+                        <CardContent className="p-0 relative">
+                            <div className="relative aspect-[3/4] w-full bg-muted/30">
+                              <Image 
+                                src={primaryImage.url}
+                                alt={service.name}
+                                fill
+                                className="object-contain"
+                                data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
+                              />
+                              {isFront && service.isFeatured && (
+                                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+                                     <div className="bg-red-500 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg transform transition-transform group-hover:scale-110">
+                                         HOT
+                                     </div>
+                                 </div>
+                              )}
+                            </div>
+                        </CardContent>
+                     </Card>
+                   </Link>
+                )
+              })}
+             </div>
+          </div>
+        )}
         
         <div className="mb-8">
            <h2 className="text-lg font-semibold mb-3">Top Rated</h2>
         </div>
 
-        {/* Main content grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
           {filteredServices.map(service => (
             <NewInvitationProductCard key={service.id} service={service} />
