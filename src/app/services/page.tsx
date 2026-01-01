@@ -17,6 +17,7 @@ const categoryIcons: { [key: string]: React.ElementType } = {
   'combo-packages': PackageIcon,
   'video-editing': Video,
   'cdr-files': FileText,
+  'website-development': FileText,
 };
 
 
@@ -62,3 +63,5 @@ export default function ServicesPage() {
     </div>
   );
 }
+
+    
