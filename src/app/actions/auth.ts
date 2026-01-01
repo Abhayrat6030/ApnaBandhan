@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { initializeAdminApp } from '@/firebase/admin';
 import admin from 'firebase-admin';
-import { getDocs, query, where } from 'firebase-admin/firestore';
+import { getDocs, query } from 'firebase-admin/firestore';
 
 const signupSchema = z.object({
   name: z.string().min(2),
@@ -31,8 +31,9 @@ export async function signUpUser(prevState: any, formData: FormData) {
   // 1. Validate referral code if provided
   if (referralCode) {
     const usersRef = db.collection('users');
-    const q = query(usersRef, where('referralCode', '==', referralCode.toUpperCase()));
-    const querySnapshot = await getDocs(q);
+    // Correct way to query with firebase-admin
+    const q = usersRef.where('referralCode', '==', referralCode.toUpperCase());
+    const querySnapshot = await q.get();
 
     if (querySnapshot.empty) {
       return { success: false, message: 'Invalid referral code.' };
