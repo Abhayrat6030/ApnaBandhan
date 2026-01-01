@@ -34,7 +34,7 @@ export const adminNavItems: NavItem[] = [
 ];
 
 export const mainAppNavItems: NavItem[] = [
-    { label: 'Go to App', href: '/' },
+    { label: 'Return to Main Site', href: '/' },
 ];
 
 export const footerLinks = {

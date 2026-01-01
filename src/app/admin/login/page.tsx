@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -124,9 +125,6 @@ export default function AdminLoginPage() {
                     <CardFooter className="flex flex-col gap-4">
                         <Button type="submit" className="w-full" disabled={isLoading || !auth}>
                             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Login'}
-                        </Button>
-                         <Button asChild variant="link" size="sm">
-                            <Link href="/login">Are you a customer? Login here</Link>
                         </Button>
                     </CardFooter>
                 </form>

@@ -22,7 +22,7 @@ const icons: { [key: string]: React.ElementType } = {
   '/admin/rewards': Award,
   '/admin/referrals': Gift,
   '/admin/settings': Settings,
-  '/': Home,
+  '/': ArrowLeft,
 };
 
 interface AdminNavProps {
