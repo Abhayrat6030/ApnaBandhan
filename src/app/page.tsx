@@ -4,7 +4,7 @@
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Film, Mails, Album, Package as PackageIcon, Video } from 'lucide-react';
+import { ArrowRight, Film, Mails, Album, Package as PackageIcon, Video, FileText } from 'lucide-react';
 import Autoplay from "embla-carousel-autoplay";
 
 
@@ -30,6 +30,8 @@ const categoryIcons = {
   'album-design': Album,
   'combo-packages': PackageIcon,
   'video-editing': Video,
+  'cdr-files': FileText,
+  'website-development': FileText,
 };
 
 
