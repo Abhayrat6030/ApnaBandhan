@@ -90,6 +90,7 @@ export type UserProfile = {
   createdAt: string;
   referralCode?: string; // The user's own referral code
   referredBy?: string; // The code they used to sign up
+  status?: 'active' | 'blocked';
 }
 
 export type AppSettings = {

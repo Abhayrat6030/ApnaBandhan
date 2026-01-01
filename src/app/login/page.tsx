@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
+import type { UserProfile } from '@/lib/types';
 
 
 const formSchema = z.object({
@@ -27,6 +29,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
+  const db = useFirestore();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -41,7 +44,7 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    if (!auth) {
+    if (!auth || !db) {
       toast({
         title: "Authentication service not ready",
         description: "Please wait a moment and try again.",
@@ -52,7 +55,20 @@ export default function LoginPage() {
     }
 
     try {
-        await signInWithEmailAndPassword(auth, values.email, values.password);
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+        
+        // Check if user is blocked
+        const userDocRef = doc(db, 'users', userCredential.user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const userProfile = userDoc.data() as UserProfile;
+            if (userProfile.status === 'blocked') {
+                await auth.signOut(); // Log them out immediately
+                throw new Error("Your account has been suspended.");
+            }
+        }
+
         toast({
           title: 'Logged In Successfully!',
           description: "Welcome back!",
@@ -64,6 +80,8 @@ export default function LoginPage() {
         let description = 'An unexpected error occurred.';
         if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
             description = 'Incorrect email or password. Please try again.';
+        } else if (error.message === "Your account has been suspended.") {
+            description = error.message;
         }
         toast({
             title: 'Login Failed',

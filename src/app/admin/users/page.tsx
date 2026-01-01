@@ -1,24 +1,26 @@
 
-
 'use client';
 
 import { useMemo, useState } from 'react';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MoreHorizontal, Loader2, Search } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Loader2, Search, Slash, CheckCircle } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminUsersPage() {
   const db = useFirestore();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
   const usersQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -37,6 +39,26 @@ export default function AdminUsersPage() {
   }, [users, searchTerm]);
 
   const isLoading = areUsersLoading;
+  
+  const handleUpdateStatus = async (userId: string, newStatus: 'active' | 'blocked') => {
+      if (!db) return;
+      setIsUpdating(userId);
+      try {
+          const userRef = doc(db, 'users', userId);
+          await updateDoc(userRef, { status: newStatus });
+          toast({
+              title: `User ${newStatus === 'active' ? 'Unblocked' : 'Blocked'}`,
+              description: `The user status has been updated.`,
+          });
+      } catch (error: any) {
+          toast({
+              title: "Update Failed",
+              description: error.message || 'Could not update user status.',
+              variant: 'destructive',
+          });
+      }
+      setIsUpdating(null);
+  }
 
   const renderSkeleton = () => (
     <div className="p-4 md:p-0">
@@ -45,6 +67,7 @@ export default function AdminUsersPage() {
           <TableRow>
             <TableHead>User</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Referred By</TableHead>
             <TableHead>Own Referral Code</TableHead>
             <TableHead>Joined</TableHead>
@@ -56,6 +79,7 @@ export default function AdminUsersPage() {
             <TableRow key={i}>
               <TableCell className="flex items-center gap-2"><Skeleton className="h-10 w-10 rounded-full" /><Skeleton className="h-4 w-32" /></TableCell>
               <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+              <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
               <TableCell><Skeleton className="h-4 w-24" /></TableCell>
               <TableCell><Skeleton className="h-4 w-24" /></TableCell>
               <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -97,6 +121,7 @@ export default function AdminUsersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="hidden sm:table-cell">Referred By</TableHead>
                   <TableHead>Own Referral Code</TableHead>
                   <TableHead className="hidden md:table-cell">Joined</TableHead>
@@ -118,6 +143,11 @@ export default function AdminUsersPage() {
                         </div>
                       </div>
                     </TableCell>
+                    <TableCell>
+                        <Badge variant={user.status === 'blocked' ? 'destructive' : 'default'} className="capitalize">
+                            {user.status || 'active'}
+                        </Badge>
+                    </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       {user.referredBy ? (
                         <Badge variant="outline">{user.referredBy}</Badge>
@@ -132,18 +162,30 @@ export default function AdminUsersPage() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" disabled={isUpdating === user.uid}>
+                            {isUpdating === user.uid ? <Loader2 className="h-4 w-4 animate-spin"/> : <MoreHorizontal className="h-4 w-4" />}
+                          </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View Profile</DropdownMenuItem>
-                          <DropdownMenuItem>View Orders</DropdownMenuItem>
+                            <DropdownMenuItem>View Profile</DropdownMenuItem>
+                            <DropdownMenuItem>View Orders</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {user.status === 'blocked' ? (
+                                <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')}>
+                                    <CheckCircle className="mr-2 h-4 w-4" /> Unblock User
+                                </DropdownMenuItem>
+                            ) : (
+                                <DropdownMenuItem className="text-destructive" onClick={() => handleUpdateStatus(user.uid, 'blocked')}>
+                                    <Slash className="mr-2 h-4 w-4" /> Block User
+                                </DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">No users found.</TableCell>
+                    <TableCell colSpan={6} className="h-24 text-center">No users found.</TableCell>
                   </TableRow>
                 )}
               </TableBody>

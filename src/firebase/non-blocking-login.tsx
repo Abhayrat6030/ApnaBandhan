@@ -41,6 +41,7 @@ export async function initiateEmailSignUp(
             createdAt: new Date().toISOString(),
             referralCode: ownReferralCode, // Their own code
             referredBy: referralCodeInput || null, // The code they used
+            status: 'active' as const,
         };
 
         await setDoc(userDocRef, userProfile);
