@@ -15,7 +15,7 @@ import { siteConfig } from "@/lib/constants";
 import { PanelLeft } from "lucide-react";
 import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -49,6 +49,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { user } = useUser();
+  const [isSheetOpen, setSheetOpen] = useState(false);
 
   return (
     <AdminAuthGuard>
@@ -73,7 +74,7 @@ export default function AdminLayout({
         <div className="flex flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
             {/* MOBILE SIDEBAR TRIGGER */}
-            <Sheet>
+            <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="outline"
@@ -94,7 +95,7 @@ export default function AdminLayout({
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="grid gap-2 text-lg font-medium">
-                  <AdminNav />
+                  <AdminNav onLinkClick={() => setSheetOpen(false)} />
                 </nav>
               </SheetContent>
             </Sheet>
