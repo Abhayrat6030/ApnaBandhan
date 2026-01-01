@@ -1,30 +1,42 @@
 'use server';
 
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
+import { config } from 'dotenv';
+config();
 
-if (!admin.apps.length) {
+/**
+ * Initializes the Firebase Admin SDK if not already initialized.
+ * This function is designed to be safely called multiple times.
+ */
+export const initializeAdminApp = () => {
+  if (admin.apps.length > 0) {
+    return;
+  }
+
+  const serviceAccount = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  };
+
+  const missingVars = [
+    !serviceAccount.projectId && 'FIREBASE_PROJECT_ID',
+    !serviceAccount.clientEmail && 'FIREBASE_CLIENT_EMAIL',
+    !serviceAccount.privateKey && 'FIREBASE_PRIVATE_KEY',
+  ].filter(Boolean).join(', ');
+
+  if (missingVars) {
+    throw new Error(`Firebase admin initialization failed: Missing environment variables: ${missingVars}`);
+  }
+
   try {
-    const serviceAccount = {
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    };
-
-    // Check if all required environment variables are present
-    if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
-        throw new Error('Firebase Admin SDK service account credentials are not set in environment variables.');
-    }
-
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`,
+      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     });
   } catch (error: any) {
     if (!/already exists/u.test(error.message)) {
-      console.error('Firebase admin initialization error', error.stack);
+      console.error('Firebase admin initialization error', error);
+      throw new Error('Firebase admin initialization failed: ' + error.message);
     }
   }
-}
-
-export const auth = admin.auth();
-export const db = admin.firestore();
+};
