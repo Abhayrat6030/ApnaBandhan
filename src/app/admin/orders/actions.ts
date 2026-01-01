@@ -5,21 +5,24 @@ import { revalidatePath } from 'next/cache';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import type { Order } from '@/lib/types';
+import admin from '@/firebase/admin';
 import { getAuth } from 'firebase-admin/auth';
-import { adminApp } from '@/firebase/admin';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 // This is a server-side verification using the Firebase Admin SDK
 async function verifyAdmin(idToken: string | undefined) {
-    // If adminApp is not initialized or no token is provided, deny access.
-    if (!adminApp || !idToken) {
-        console.warn("Cannot verify admin: Firebase Admin SDK not initialized or no token provided.");
+    if (!admin.apps.length) {
+        console.error("Admin SDK not initialized. Cannot verify admin.");
+        return false;
+    }
+    if (!idToken) {
+        console.warn("Cannot verify admin: No token provided.");
         return false;
     }
 
     try {
-        const decodedToken = await getAuth(adminApp).verifyIdToken(idToken);
+        const decodedToken = await getAuth().verifyIdToken(idToken);
         return decodedToken.email === ADMIN_EMAIL;
     } catch (error) {
         console.error('Error verifying admin token:', error);
@@ -42,6 +45,7 @@ export async function updateOrderStatus(idToken: string | undefined, orderId: st
         revalidatePath('/admin/dashboard');
         return { success: true };
     } catch (error: any) {
+        console.error("Firestore update error:", error);
         return { success: false, error: error.message || 'Failed to update status.' };
     }
 }
@@ -60,6 +64,7 @@ export async function updatePaymentStatus(idToken: string | undefined, orderId: 
         revalidatePath('/admin/dashboard');
         return { success: true };
     } catch (error: any) {
+        console.error("Firestore update error:", error);
         return { success: false, error: error.message || 'Failed to update payment status.' };
     }
 }

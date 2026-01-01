@@ -1,28 +1,25 @@
 
 import * as admin from 'firebase-admin';
 
-let adminApp: admin.app.App;
-
-// Check if the service account key is available
-if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string);
-
-    // Initialize the app if it's not already initialized
-    if (!admin.apps.length) {
-      try {
-        adminApp = admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount)
-        });
-      } catch (e) {
-        console.error('Firebase admin initialization error', e);
-      }
-    } else {
-        adminApp = admin.app();
+// This guard prevents re-initialization in hot-reload scenarios.
+if (!admin.apps.length) {
+  try {
+    const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    if (!serviceAccountString) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set.');
     }
-} else {
-    console.warn('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set. Firebase Admin SDK not initialized. Server-side admin actions will be disabled.');
+    const serviceAccount = JSON.parse(serviceAccountString);
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+     console.log("Firebase Admin SDK initialized successfully.");
+  } catch (e: any) {
+    console.error('Firebase Admin SDK initialization error:', e.message);
+  }
 }
 
-
-// Export the initialized app, which may be undefined if the key is not set
-export { adminApp };
+// We export the admin namespace directly.
+// The functions that need it (like getAuth()) can call admin.auth()
+// This ensures they use the initialized app instance.
+export default admin;
