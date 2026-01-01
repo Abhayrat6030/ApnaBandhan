@@ -1,27 +1,47 @@
-import { cookies } from 'next/headers';
-import { type NextRequest, NextResponse } from 'next/server';
-import admin from '@/firebase/admin';
+import { NextResponse } from "next/server";
+import admin from "@/firebase/admin";
+import { cookies } from "next/headers";
 
-// Handles session creation (login)
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const idToken = body.idToken?.toString();
-
-  if (!idToken) {
-    return NextResponse.json({ error: 'ID token is required.' }, { status: 400 });
-  }
-
-  // Set session expiration to 5 days.
-  const expiresIn = 60 * 60 * 24 * 5 * 1000;
-
+export async function POST(req: Request) {
   try {
+    const { idToken } = await req.json();
+    if (!idToken) {
+        console.log("SESSION FAIL: No ID token provided.");
+        throw new Error("No token provided");
+    }
+
+    // Optional: Log environment variables for debugging purposes, but be careful in production
+    // console.log("ENV CHECK", {
+    //   projectId: process.env.FIREBASE_PROJECT_ID,
+    //   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    //   hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
+    // });
+
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    
+    console.log("DECODED EMAIL:", decoded.email);
+
+    if (decoded.email !== "abhayrat603@gmail.com") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    // Set session expiration to 5 days.
+    const expiresIn = 60 * 60 * 24 * 5 * 1000;
+    
     const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
-    const options = { name: '__session', value: sessionCookie, maxAge: expiresIn, httpOnly: true, secure: true };
-    cookies().set(options);
+
+    cookies().set("__session", sessionCookie, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development', // Use secure cookies in production
+      sameSite: "lax",
+      path: "/",
+      maxAge: expiresIn,
+    });
+
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Session cookie creation failed:', error);
-    return NextResponse.json({ error: 'Failed to create session.' }, { status: 401 });
+  } catch (e: any) {
+    console.error("SESSION FAIL:", e.message);
+    return NextResponse.json({ error: "Session creation failed" }, { status: 401 });
   }
 }
 
