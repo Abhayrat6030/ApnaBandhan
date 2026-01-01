@@ -17,6 +17,11 @@ export function middleware(request: NextRequest) {
   if (!isProtectedRoute) {
     return NextResponse.next();
   }
+
+  // If the user is trying to access the login page, let them through.
+  if (pathname.startsWith('/admin/login')) {
+    return NextResponse.next();
+  }
   
   // If it IS a protected route, check for the session cookie.
   const sessionCookie = request.cookies.get('__session')?.value;
