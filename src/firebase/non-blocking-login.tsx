@@ -17,83 +17,46 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
   signInAnonymously(authInstance);
 }
 
-/** Initiate email/password sign-up (non-blocking). */
+/** 
+ * Initiates email/password sign-up (non-blocking).
+ * This function now ONLY creates the user in Firebase Auth and updates their display name.
+ * The user profile document in Firestore is created separately when the user first visits their profile page.
+ * This two-step process avoids Firestore permission race conditions during signup.
+ */
 export async function initiateEmailSignUp(
     authInstance: Auth, 
     email: string, 
     password: string, 
     displayName: string,
-    referralCodeInput?: string, // The referral code the new user entered
+    referralCodeInput?: string,
 ) {
-    const userCredential = await createUserWithEmailAndPassword(authInstance, email, password);
-    const newUser = userCredential.user;
-
-    let referrerId: string | null = null;
-    let referrerDocRef: any = null;
-
-    // 1. Validate referral code if provided
+    // Step 1: Validate referral code if provided.
+    // We do this *before* creating the user to fail early if the code is invalid.
     if (referralCodeInput) {
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where("referralCode", "==", referralCodeInput));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            await newUser.delete(); // Clean up the created user
+            // Throw an error that the frontend can catch and display to the user.
             throw new Error("Invalid referral code.");
-        } else {
-            const referrerDoc = querySnapshot.docs[0];
-            // This check is flawed because newUser.uid is not yet in the 'users' collection.
-            // A user can't refer themselves anyway since they don't have an account yet.
-            // This logic is for preventing using one's own code, which is impossible at signup.
-            // The check `referrerDoc.id === newUser.uid` will always be false.
-            
-            referrerId = referrerDoc.id;
-            referrerDocRef = referrerDoc.ref;
         }
     }
     
-    // 2. Create the new user's profile
+    // Step 2: Create the user in Firebase Authentication.
+    const userCredential = await createUserWithEmailAndPassword(authInstance, email, password);
+    const newUser = userCredential.user;
+
+    // Step 3: Update the user's profile in Firebase Authentication (e.g., with displayName).
     await updateProfile(newUser, { displayName });
-    
-    const newUserDocRef = doc(db, 'users', newUser.uid);
-    
-    // Generate the new user's own referral code
-    const ownReferralCode = `${displayName.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
 
-    const newUserProfile = {
-        uid: newUser.uid,
-        displayName: displayName,
-        email: email,
-        createdAt: new Date().toISOString(),
-        referralCode: ownReferralCode, // Their own code
-        referredBy: referrerId, // The UID of the person who referred them
-        status: 'active' as const,
-        referredUsers: [] // Array to store UIDs of users they refer
-    };
+    // Step 4 (Crucial Change): We DO NOT create the Firestore document here.
+    // It will be created on the first visit to the profile page.
+    // However, we can temporarily store the referral code info if needed, e.g., in local storage,
+    // so the profile page can use it. For simplicity, we will have the profile page logic
+    // handle finding the referrer if the `referredBy` field is not set.
 
-    // 3. Save documents to Firestore
-    if (referrerId && referrerDocRef) {
-        // If there was a referrer, update both the new user and the referrer's document in a batch
-        const batch = writeBatch(db);
-
-        // Set the new user's document
-        batch.set(newUserDocRef, newUserProfile);
-        
-        // Atomically update the referrer's document to add the new user's UID to their `referredUsers` array
-        const referrerDocSnap = await getDoc(referrerDocRef);
-        const referrerData = referrerDocSnap.data();
-        const referredUsers = referrerData?.referredUsers || [];
-        
-        batch.update(referrerDocRef, {
-            referredUsers: [...referredUsers, newUser.uid]
-        });
-
-        await batch.commit();
-
-    } else {
-        // Otherwise, just create the new user's document
-        await setDoc(newUserDocRef, newUserProfile);
-    }
+    // The user is now created and will be redirected by the frontend.
 }
 
 /** Initiate email/password sign-in (non-blocking). */
