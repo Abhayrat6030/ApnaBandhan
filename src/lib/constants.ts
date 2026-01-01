@@ -33,6 +33,10 @@ export const adminNavItems: NavItem[] = [
   { label: 'App Settings', href: '/admin/settings' },
 ];
 
+export const mainAppNavItems: NavItem[] = [
+    { label: 'Go to App', href: '/' },
+];
+
 export const footerLinks = {
   quickLinks: [
     { label: 'Home', href: '/' },

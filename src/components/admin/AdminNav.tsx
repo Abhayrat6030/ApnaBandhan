@@ -4,9 +4,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { adminNavItems } from '@/lib/constants';
+import { adminNavItems, mainAppNavItems } from '@/lib/constants';
 import { Separator } from '@/components/ui/separator';
-import { LayoutDashboard, ShoppingCart, List, Sparkles, Home, Gift, Info, Mail, Package, Users, Bell, Download, FileText, Award, Settings } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, List, Sparkles, Home, Gift, Info, Mail, Package, Users, Bell, Download, FileText, Award, Settings, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 
@@ -23,10 +23,6 @@ const icons: { [key: string]: React.ElementType } = {
   '/admin/referrals': Gift,
   '/admin/settings': Settings,
   '/': Home,
-  '/services': Gift,
-  '/packages': Package,
-  '/about': Info,
-  '/contact': Mail,
 };
 
 interface AdminNavProps {
@@ -59,6 +55,27 @@ export default function AdminNav({ onLinkClick }: AdminNavProps) {
             );
         })}
       </div>
+       <Separator className="my-2" />
+       <div className="py-2">
+        <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Main App</h3>
+         {mainAppNavItems.map((item) => {
+            const Icon = icons[item.href as keyof typeof icons] || ArrowLeft;
+            return (
+            <Button
+                key={item.label}
+                asChild
+                variant="ghost"
+                className="justify-start w-full"
+                onClick={onLinkClick}
+            >
+                <Link href={item.href} >
+                <Icon className="mr-2 h-4 w-4" />
+                {item.label}
+                </Link>
+            </Button>
+            );
+        })}
+       </div>
     </>
   );
 }
