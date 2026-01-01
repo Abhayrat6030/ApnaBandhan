@@ -109,9 +109,9 @@ export default function Home() {
       </section>
 
       {/* Top Rated Videos Section */}
-      {topRatedVideos.length > 0 && <section id="top-videos" className="py-4 bg-secondary/30">
+      {topRatedVideos.length > 0 && <section id="top-videos" className="py-8 bg-secondary/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-4">
+          <div className="text-center mb-6">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Invitation Videos
             </h2>
@@ -122,7 +122,7 @@ export default function Home() {
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
-           <div className="text-center mt-4">
+           <div className="text-center mt-8">
             <Button asChild variant="outline">
               <Link href="/invitation-videos">
                 View All Videos <ArrowRight className="ml-2 h-4 w-4" />
@@ -133,9 +133,9 @@ export default function Home() {
       </section>}
       
       {/* Top Rated Cards Section */}
-      {topRatedCards.length > 0 && <section id="top-cards" className="py-4 bg-background">
+      {topRatedCards.length > 0 && <section id="top-cards" className="py-8 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-4">
+          <div className="text-center mb-6">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Invitation Cards
             </h2>
@@ -146,7 +146,7 @@ export default function Home() {
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
-          <div className="text-center mt-4">
+          <div className="text-center mt-8">
             <Button asChild variant="outline">
               <Link href="/invitation-cards">
                 View All Cards <ArrowRight className="ml-2 h-4 w-4" />
@@ -157,9 +157,9 @@ export default function Home() {
       </section>}
 
        {/* Top Rated Album Designs Section */}
-      {topRatedAlbums.length > 0 && <section id="top-albums" className="py-4 bg-secondary/30">
+      {topRatedAlbums.length > 0 && <section id="top-albums" className="py-8 bg-secondary/30">
         <div className="container mx-auto px-4">
-           <div className="text-center mb-4">
+           <div className="text-center mb-6">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Album Designs
             </h2>
@@ -170,7 +170,7 @@ export default function Home() {
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
-           <div className="text-center mt-4">
+           <div className="text-center mt-8">
             <Button asChild variant="outline">
               <Link href="/album-design">
                 View All Designs <ArrowRight className="ml-2 h-4 w-4" />
@@ -181,20 +181,20 @@ export default function Home() {
       </section>}
 
        {/* Top Rated Video Editing Section */}
-      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="py-4 bg-background">
+      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="py-8 bg-background">
         <div className="container mx-auto px-4">
-           <div className="text-center mb-4">
+           <div className="text-center mb-6">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Wedding Video Editing
             </h2>
             <p className="text-lg text-muted-foreground mt-1">Cinematic edits of your precious moments.</p>
           </div>
-          <div className="grid grid-cols-2 md-grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedVideoEditing.slice(0, 4).map((service) => (
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
-          <div className="text-center mt-4">
+          <div className="text-center mt-8">
             <Button asChild variant="outline">
               <Link href="/video-editing">
                 View All Editing Services <ArrowRight className="ml-2 h-4 w-4" />
@@ -205,16 +205,16 @@ export default function Home() {
       </section>}
 
       {/* Combo Packages Section */}
-      {comboPackages.length > 0 && <section id="combo-packages" className="py-4 bg-secondary/30">
+      {comboPackages.length > 0 && <section id="combo-packages" className="py-8 bg-secondary/30">
         <div className="container mx-auto px-4">
-           <div className="text-center mb-4">
+           <div className="text-center mb-6">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Combo Packages
             </h2>
             <p className="text-lg text-muted-foreground mt-1">Get the best value with our curated packages.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {comboPackages.slice(0, 4).map((pkg) => {
+            {comboPackages.slice(0, 3).map((pkg) => {
                 const service = services.find(s => s.id === pkg.id);
                 if (!service) return null;
                 // A bit of a hack to show package price
@@ -222,7 +222,7 @@ export default function Home() {
                 return <ProductCard key={service.id} service={serviceWithPackagePrice} />;
             })}
           </div>
-           <div className="text-center mt-4">
+           <div className="text-center mt-8">
             <Button asChild variant="outline">
               <Link href="/packages">
                 View All Packages <ArrowRight className="ml-2 h-4 w-4" />
@@ -233,9 +233,9 @@ export default function Home() {
       </section>}
       
       {/* CDR Files Section */}
-      {cdrFileServices.length > 0 && <section id="cdr-files" className="py-4 bg-background">
+      {cdrFileServices.length > 0 && <section id="cdr-files" className="py-8 bg-background">
         <div className="container mx-auto px-4">
-           <div className="text-center mb-4">
+           <div className="text-center mb-6">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               CDR Files
             </h2>
@@ -246,7 +246,7 @@ export default function Home() {
               <ProductCard key={service.id} service={service} />
             ))}
           </div>
-          <div className="text-center mt-4">
+          <div className="text-center mt-8">
             <Button asChild variant="outline">
               <Link href="/invitation-cards?filter=cdr-file">
                 View All CDR Files <ArrowRight className="ml-2 h-4 w-4" />
@@ -257,7 +257,7 @@ export default function Home() {
       </section>}
 
       {/* Website Development Section */}
-      <section id="website-development" className="py-8 bg-secondary/30">
+      <section id="website-development" className="py-12 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center bg-card p-8 rounded-2xl shadow-lg">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 text-primary">

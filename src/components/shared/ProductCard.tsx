@@ -1,5 +1,4 @@
 
-
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Service } from '@/lib/types';
@@ -20,7 +19,7 @@ export function ProductCard({ service }: ProductCardProps) {
 
   return (
     <Link href={`/services/${service.slug}`} className="group block animate-fade-in-up">
-        <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full rounded-2xl">
+        <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full rounded-2xl">
             <CardContent className="p-0">
             {primaryImage && (
                 <div className="relative aspect-[3/4] w-full">
