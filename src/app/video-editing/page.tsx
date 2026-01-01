@@ -10,7 +10,7 @@ const videoEditingServices = services.filter(s => s.category === 'video-editing'
 export default function VideoEditingPage() {
 
   return (
-    <div className="container mx-auto px-4 py-16 md:py-24">
+    <div className="container mx-auto px-4 py-16 md:py-24 overflow-hidden">
       <div className="text-center mb-12">
         <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
           Wedding Video Editing

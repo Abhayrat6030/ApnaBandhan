@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -44,7 +45,7 @@ export default function InvitationCardsPage() {
   const topRated = filteredServices.sort(() => 0.5 - Math.random()).slice(0, 8); // Randomize for demo
 
   return (
-    <div className="bg-background">
+    <div className="bg-background overflow-hidden">
       <div className="container mx-auto px-4 py-8 md:py-12">
         
         {/* Browse by Category */}

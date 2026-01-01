@@ -1,3 +1,4 @@
+
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -30,7 +31,7 @@ export default function ServicePage({ params }: ServicePageProps) {
 
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-20">
+    <div className="container mx-auto px-4 py-12 md:py-20 overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Gallery */}
         <div>

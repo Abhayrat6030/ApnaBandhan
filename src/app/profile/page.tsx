@@ -62,7 +62,7 @@ export default function ProfilePage() {
 
     if (isLoading) {
         return (
-             <div className="container mx-auto px-4 py-8 md:py-16">
+             <div className="container mx-auto px-4 py-8 md:py-16 overflow-hidden">
                  <Card className="max-w-2xl mx-auto animate-pulse">
                      <CardHeader className="text-center">
                          <Skeleton className="w-24 h-24 rounded-full bg-muted mx-auto mb-4" />
@@ -83,7 +83,7 @@ export default function ProfilePage() {
 
     if (!user || user.isAnonymous) {
         return (
-            <div className="container mx-auto px-4 py-8 md:py-16">
+            <div className="container mx-auto px-4 py-8 md:py-16 overflow-hidden">
                 <Card className="max-w-md mx-auto text-center">
                     <CardHeader>
                         <CardTitle>Welcome!</CardTitle>
@@ -107,7 +107,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="container mx-auto px-4 py-8 md:py-16 overflow-hidden">
              <Card className="max-w-2xl mx-auto">
                 <CardHeader className="text-center">
                     <Avatar className="w-24 h-24 mx-auto mb-4 border-4 border-primary/20">
