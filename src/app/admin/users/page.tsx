@@ -2,8 +2,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { collection, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
+import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
+import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -82,19 +82,29 @@ export default function AdminUsersPage() {
     setIsUpdating(`delete-${userToDelete.uid}`);
     
     try {
-        const userDocRef = doc(db, 'users', userToDelete.uid);
-        // This is a client-side delete, which relies on Firestore rules for security.
-        // Ensure your rules only allow admins to delete user documents.
-        await deleteDoc(userDocRef);
+        const response = await fetch('/api/admin/delete-user', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ uid: userToDelete.uid }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to delete user.');
+        }
         
         toast({
             title: "User Deleted",
-            description: `${userToDelete.displayName} (${userToDelete.email})'s data has been deleted from Firestore.`,
+            description: `${userToDelete.displayName} has been permanently deleted.`,
         });
     } catch (error: any) {
+        console.error("Deletion Error:", error);
         toast({
             title: "Deletion Failed",
-            description: error.message || "Could not delete user from Firestore. Check security rules.",
+            description: error.message || "An unexpected error occurred.",
             variant: "destructive",
         });
     }
@@ -349,7 +359,7 @@ export default function AdminUsersPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the user's account data from Firestore for <span className="font-bold">{userToDelete?.displayName} ({userToDelete?.email})</span>.
+                    This action cannot be undone. This will permanently delete the user <span className="font-bold">{userToDelete?.displayName}</span> from Firebase Authentication and Firestore.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -360,7 +370,7 @@ export default function AdminUsersPage() {
                     disabled={!!isUpdating}
                 >
                     {isUpdating?.startsWith('delete-') ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                    Delete
+                    Delete User
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
