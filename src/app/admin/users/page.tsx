@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -8,19 +7,31 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MoreHorizontal, Loader2, Search, Slash, CheckCircle } from 'lucide-react';
+import { MoreHorizontal, Loader2, Search, Slash, CheckCircle, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { deleteUserAction } from './actions';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminUsersPage() {
   const db = useFirestore();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
 
   const usersQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -42,7 +53,7 @@ export default function AdminUsersPage() {
   
   const handleUpdateStatus = async (userId: string, newStatus: 'active' | 'blocked') => {
       if (!db) return;
-      setIsUpdating(userId);
+      setIsUpdating(`status-${userId}`);
       try {
           const userRef = doc(db, 'users', userId);
           await updateDoc(userRef, { status: newStatus });
@@ -58,6 +69,29 @@ export default function AdminUsersPage() {
           });
       }
       setIsUpdating(null);
+  }
+  
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    setIsUpdating(`delete-${userToDelete.uid}`);
+    
+    const result = await deleteUserAction(userToDelete.uid);
+
+    if (result.success) {
+      toast({
+        title: "User Deleted",
+        description: `${userToDelete.displayName} (${userToDelete.email}) has been permanently deleted.`,
+      });
+    } else {
+      toast({
+        title: "Deletion Failed",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+    
+    setIsUpdating(null);
+    setUserToDelete(null);
   }
 
   const renderSkeleton = () => (
@@ -97,6 +131,7 @@ export default function AdminUsersPage() {
   );
 
   return (
+    <>
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
       <div className="flex items-center">
         <h1 className="font-headline text-lg font-semibold md:text-2xl">Manage Users</h1>
@@ -170,8 +205,8 @@ export default function AdminUsersPage() {
                                 <TableCell className="text-right">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                    <Button size="icon" variant="ghost" disabled={isUpdating === user.uid}>
-                                        {isUpdating === user.uid ? <Loader2 className="h-4 w-4 animate-spin"/> : <MoreHorizontal className="h-4 w-4" />}
+                                    <Button size="icon" variant="ghost" disabled={!!isUpdating}>
+                                        {isUpdating?.endsWith(user.uid) ? <Loader2 className="h-4 w-4 animate-spin"/> : <MoreHorizontal className="h-4 w-4" />}
                                     </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
@@ -187,6 +222,10 @@ export default function AdminUsersPage() {
                                                 <Slash className="mr-2 h-4 w-4" /> Block User
                                             </DropdownMenuItem>
                                         )}
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="text-destructive" onClick={() => setUserToDelete(user)}>
+                                            <Trash2 className="mr-2 h-4 w-4" /> Delete User
+                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                                 </TableCell>
@@ -217,12 +256,11 @@ export default function AdminUsersPage() {
                                 </div>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button size="icon" variant="ghost" disabled={isUpdating === user.uid} className="-mt-2 -mr-2">
-                                            {isUpdating === user.uid ? <Loader2 className="h-4 w-4 animate-spin"/> : <MoreHorizontal className="h-4 w-4" />}
+                                        <Button size="icon" variant="ghost" disabled={!!isUpdating} className="-mt-2 -mr-2">
+                                            {isUpdating?.endsWith(user.uid) ? <Loader2 className="h-4 w-4 animate-spin"/> : <MoreHorizontal className="h-4 w-4" />}
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                        <DropdownMenuSeparator />
                                         {user.status === 'blocked' ? (
                                             <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')}>
                                                 <CheckCircle className="mr-2 h-4 w-4" /> Unblock
@@ -232,6 +270,10 @@ export default function AdminUsersPage() {
                                                 <Slash className="mr-2 h-4 w-4" /> Block
                                             </DropdownMenuItem>
                                         )}
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="text-destructive" onClick={() => setUserToDelete(user)}>
+                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </CardHeader>
@@ -269,5 +311,28 @@ export default function AdminUsersPage() {
         </CardFooter>
       </Card>
     </main>
+
+    <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This will permanently delete the user <span className="font-bold">{userToDelete?.displayName} ({userToDelete?.email})</span>. This action cannot be undone.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                    className="bg-destructive hover:bg-destructive/90"
+                    onClick={handleDeleteUser}
+                    disabled={!!isUpdating}
+                >
+                    {isUpdating?.startsWith('delete-') ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                    Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
