@@ -1,34 +1,27 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 
-const ADMIN_PATHS = ['/admin', '/api/admin'];
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isProtectedRoute = ADMIN_PATHS.some(path => pathname.startsWith(path));
-
-  if (!isProtectedRoute) {
+  // Exclude the login page itself to prevent a redirect loop.
+  if (pathname.startsWith('/admin/login')) {
     return NextResponse.next();
   }
   
   const sessionCookie = request.cookies.get('__session')?.value;
 
-  // Handle API requests
+  // If it's an API request and there's no session, return a JSON error.
   if (pathname.startsWith('/api/')) {
     if (!sessionCookie) {
-      // For API routes, return a JSON error response instead of redirecting.
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    // If cookie exists, let the request proceed. The API route itself will verify it.
-    return NextResponse.next();
   }
-
-  // Handle Page requests
-  if (pathname.startsWith('/admin')) {
-    // If it's a UI page and there's no cookie, redirect to login.
-    // Exclude the login page itself to prevent a redirect loop.
-    if (!sessionCookie && !pathname.startsWith('/admin/login')) {
+  // If it's a UI page request and there's no session, redirect to login.
+  else if (pathname.startsWith('/admin')) {
+    if (!sessionCookie) {
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('redirectedFrom', pathname);
       return NextResponse.redirect(loginUrl);
@@ -38,7 +31,8 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Ensure the middleware runs on all admin paths.
+// This matcher ensures the middleware runs on all admin-related paths,
+// including UI pages and all relevant API routes for auth and admin actions.
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/auth/:path*'],
 };
