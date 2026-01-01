@@ -89,8 +89,9 @@ export type UserProfile = {
   photoURL?: string;
   createdAt: string;
   referralCode?: string; // The user's own referral code
-  referredBy?: string; // The code they used to sign up
+  referredBy?: string | null; // UID of the user who referred them
   status?: 'active' | 'blocked';
+  referredUsers?: string[]; // Array of UIDs of users they have referred
 }
 
 export type AppSettings = {

@@ -39,6 +39,12 @@ export default function AdminUsersPage() {
 
   const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersQuery);
 
+  const usersMap = useMemo(() => {
+    if (!users) return new Map();
+    return new Map(users.map(u => [u.uid, u]));
+  }, [users]);
+
+
   const filteredUsers = useMemo(() => {
     if (!users) return [];
     return users.filter(user =>
@@ -76,9 +82,10 @@ export default function AdminUsersPage() {
     
     try {
         const userDocRef = doc(db, 'users', userToDelete.uid);
+        // This is a client-side delete, which relies on Firestore rules for security.
+        // Ensure your rules only allow admins to delete user documents.
         await deleteDoc(userDocRef);
-        // Note: This only deletes the Firestore record. The Firebase Auth user is not deleted.
-        // A cloud function would be required to delete the auth user when the doc is deleted.
+        
         toast({
             title: "User Deleted",
             description: `${userToDelete.displayName} (${userToDelete.email})'s data has been deleted from Firestore.`,
@@ -86,7 +93,7 @@ export default function AdminUsersPage() {
     } catch (error: any) {
         toast({
             title: "Deletion Failed",
-            description: error.message || "Could not delete user from Firestore.",
+            description: error.message || "Could not delete user from Firestore. Check security rules.",
             variant: "destructive",
         });
     }
@@ -106,6 +113,7 @@ export default function AdminUsersPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Referred By</TableHead>
                 <TableHead>Own Referral Code</TableHead>
+                <TableHead>Referrals</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead><span className="sr-only">Actions</span></TableHead>
             </TableRow>
@@ -117,6 +125,7 @@ export default function AdminUsersPage() {
                 <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
                 </TableRow>
@@ -167,73 +176,83 @@ export default function AdminUsersPage() {
                             <TableHead>User</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Referred By</TableHead>
-                            <TableHead>Own Referral Code</TableHead>
+                            <TableHead>Own Code</TableHead>
+                             <TableHead>Referrals</TableHead>
                             <TableHead>Joined</TableHead>
                             <TableHead><span className="sr-only">Actions</span></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredUsers.length > 0 ? filteredUsers.map(user => (
-                            <TableRow key={user.uid}>
-                                <TableCell>
-                                <div className="flex items-center gap-3">
-                                    <Avatar>
-                                    <AvatarImage src={user.photoURL || `https://avatar.vercel.sh/${user.email}.png`} />
-                                    <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="grid">
-                                    <div className="font-medium">{user.displayName}</div>
-                                    <div className="text-xs text-muted-foreground">{user.email}</div>
+                            {filteredUsers.length > 0 ? filteredUsers.map(user => {
+                                const referrer = user.referredBy ? usersMap.get(user.referredBy) : null;
+                                return (
+                                <TableRow key={user.uid}>
+                                    <TableCell>
+                                    <div className="flex items-center gap-3">
+                                        <Avatar>
+                                        <AvatarImage src={user.photoURL || `https://avatar.vercel.sh/${user.email}.png`} />
+                                        <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="grid">
+                                        <div className="font-medium">{user.displayName}</div>
+                                        <div className="text-xs text-muted-foreground">{user.email}</div>
+                                        </div>
                                     </div>
-                                </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant={user.status === 'blocked' ? 'destructive' : 'default'} className="capitalize">
-                                        {user.status || 'active'}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                {user.referredBy ? (
-                                    <Badge variant="outline">{user.referredBy}</Badge>
-                                ) : (
-                                    <span className="text-muted-foreground text-xs">N/A</span>
-                                )}
-                                </TableCell>
-                                <TableCell>
-                                <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
-                                </TableCell>
-                                <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</TableCell>
-                                <TableCell className="text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                    <Button size="icon" variant="ghost" disabled={!!isUpdating}>
-                                        {isUpdating?.endsWith(user.uid) ? <Loader2 className="h-4 w-4 animate-spin"/> : <MoreHorizontal className="h-4 w-4" />}
-                                    </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem>View Profile</DropdownMenuItem>
-                                        <DropdownMenuItem>View Orders</DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        {user.status === 'blocked' ? (
-                                            <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')}>
-                                                <CheckCircle className="mr-2 h-4 w-4" /> Unblock User
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={user.status === 'blocked' ? 'destructive' : 'default'} className="capitalize">
+                                            {user.status || 'active'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                    {referrer ? (
+                                        <div className="grid">
+                                            <div className="font-medium text-xs">{referrer.displayName}</div>
+                                            <div className="text-xs text-muted-foreground">{referrer.email}</div>
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted-foreground text-xs">N/A</span>
+                                    )}
+                                    </TableCell>
+                                    <TableCell>
+                                    <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <span className="font-medium">{(user.referredUsers || []).length}</span>
+                                    </TableCell>
+                                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</TableCell>
+                                    <TableCell className="text-right">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                        <Button size="icon" variant="ghost" disabled={!!isUpdating}>
+                                            {isUpdating?.endsWith(user.uid) ? <Loader2 className="h-4 w-4 animate-spin"/> : <MoreHorizontal className="h-4 w-4" />}
+                                        </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem>View Profile</DropdownMenuItem>
+                                            <DropdownMenuItem>View Orders</DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            {user.status === 'blocked' ? (
+                                                <DropdownMenuItem onClick={() => handleUpdateStatus(user.uid, 'active')}>
+                                                    <CheckCircle className="mr-2 h-4 w-4" /> Unblock User
+                                                </DropdownMenuItem>
+                                            ) : (
+                                                <DropdownMenuItem className="text-destructive" onClick={() => handleUpdateStatus(user.uid, 'blocked')}>
+                                                    <Slash className="mr-2 h-4 w-4" /> Block User
+                                                </DropdownMenuItem>
+                                            )}
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem className="text-destructive" onClick={() => setUserToDelete(user)}>
+                                                <Trash2 className="mr-2 h-4 w-4" /> Delete User
                                             </DropdownMenuItem>
-                                        ) : (
-                                            <DropdownMenuItem className="text-destructive" onClick={() => handleUpdateStatus(user.uid, 'blocked')}>
-                                                <Slash className="mr-2 h-4 w-4" /> Block User
-                                            </DropdownMenuItem>
-                                        )}
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem className="text-destructive" onClick={() => setUserToDelete(user)}>
-                                            <Trash2 className="mr-2 h-4 w-4" /> Delete User
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                            )) : (
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                                )
+                            }) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">No users found.</TableCell>
+                                <TableCell colSpan={7} className="h-24 text-center">No users found.</TableCell>
                             </TableRow>
                             )}
                         </TableBody>
@@ -242,7 +261,9 @@ export default function AdminUsersPage() {
 
                 {/* Mobile Cards */}
                 <div className="block md:hidden p-4 space-y-4">
-                    {filteredUsers.length > 0 ? filteredUsers.map(user => (
+                    {filteredUsers.length > 0 ? filteredUsers.map(user => {
+                      const referrer = user.referredBy ? usersMap.get(user.referredBy) : null;
+                      return (
                         <Card key={user.uid}>
                             <CardHeader className="flex flex-row items-start justify-between p-4 pb-2">
                                 <div className="flex items-center gap-3">
@@ -278,24 +299,33 @@ export default function AdminUsersPage() {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </CardHeader>
-                            <CardContent className="p-4 pt-2 space-y-2">
-                                <div className="flex justify-between items-center text-sm">
+                            <CardContent className="p-4 pt-2 space-y-2 text-sm">
+                                <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">Status</span>
                                     <Badge variant={user.status === 'blocked' ? 'destructive' : 'default'} className="capitalize">
                                         {user.status || 'active'}
                                     </Badge>
                                 </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-muted-foreground">Referral Code</span>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Own Code</span>
                                      <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
                                 </div>
-                                <div className="flex justify-between items-center text-sm">
+                                 <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Referred By</span>
+                                    <span>{referrer ? referrer.displayName : 'N/A'}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Referrals</span>
+                                    <span className="font-medium">{(user.referredUsers || []).length}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">Joined</span>
                                     <span>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</span>
                                 </div>
                             </CardContent>
                         </Card>
-                    )) : (
+                      )
+                    }) : (
                         <div className="h-24 text-center flex items-center justify-center">
                             <p>No users found.</p>
                         </div>
@@ -304,7 +334,7 @@ export default function AdminUsersPage() {
             </>
           )}
           </div>
-        </CardContent>
+        </CardFooter>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
             Showing <strong>{filteredUsers.length}</strong> of <strong>{users?.length || 0}</strong> users.
