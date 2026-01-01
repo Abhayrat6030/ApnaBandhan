@@ -1,6 +1,17 @@
+
 {
   "rules": {
-    ".read": "auth.token.email == 'abhayrat603@gmail.com'",
-    ".write": "auth.token.email == 'abhayrat603@gmail.com'"
+    "rules": {
+      "cloud.firestore": {
+        "databases": {
+          "{database}": {
+            "documents": {
+              ".read": "auth.token.email == 'abhayrat603@gmail.com'",
+              ".write": "auth.token.email == 'abhayrat603@gmail.com'"
+            }
+          }
+        }
+      }
+    }
   }
 }

@@ -1,7 +1,17 @@
 
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    function isAdmin() {
+      return request.auth.token.email == 'abhayrat603@gmail.com';
+    }
+
+    // Admin has global access
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
 
     /* ===============================
        HELPER FUNCTIONS
@@ -20,16 +30,16 @@ service cloud.firestore {
     =============================== */
     match /users/{userId} {
       // Users can read and write their own data. Admins can too.
-      allow read, write: if isOwner(userId) || request.auth.token.email == 'abhayrat603@gmail.com';
+      allow read, write: if isOwner(userId) || isAdmin();
 
       match /notifications/{notificationId} {
-        allow read: if isOwner(userId);
-        allow write: if request.auth.token.email == 'abhayrat603@gmail.com'; // Only admin can send notifications
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin(); // Only admin can send notifications
       }
 
       match /downloadableProducts/{productId} {
-        allow read: if isOwner(userId);
-        allow write: if request.auth.token.email == 'abhayrat603@gmail.com'; // Only admin can add downloadable products
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin(); // Only admin can add downloadable products
       }
     }
 
@@ -37,7 +47,7 @@ service cloud.firestore {
        SETTINGS (ADMIN ONLY)
     =============================== */
     match /app-settings/{settingId} {
-      allow read, write: if request.auth.token.email == 'abhayrat603@gmail.com';
+      allow read, write: if isAdmin();
     }
     
     /* ===============================
@@ -45,24 +55,24 @@ service cloud.firestore {
     =============================== */
     match /services/{serviceId} {
       allow read: if true;
-      allow write: if request.auth.token.email == 'abhayrat603@gmail.com';
+      allow write: if isAdmin();
     }
 
     match /comboPackages/{comboId} {
       allow read: if true;
-      allow write: if request.auth.token.email == 'abhayrat603@gmail.com';
+      allow write: if isAdmin();
     }
      match /media/{mediaId} {
       allow read: if true;
-      allow write: if request.auth.token.email == 'abhayrat603@gmail.com';
+      allow write: if isAdmin();
     }
 
     /* ===============================
        ORDERS (SECURE)
     =============================== */
      match /orders/{orderId} {
-      // Admins can read/write any order. Users can only get their own.
-      allow read, write: if request.auth.token.email == 'abhayrat603@gmail.com';
+      // Admins can read/write any order.
+      allow read, write: if isAdmin();
       
       // Users can create orders for themselves with specific initial data.
       allow create: if isSignedIn()
