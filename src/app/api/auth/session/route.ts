@@ -1,16 +1,14 @@
 
-import { NextResponse, type NextRequest } from "next/server";
-import admin from "firebase-admin";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { initializeAdminApp } from "@/firebase/admin";
-
-// Initialize admin app safely
-initializeAdminApp();
+import admin from "firebase-admin";
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export async function POST(req: NextRequest) {
   try {
+    initializeAdminApp();
     const body = await req.json();
     const { idToken } = body;
     
@@ -20,17 +18,14 @@ export async function POST(req: NextRequest) {
 
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     
-    // Crucially, only create a session for the designated admin user.
     if (decodedToken.email !== ADMIN_EMAIL) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
     
-    // Set session expiration. 5 days in this case.
-    const expiresIn = 60 * 60 * 24 * 5 * 1000; 
+    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
     
     const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
 
-    // Set the cookie on the response.
     cookies().set("__session", sessionCookie, {
       maxAge: expiresIn,
       httpOnly: true,
@@ -50,13 +45,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const sessionCookieName = '__session';
-    const sessionCookie = cookies().get(sessionCookieName);
-
-    if (sessionCookie) {
-      // Clear the cookie by setting its max-age to 0.
-      cookies().set(sessionCookieName, '', { maxAge: 0 });
-    }
-
+    cookies().delete(sessionCookieName);
     return NextResponse.json({ success: true, message: "Session deleted successfully." });
   } catch (error: any) {
     console.error("SESSION DELETION FAILED:", error);

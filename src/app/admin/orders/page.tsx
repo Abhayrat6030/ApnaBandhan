@@ -1,60 +1,53 @@
 
-'use client';
-
-import { useMemo } from 'react';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
+import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { packages, services as staticServices } from '@/lib/data';
+import { getAllOrders } from '@/app/actions/admin';
 
-export const dynamic = 'force-dynamic';
+async function OrdersList() {
+    const allOrders = await getAllOrders();
+    return (
+        <Card>
+            <CardHeader>
+            <CardTitle>Orders</CardTitle>
+            <CardDescription>A list of all the orders from your customers.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+            {allOrders && allOrders.length > 0 ? (
+                <OrderTable orders={allOrders} />
+            ) : (
+                <div className="p-6 text-center text-muted-foreground">
+                <p>No orders found.</p>
+                </div>
+            )}
+            </CardContent>
+        </Card>
+    );
+}
 
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
+function OrdersSkeleton() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Orders</CardTitle>
+                <CardDescription>A list of all the orders from your customers.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4">
+                <div className="space-y-2">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
 
 export default function AdminOrdersPage() {
-  const { user, isUserLoading } = useUser();
-  const isAdmin = user?.email === ADMIN_EMAIL;
-  const db = useFirestore();
-
-  const ordersQuery = useMemoFirebase(() => {
-      if (!isAdmin || !db) return null;
-      return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
-  }, [isAdmin, db]);
-
-  const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
-
-  const allServicesMap = useMemo(() => {
-    const map = new Map<string, string>();
-    staticServices.forEach(s => map.set(s.id, s.name));
-    packages.forEach(p => map.set(p.id, p.name));
-    return map;
-  }, []);
-
-  const ordersWithServiceNames = useMemo(() => {
-    if (!allOrders) return [];
-    return allOrders.map(order => ({
-      ...order,
-      serviceName: allServicesMap.get(order.selectedServiceId) || 'Unknown Service',
-    }));
-  }, [allOrders, allServicesMap]);
-  
-  const isLoading = isUserLoading || areOrdersLoading;
-
-  const renderSkeleton = () => (
-    <div className="p-4">
-        {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center space-x-4 p-4">
-                <Skeleton className="h-10 w-full" />
-            </div>
-        ))}
-    </div>
-  );
-
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="flex items-center">
@@ -68,28 +61,9 @@ export default function AdminOrdersPage() {
             </Button>
         </div>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Orders</CardTitle>
-          <CardDescription>A list of all the orders from your customers.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            renderSkeleton()
-          ) : !isAdmin ? (
-            <div className="p-6 text-center text-muted-foreground">
-              <p>You do not have permission to view this page.</p>
-            </div>
-          ) : allOrders && allOrders.length > 0 ? (
-            <OrderTable orders={ordersWithServiceNames} />
-          ) : (
-             <div className="p-6 text-center text-muted-foreground">
-               <p>No orders found.</p>
-             </div>
-          )}
-        </CardContent>
-      </Card>
+      <Suspense fallback={<OrdersSkeleton />}>
+        <OrdersList />
+      </Suspense>
     </main>
   );
 }

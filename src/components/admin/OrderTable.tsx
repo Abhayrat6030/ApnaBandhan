@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -24,9 +25,8 @@ import { MoreHorizontal, MessageSquare, Loader2 } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
+import { updateOrderStatus, updatePaymentStatus } from '@/app/actions/admin';
 
 interface OrderTableProps {
   orders: (Order & { serviceName?: string })[];
@@ -34,8 +34,9 @@ interface OrderTableProps {
 
 export default function OrderTable({ orders }: OrderTableProps) {
   const { toast } = useToast();
-  const db = useFirestore();
-  const [isSubmitting, setIsSubmitting] = React.useState<string | null>(null);
+  const router = useRouter();
+  const [isPending, startTransition] = React.useTransition();
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null);
 
   const getStatusVariant = (status: Order['status']) => {
     switch (status) {
@@ -56,34 +57,38 @@ export default function OrderTable({ orders }: OrderTableProps) {
     }
   }
 
-  const handleStatusUpdate = async (orderId: string, newStatus: Order['status']) => {
-    if (!db) return;
-    setIsSubmitting(`status-${orderId}`);
-    try {
-      const orderRef = doc(db, 'orders', orderId);
-      await updateDoc(orderRef, { status: newStatus });
-      toast({ title: "Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-    } catch (error: any) {
-      toast({ title: "Update Failed", description: error.message, variant: 'destructive'});
-    }
-    setIsSubmitting(null);
+  const handleStatusUpdate = (orderId: string, newStatus: Order['status']) => {
+    setUpdatingId(`status-${orderId}`);
+    startTransition(async () => {
+        try {
+            await updateOrderStatus({ orderId, newStatus });
+            toast({ title: "Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
+            router.refresh();
+        } catch (error: any) {
+            toast({ title: "Update Failed", description: error.message, variant: 'destructive'});
+        } finally {
+            setUpdatingId(null);
+        }
+    });
   }
 
-  const handlePaymentUpdate = async (orderId: string, newStatus: Order['paymentStatus']) => {
-    if (!db) return;
-    setIsSubmitting(`payment-${orderId}`);
-    try {
-        const orderRef = doc(db, 'orders', orderId);
-        await updateDoc(orderRef, { paymentStatus: newStatus });
-        toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-    } catch (error: any) {
-        toast({ title: "Update Failed", description: error.message, variant: 'destructive'});
-    }
-    setIsSubmitting(null);
+  const handlePaymentUpdate = (orderId: string, newStatus: Order['paymentStatus']) => {
+    setUpdatingId(`payment-${orderId}`);
+    startTransition(async () => {
+        try {
+            await updatePaymentStatus({ orderId, newStatus });
+            toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
+            router.refresh();
+        } catch (error: any) {
+            toast({ title: "Update Failed", description: error.message, variant: 'destructive'});
+        } finally {
+            setUpdatingId(null);
+        }
+    });
   }
   
   const isUpdating = (type: 'status' | 'payment', orderId: string) => {
-      return isSubmitting === `${type}-${orderId}`;
+      return isPending && updatingId === `${type}-${orderId}`;
   }
 
   return (
@@ -121,8 +126,8 @@ export default function OrderTable({ orders }: OrderTableProps) {
                     <TableCell>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isSubmitting}>
-                            {isSubmitting?.endsWith(order.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+                        <Button aria-haspopup="true" size="icon" variant="ghost" disabled={isPending}>
+                            {isPending && updatingId?.endsWith(order.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
                             <span className="sr-only">Toggle menu</span>
                         </Button>
                         </DropdownMenuTrigger>
@@ -168,7 +173,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isSubmitting} className="-mt-2 -mr-2">
+                                <Button aria-haspopup="true" size="icon" variant="ghost" disabled={isPending} className="-mt-2 -mr-2">
                                     <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>

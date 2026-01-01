@@ -1,9 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
+import { useState } from 'react';
 import AdminNav from "@/components/admin/AdminNav";
 import Logo from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
@@ -15,9 +13,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/lib/constants";
-import { PanelLeft, Loader2 } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUser } from '@/firebase';
 
 export default function AdminLayout({
   children,
@@ -29,7 +28,6 @@ export default function AdminLayout({
 
   return (
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-        {/* DESKTOP SIDEBAR */}
         <aside className="hidden border-r bg-muted/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
@@ -48,7 +46,6 @@ export default function AdminLayout({
 
         <div className="flex flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-            {/* MOBILE SIDEBAR TRIGGER */}
             <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild>
                 <Button

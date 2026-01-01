@@ -5,10 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
-import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -16,11 +14,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser } from '@/firebase';
+import { createServiceOrPackage } from '@/app/actions/admin';
 
 const formSchema = z.object({
-  itemType: z.enum(['service', 'package']),
-  // Service fields
+  itemType: z.enum(['Service', 'Package']),
   name: z.string().min(3, 'Name is required.'),
   slug: z.string().min(3, 'Slug is required. Use format: "your-service-name"').optional(),
   category: z.string().optional(),
@@ -29,7 +26,6 @@ const formSchema = z.object({
   priceType: z.enum(['starting', 'fixed']).optional(),
   deliveryTime: z.string().optional(),
   inclusions: z.array(z.object({ value: z.string() })).optional(),
-  // Package fields
   priceString: z.string().optional(),
   features: z.array(z.object({ value: z.string() })).optional(),
 });
@@ -46,15 +42,13 @@ const serviceCategories = [
 export default function NewServicePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [itemType, setItemType] = useState('service');
-  const { user } = useUser();
-  const db = useFirestore();
+  const [isPending, startTransition] = useTransition();
+  const [itemType, setItemType] = useState('Service');
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      itemType: 'service',
+      itemType: 'Service',
       name: '',
       slug: '',
       description: '',
@@ -78,60 +72,31 @@ export default function NewServicePage() {
 
   const handleItemTypeChange = (value: string) => {
     setItemType(value);
-    form.setValue('itemType', value as 'service' | 'package');
+    form.setValue('itemType', value as 'Service' | 'Package');
   }
 
-  async function onSubmit(values: FormValues) {
-    if (!user || !db) {
-        toast({ title: 'Error', description: 'You must be logged in to perform this action.', variant: 'destructive' });
-        return;
-    }
-    setIsLoading(true);
-
-    try {
-        if (values.itemType === 'service' && values.slug) {
-            const serviceRef = doc(db, 'services', values.slug);
-            await setDoc(serviceRef, {
-                name: values.name,
-                slug: values.slug,
-                description: values.description,
-                category: values.category,
-                price: values.price,
-                priceType: values.priceType,
-                deliveryTime: values.deliveryTime,
-                inclusions: values.inclusions?.map(i => i.value).filter(Boolean)
-            });
-        } else if (values.itemType === 'package') {
-            const slug = values.name.toLowerCase().replace(/\s+/g, '-');
-            const packageRef = doc(db, 'comboPackages', slug);
-            await setDoc(packageRef, {
-                name: values.name,
-                description: values.description,
-                price: values.priceString,
-                features: values.features?.map(f => f.value).filter(Boolean),
-            });
-        }
+  function onSubmit(values: FormValues) {
+    startTransition(async () => {
+      try {
+        await createServiceOrPackage(values);
         toast({
             title: 'Success!',
-            description: `${values.itemType === 'service' ? 'Service' : 'Package'} added successfully.`,
+            description: `${values.itemType} added successfully.`,
         });
         router.push('/admin/services');
-
-    } catch (error: any) {
-        console.error("Error adding service:", error);
-        toast({
-            title: 'Error',
-            description: error.message || 'Something went wrong.',
-            variant: 'destructive',
-        });
-    }
-
-
-    setIsLoading(false);
+        router.refresh();
+      } catch (error: any) {
+          toast({
+              title: 'Error',
+              description: error.message || 'Something went wrong.',
+              variant: 'destructive',
+          });
+      }
+    });
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 animate-fade-in-up">
       <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <CardTitle>Add New Item</CardTitle>
@@ -153,8 +118,8 @@ export default function NewServicePage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="service">Service</SelectItem>
-                        <SelectItem value="package">Combo Package</SelectItem>
+                        <SelectItem value="Service">Service</SelectItem>
+                        <SelectItem value="Package">Combo Package</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -166,7 +131,7 @@ export default function NewServicePage() {
                 <FormItem><FormLabel>Name</FormLabel><FormControl><Input placeholder="e.g. Elegant Wedding E-Invite" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
               
-              {itemType === 'service' && <FormField control={form.control} name="slug" render={({ field }) => (
+              {itemType === 'Service' && <FormField control={form.control} name="slug" render={({ field }) => (
                 <FormItem><FormLabel>Slug</FormLabel><FormControl><Input placeholder="e.g. elegant-wedding-e-invite" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>}
               
@@ -174,14 +139,14 @@ export default function NewServicePage() {
                 <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the item..." {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
 
-              {itemType === 'service' ? (
+              {itemType === 'Service' ? (
                 <>
                     <FormField control={form.control} name="category" render={({ field }) => (
                         <FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent>
                             {serviceCategories.map(cat => <SelectItem key={cat} value={cat}>{cat.replace('-', ' ')}</SelectItem>)}
                         </SelectContent></Select><FormMessage /></FormItem>
                     )}/>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField control={form.control} name="price" render={({ field }) => (
                             <FormItem><FormLabel>Price (INR)</FormLabel><FormControl><Input type="number" placeholder="e.g. 800" {...field} /></FormControl><FormMessage /></FormItem>
                         )}/>
@@ -227,8 +192,8 @@ export default function NewServicePage() {
                 </>
               )}
 
-              <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={isPending} className="w-full">
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Add Item
               </Button>
             </form>
