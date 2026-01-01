@@ -2,6 +2,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import admin from '@/firebase/admin';
 
+export const unstable_allowDynamic = [
+  '**/node_modules/firebase-admin/lib/app/credential-internal.js',
+  '**/node_modules/firebase-admin/lib/app/firebase-namespace-internal.js',
+];
+
+
 async function verifySessionCookie(req: NextRequest) {
   const sessionCookie = req.cookies.get('__session')?.value;
   if (!sessionCookie) {
