@@ -74,7 +74,7 @@ export default function RootLayout({
       >
         <FirebaseClientProvider>
           {isAuthRoute ? (
-             children
+             <AppContent />
           ) : (
             <AuthHandler>
               <div className="relative flex min-h-dvh flex-col pb-16 md:pb-0">

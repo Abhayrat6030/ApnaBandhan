@@ -7,6 +7,15 @@ import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { firebaseConfig } from './config';
 
+// VERY IMPORTANT: prevent re-initialization
+const app = getApps().length === 0
+  ? initializeApp(firebaseConfig)
+  : getApp();
+
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+
+
 interface UserAuthState {
   user: User | null;
   isUserLoading: boolean;
@@ -22,12 +31,6 @@ export interface FirebaseContextState {
   userError: Error | null;
 }
 
-// Initialize Firebase App
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-export const db = getFirestore(app);
-export const auth = getAuth(app);
-
-
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
 export const FirebaseProvider: React.FC<{children: ReactNode}> = ({
@@ -39,28 +42,24 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({
     userError: null,
   });
 
-  const firebaseApp = useMemo(() => app, []);
-  const authInstance = useMemo(() => auth, []);
-  const firestoreInstance = useMemo(() => db, []);
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(authInstance, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
     }, (error) => {
       console.error("FirebaseProvider: onAuthStateChanged error:", error);
       setUserAuthState({ user: null, isUserLoading: false, userError: error });
     });
     return () => unsubscribe();
-  }, [authInstance]);
+  }, []);
 
   const contextValue = useMemo((): FirebaseContextState => ({
-    firebaseApp,
-    firestore: firestoreInstance,
-    auth: authInstance,
+    firebaseApp: app,
+    firestore: db,
+    auth: auth,
     user: userAuthState.user,
     isUserLoading: userAuthState.isUserLoading,
     userError: userAuthState.userError,
-  }), [firebaseApp, firestoreInstance, authInstance, userAuthState]);
+  }), [userAuthState]);
 
   return (
     <FirebaseContext.Provider value={contextValue}>
@@ -79,13 +78,11 @@ export const useFirebase = (): FirebaseContextState => {
 };
 
 export const useAuth = (): Auth => {
-  const context = useFirebase();
-  return context.auth;
+  return auth;
 };
 
 export const useFirestore = (): Firestore => {
-  const context = useFirebase();
-  return context.firestore;
+  return db;
 };
 
 export const useFirebaseApp = (): FirebaseApp => {

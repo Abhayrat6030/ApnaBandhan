@@ -14,7 +14,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Lock, Phone, Gift, Eye, EyeOff } from 'lucide-react';
-import { initiateEmailSignUp, useAuth } from '@/firebase';
+import { initiateEmailSignUp } from '@/firebase';
+import { useAuth } from '@/firebase';
 
 
 const formSchema = z.object({

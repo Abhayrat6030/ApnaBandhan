@@ -21,7 +21,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { services, packages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, errorEmitter, useFirestore } from '@/firebase';
+import { useUser, errorEmitter } from '@/firebase';
+import { db } from '@/firebase/provider';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 
@@ -47,7 +48,6 @@ function OrderFormComponent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { user } = useUser();
-  const db = useFirestore();
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
