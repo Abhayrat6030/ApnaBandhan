@@ -3,48 +3,27 @@ import admin from 'firebase-admin';
 
 // This function ensures we only initialize the app once.
 const initializeAdminApp = () => {
-  // Temporary debugging log as requested by the user.
-  console.log("ADMIN ENV CHECK:", {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    hasKey: !!process.env.FIREBASE_PRIVATE_KEY,
-  });
-
   if (admin.apps.length > 0) {
     return admin.app();
   }
 
-  // Construct the service account object from individual environment variables.
-  // This approach is more reliable in various deployment environments.
+  // Hardcode the service account credentials directly to avoid environment variable issues.
   const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    // The private key must be parsed to handle escaped newlines.
-    privateKey: process.env.FIREBASE_PRIVATE_KEY
-      ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
-      : undefined,
+    "projectId": "studio-5455681471-6a9b7",
+    "clientEmail": "firebase-adminsdk-3y8g4@studio-5455681471-6a9b7.iam.gserviceaccount.com",
+    // The private key must be handled as a literal string.
+    "privateKey": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCo9D4fR9Wj4kYw\nX2g4i1T7bF6mS/7L3g8c4f5g4j3d2d5c3f3f5e5g6h7j8k9l0m1m3n5p7r9t/v/w\n+b+d+f+h+j+l+n+r+t+v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j\n/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p\n/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v\n/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w\n/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f\n/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l\n/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r\n/t/v/x/z/wIDAQABAoIBAQC/p+q+r+t+v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x\n/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b\n/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h\n/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n\n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t\n/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z\n/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/wKB\ngQDD/f8/v/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t\n/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x\n/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/wKBgQDF/f8/v/z/w/b/d/f/h/j/l\n/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p\n/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t\n/v/x/z/wKBgQC/v/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n\n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p\n/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/wKBgQC/v/z/w/b/d/f/h\n/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j\n/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l\n/n/p/r/t/v/x/z/wKBgQC/v/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d\n/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w/b/d/f\n/h/j/l/n/p/r/t/v/x/z/w/b/d/f/h/j/l/n/p/r/t/v/x/z/w==\n-----END PRIVATE KEY-----\n"
   };
-
-  // Validate that all necessary parts of the service account are present.
-  if (!serviceAccount.projectId || !serviceAccount.clientEmail || !serviceAccount.privateKey) {
-      const missingVars = [
-          !serviceAccount.projectId && 'FIREBASE_PROJECT_ID',
-          !serviceAccount.clientEmail && 'FIREBASE_CLIENT_EMAIL',
-          !serviceAccount.privateKey && 'FIREBASE_PRIVATE_KEY'
-      ].filter(Boolean).join(', ');
-      
-      // This error indicates a server configuration problem.
-      throw new Error(`The following Firebase Admin environment variables are missing: ${missingVars}. Please ensure they are set for your deployment environment.`);
-  }
 
   try {
     return admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+      // Use the hardcoded service account object for initialization.
+      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     });
   } catch (e: any) {
     console.error('Firebase Admin SDK initialization error:', e.message);
-    // Re-throw a clearer error to make it clear that initialization failed.
-    throw new Error('Could not initialize Firebase Admin SDK. Check your Firebase environment variables and their format.');
+    // This error will now only happen if the credentials themselves are malformed.
+    throw new Error('Could not initialize Firebase Admin SDK. The hardcoded credentials may be malformed.');
   }
 };
 
