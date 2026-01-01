@@ -1,6 +1,9 @@
 
 "use client";
 
+import { useEffect, useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/firebase';
 import AdminNav from "@/components/admin/AdminNav";
 import Logo from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
@@ -12,11 +15,38 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/lib/constants";
-import { PanelLeft } from "lucide-react";
-import { useUser } from "@/firebase";
-import { useState } from "react";
+import { PanelLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
+
+function AdminAuthGuard({ children }: { children: ReactNode }) {
+    const { user, isUserLoading } = useUser();
+    const router = useRouter();
+    const [isVerifying, setIsVerifying] = useState(true);
+
+    useEffect(() => {
+        if (!isUserLoading) {
+            if (!user || user.email !== ADMIN_EMAIL) {
+                router.push('/admin/login');
+            } else {
+                setIsVerifying(false);
+            }
+        }
+    }, [user, isUserLoading, router]);
+    
+    if (isVerifying || isUserLoading) {
+        return (
+            <div className="flex h-screen w-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        );
+    }
+    
+    return <>{children}</>;
+}
+
 
 export default function AdminLayout({
   children,
@@ -26,10 +56,8 @@ export default function AdminLayout({
   const { user } = useUser();
   const [isSheetOpen, setSheetOpen] = useState(false);
 
-  // Since middleware.ts now handles the auth guard, this layout component's only role
-  // is to render the UI for authenticated admins.
-
   return (
+    <AdminAuthGuard>
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         {/* DESKTOP SIDEBAR */}
         <aside className="hidden border-r bg-muted/40 md:block">
@@ -92,5 +120,6 @@ export default function AdminLayout({
           </main>
         </div>
       </div>
+    </AdminAuthGuard>
   );
 }

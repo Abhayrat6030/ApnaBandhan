@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     
     // Crucially, only create a session for the designated admin user.
     if (decodedToken.email !== ADMIN_EMAIL) {
-      return NextResponse.json({ error: "Unauthorized: Not an admin user." }, { status: 403 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
     
     // Set session expiration. 5 days in this case.

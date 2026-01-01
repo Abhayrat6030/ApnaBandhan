@@ -20,9 +20,7 @@ export async function DELETE(req: NextRequest) {
 
         try {
             await admin.auth().verifySessionCookie(sessionCookie, true);
-            // The cookie is valid, and the user is authenticated. We can proceed.
         } catch (error) {
-            // The cookie is invalid (expired, revoked, etc.)
             return NextResponse.json({ error: "Unauthorized: Invalid session." }, { status: 403 });
         }
 
@@ -32,10 +30,8 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: "User ID is required." }, { status: 400 });
         }
 
-        // Delete from Firebase Authentication
         await admin.auth().deleteUser(uid);
         
-        // Delete from Firestore
         const firestore = admin.firestore();
         await firestore.collection('users').doc(uid).delete();
 
