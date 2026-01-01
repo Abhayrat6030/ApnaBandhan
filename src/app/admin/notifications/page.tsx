@@ -4,9 +4,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Loader2, Send, Trash2 } from 'lucide-react';
-import { collection, addDoc, doc, writeBatch, collectionGroup, query, getDocs, deleteDoc, orderBy, limit } from 'firebase/firestore';
+import { collection, addDoc, doc, writeBatch, getDocs, deleteDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -78,39 +78,42 @@ export default function AdminNotificationsPage() {
   const watchTarget = form.watch('target');
   
   const fetchSentNotifications = async () => {
-        if (!db) return;
-        setIsFetchingSent(true);
-        try {
-            const notificationsQuery = query(
-                collectionGroup(db, 'notifications'),
-                orderBy('date', 'desc'),
-                limit(15)
-            );
-            const querySnapshot = await getDocs(notificationsQuery);
-            const notifs = querySnapshot.docs.map(doc => {
-                const userId = doc.ref.parent.parent?.id;
-                const user = userId ? usersMap.get(userId) : undefined;
-                return {
-                    ...(doc.data() as Notification),
-                    id: doc.id,
-                    path: doc.ref.path,
-                    userName: user?.displayName,
-                    userEmail: user?.email,
-                };
-            });
-            setSentNotifications(notifs);
-        } catch (error) {
-            console.error("Failed to fetch sent notifications:", error);
-            toast({ title: "Error", description: "Could not fetch sent notifications.", variant: 'destructive' });
-        }
-        setIsFetchingSent(false);
-    };
+      if (!db || !users) return;
+      setIsFetchingSent(true);
+      try {
+          const allNotifs: SentNotification[] = [];
+          for (const user of users) {
+              const notifsCollection = collection(db, `users/${user.uid}/notifications`);
+              const querySnapshot = await getDocs(notifsCollection);
+              querySnapshot.forEach(doc => {
+                  allNotifs.push({
+                      ...(doc.data() as Notification),
+                      id: doc.id,
+                      path: doc.ref.path,
+                      userName: user.displayName,
+                      userEmail: user.email,
+                  });
+              });
+          }
+          
+          allNotifs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          
+          setSentNotifications(allNotifs.slice(0, 15));
 
-    useMemo(() => {
-        if(users && users.length > 0) {
-            fetchSentNotifications();
-        }
-    }, [users]);
+      } catch (error) {
+          console.error("Failed to fetch sent notifications:", error);
+          toast({ title: "Error", description: "Could not fetch sent notifications.", variant: 'destructive' });
+      }
+      setIsFetchingSent(false);
+  };
+
+  useEffect(() => {
+    if (users && users.length > 0) {
+      fetchSentNotifications();
+    } else if (!areUsersLoading) {
+      setIsFetchingSent(false); // No users, stop fetching
+    }
+  }, [users, areUsersLoading]);
 
 
   async function onSubmit(values: FormValues) {
