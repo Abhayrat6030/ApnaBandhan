@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -14,7 +15,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { deleteUserAction } from './actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,19 +75,31 @@ export default function AdminUsersPage() {
     if (!userToDelete) return;
     setIsUpdating(`delete-${userToDelete.uid}`);
     
-    const result = await deleteUserAction(userToDelete.uid);
+    try {
+        const response = await fetch('/api/users/delete', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ uid: userToDelete.uid }),
+        });
 
-    if (result.success) {
-      toast({
-        title: "User Deleted",
-        description: `${userToDelete.displayName} (${userToDelete.email}) has been permanently deleted.`,
-      });
-    } else {
-      toast({
-        title: "Deletion Failed",
-        description: result.error,
-        variant: "destructive",
-      });
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            toast({
+                title: "User Deleted",
+                description: `${userToDelete.displayName} (${userToDelete.email}) has been permanently deleted.`,
+            });
+        } else {
+            throw new Error(result.error || "Failed to delete user.");
+        }
+    } catch (error: any) {
+        toast({
+            title: "Deletion Failed",
+            description: error.message,
+            variant: "destructive",
+        });
     }
     
     setIsUpdating(null);
