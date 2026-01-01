@@ -5,6 +5,9 @@ import admin from 'firebase-admin';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
+// This makes the middleware run on the Node.js runtime, which is required by firebase-admin.
+export const runtime = 'nodejs';
+
 // Initialize Firebase Admin SDK using the centralized function
 try {
   initializeAdminApp();
@@ -52,12 +55,17 @@ export async function middleware(request: NextRequest) {
         url.searchParams.set('redirectedFrom', pathname);
         return NextResponse.redirect(url);
     }
-    if (pathname.startsWith('/api/admin/') || (pathname.startsWith('/api/auth/session') && request.method !== 'POST')) {
-        return NextResponse.json({ error: 'Unauthorized: No session cookie.' }, { status: 401 });
+    // Protect API routes as well
+    if (pathname.startsWith('/api/admin/')) {
+        return NextResponse.json({ error: 'Unauthorized: Admin access required.' }, { status: 401 });
+    }
+    // Allow POST to /api/auth/session for login, but protect other methods
+    if (pathname.startsWith('/api/auth/session') && request.method !== 'POST') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   }
 
-  // If we reach here, the user is an admin, so allow the request.
+  // If we reach here, the user is an admin or the route is not protected, so allow the request.
   return NextResponse.next();
 }
 
