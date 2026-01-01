@@ -2,9 +2,10 @@
 'use server';
 
 import { doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db, auth } from '@/firebase';
+import { db } from '@/firebase';
 import type { Service, Package } from '@/lib/types';
 import { z } from 'zod';
+import { verifyAdmin } from '@/lib/admin-auth';
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
@@ -24,22 +25,20 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const checkAdmin = () => {
-    const user = auth.currentUser;
-    return user?.email === 'abhayrat603@gmail.com';
-}
-
 export async function addService(data: FormValues) {
-  if (!checkAdmin()) return { success: false, error: 'Unauthorized' };
-  
-  const parseResult = formSchema.safeParse(data);
-  if (!parseResult.success) {
-    return { success: false, error: 'Invalid data provided.' };
-  }
-  
-  const { itemType, name, slug, description, ...rest } = parseResult.data;
-
   try {
+    const isAdmin = await verifyAdmin();
+    if (!isAdmin) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    
+    const parseResult = formSchema.safeParse(data);
+    if (!parseResult.success) {
+      return { success: false, error: 'Invalid data provided.' };
+    }
+    
+    const { itemType, name, slug, description, ...rest } = parseResult.data;
+
     if (itemType === 'service') {
         const newService: Omit<Service, 'id' | 'samples' | 'isFeatured' | 'topRated' | 'rating' | 'tags' | 'originalPrice'> = {
             name,
@@ -65,22 +64,24 @@ export async function addService(data: FormValues) {
 
     return { success: true };
   } catch (error: any) {
-    console.error("Error adding document: ", error);
     return { success: false, error: error.message };
   }
 }
 
 export async function updateService(id: string, data: FormValues) {
-  if (!checkAdmin()) return { success: false, error: 'Unauthorized' };
-
-  const parseResult = formSchema.safeParse(data);
-  if (!parseResult.success) {
-    return { success: false, error: 'Invalid data provided.' };
-  }
-
-  const { itemType, name, slug, description, ...rest } = parseResult.data;
-
   try {
+    const isAdmin = await verifyAdmin();
+    if (!isAdmin) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const parseResult = formSchema.safeParse(data);
+    if (!parseResult.success) {
+      return { success: false, error: 'Invalid data provided.' };
+    }
+
+    const { itemType, name, slug, description, ...rest } = parseResult.data;
+
     if (itemType === 'service') {
       const serviceRef = doc(db, 'services', id);
       const serviceData: Partial<Service> = {
@@ -106,21 +107,21 @@ export async function updateService(id: string, data: FormValues) {
 
     return { success: true };
   } catch (error: any) {
-    console.error("Error updating document: ", error);
     return { success: false, error: error.message };
   }
 }
 
-
 export async function deleteItem(itemId: string, itemType: 'Service' | 'Package') {
-    if (!checkAdmin()) return { success: false, error: 'Unauthorized' };
-
     try {
+        const isAdmin = await verifyAdmin();
+        if (!isAdmin) {
+            return { success: false, error: 'Unauthorized' };
+        }
+
         const collectionName = itemType === 'Service' ? 'services' : 'comboPackages';
         await deleteDoc(doc(db, collectionName, itemId));
         return { success: true };
     } catch (error: any) {
-        console.error("Error deleting document: ", error);
         return { success: false, error: error.message || 'Failed to delete item.' };
     }
 }
