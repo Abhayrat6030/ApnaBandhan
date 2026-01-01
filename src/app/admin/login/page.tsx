@@ -13,6 +13,19 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/firebase';
 import { Loader2 } from 'lucide-react';
 
+async function createSession(idToken: string) {
+    const response = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ idToken }),
+    });
+
+    return response.ok;
+}
+
+
 export default function AdminLoginPage() {
     const router = useRouter();
     const { toast } = useToast();
@@ -25,9 +38,18 @@ export default function AdminLoginPage() {
         setIsLoading(true);
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            toast({ title: "Login Successful", description: "Redirecting to dashboard..." });
-            router.push('/admin/dashboard');
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const idToken = await userCredential.user.getIdToken();
+            
+            const sessionCreated = await createSession(idToken);
+            
+            if (sessionCreated) {
+                toast({ title: "Login Successful", description: "Redirecting to dashboard..." });
+                router.push('/admin/dashboard');
+            } else {
+                throw new Error("Failed to create server session.");
+            }
+
         } catch (error: any) {
             let errorMessage = "An unexpected error occurred.";
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
