@@ -42,7 +42,7 @@ export default function InvitationCardsPage() {
     );
 
   return (
-    <div className="bg-background overflow-hidden">
+    <div className="bg-secondary/30 overflow-hidden">
       <div className="container mx-auto px-4 py-8 md:py-12">
         
         <div className="text-center mb-8">
@@ -63,7 +63,7 @@ export default function InvitationCardsPage() {
                     <TabsTrigger 
                         key={f.value} 
                         value={f.value} 
-                        className="m-1 rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-muted hover:bg-muted/80"
+                        className="m-1 rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-card hover:bg-muted"
                     >
                         {f.label}
                     </TabsTrigger>
@@ -76,11 +76,13 @@ export default function InvitationCardsPage() {
        {premiumSellers.length > 0 && <section className="mb-12">
           <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-2xl tracking-tight">Premium Sellers</h2>
-              <Button variant="ghost">
+              <Button variant="ghost" asChild>
+                <Link href="#">
                   <ChevronRight className="h-6 w-6" />
+                </Link>
               </Button>
           </div>
-          <div className="relative flex items-center justify-center p-8 bg-secondary/30 rounded-lg">
+          <div className="relative flex items-center justify-center p-8 bg-card rounded-lg shadow-inner">
              <Carousel
                 opts={{
                   align: "center",
@@ -116,12 +118,14 @@ export default function InvitationCardsPage() {
         <section>
           <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-2xl tracking-tight">Top Rated on Our Store</h2>
-               <Button variant="ghost">
-                  <ChevronRight className="h-6 w-6" />
-              </Button>
+               <Button variant="ghost" asChild>
+                  <Link href="#">
+                    <ChevronRight className="h-6 w-6" />
+                  </Link>
+               </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
-            {cardServices.map(service => (
+            {filteredServices.map(service => (
               <ServiceCard key={service.id} service={service} />
             ))}
           </div>
