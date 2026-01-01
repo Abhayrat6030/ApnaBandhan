@@ -4,9 +4,6 @@ import admin from "firebase-admin";
 import { cookies } from "next/headers";
 import { initializeAdminApp } from "@/firebase/admin";
 
-// Ensure the runtime is Node.js
-export const runtime = 'nodejs';
-
 // Initialize admin app safely
 initializeAdminApp();
 
@@ -35,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     // Set the cookie on the response.
     cookies().set("__session", sessionCookie, {
-      maxAge: expiresIn / 1000,
+      maxAge: expiresIn, // maxAge is in seconds
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       path: '/',
