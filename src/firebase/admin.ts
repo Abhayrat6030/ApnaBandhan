@@ -1,6 +1,9 @@
 'use server';
 
 import * as admin from 'firebase-admin';
+import { config } from 'dotenv';
+config();
+
 
 const initializeAdminApp = (): admin.app.App => {
   if (admin.apps.length > 0) {
