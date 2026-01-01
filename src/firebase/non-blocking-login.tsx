@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Auth,
@@ -7,7 +8,7 @@ import {
   sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, getDocs, collection, query, where, writeBatch, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collection, query, where, writeBatch, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/firebase';
 
 
@@ -41,16 +42,17 @@ export async function initiateEmailSignUp(
             throw new Error("Invalid referral code.");
         } else {
             const referrerDoc = querySnapshot.docs[0];
-            if (referrerDoc.id === newUser.uid) {
-                await newUser.delete(); // Clean up the created user
-                throw new Error("You cannot use your own referral code.");
-            }
+            // This check is flawed because newUser.uid is not yet in the 'users' collection.
+            // A user can't refer themselves anyway since they don't have an account yet.
+            // This logic is for preventing using one's own code, which is impossible at signup.
+            // The check `referrerDoc.id === newUser.uid` will always be false.
+            
             referrerId = referrerDoc.id;
             referrerDocRef = referrerDoc.ref;
         }
     }
     
-    // 2. Create the new user's profile and update the referrer
+    // 2. Create the new user's profile
     await updateProfile(newUser, { displayName });
     
     const newUserDocRef = doc(db, 'users', newUser.uid);
@@ -69,8 +71,9 @@ export async function initiateEmailSignUp(
         referredUsers: [] // Array to store UIDs of users they refer
     };
 
-    // If there was a referrer, we need to update both the new user and the referrer's document
+    // 3. Save documents to Firestore
     if (referrerId && referrerDocRef) {
+        // If there was a referrer, update both the new user and the referrer's document in a batch
         const batch = writeBatch(db);
 
         // Set the new user's document
