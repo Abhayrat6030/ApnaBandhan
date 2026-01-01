@@ -66,6 +66,9 @@ export default function RootLayout({
   if (isAuthRoute && !isAdminRoute) {
     return (
       <html lang="en" suppressHydrationWarning>
+         <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        </head>
         <body
           className={cn(
             'min-h-screen bg-background font-body antialiased',
@@ -85,6 +88,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>ApnaBandhan | Wedding Invitations • Videos • Albums</title>
         <meta name="description" content="Complete Wedding Invitation, Video & Album Solution. Professional and affordable wedding services for your special day." />
         <meta name="keywords" content="indian wedding invitations, wedding videos, wedding albums, save the date video, e-invites, ApnaBandhan" />
