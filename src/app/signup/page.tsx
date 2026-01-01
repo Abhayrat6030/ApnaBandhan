@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -8,6 +7,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect, Suspense } from 'react';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Lock, Phone, Gift, Eye, EyeOff } from 'lucide-react';
-import { initiateEmailSignUp, useAuth } from '@/firebase';
+import { useAuth } from '@/firebase';
 
 
 const formSchema = z.object({
@@ -66,20 +67,27 @@ function SignupFormComponent() {
     }
     
     try {
-        await initiateEmailSignUp(auth, values.email, values.password, values.name, values.referralCode);
-        setIsLoading(false);
+        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+        await updateProfile(userCredential.user, { displayName: values.name });
+
         toast({
           title: "Account Created!",
-          description: "Welcome to ApnaBandhan. You're now logged in.",
+          description: "Welcome to ApnaBandhan. You're now being redirected.",
         });
-        router.push('/profile');
+        
+        // Redirect to profile page, passing the referral code if it exists.
+        // The profile page will handle the Firestore document creation.
+        const redirectUrl = values.referralCode 
+            ? `/profile?ref=${values.referralCode}`
+            : '/profile';
+            
+        router.push(redirectUrl);
+
     } catch (error: any) {
         setIsLoading(false);
         let description = 'An unexpected error occurred.';
         if (error.code === 'auth/email-already-in-use') {
             description = 'This email is already in use. Please log in instead.';
-        } else if (error.message) {
-            description = error.message;
         }
         toast({
             title: 'Sign Up Failed',
@@ -163,22 +171,6 @@ function SignupFormComponent() {
               />
               <FormField
                 control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number (Optional)</FormLabel>
-                    <FormControl>
-                        <div className="relative">
-                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="+91 98765 43210" {...field} className="pl-10" />
-                        </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-               <FormField
-                control={form.control}
                 name="referralCode"
                 render={({ field }) => (
                   <FormItem>
@@ -219,4 +211,3 @@ export default function SignupPage() {
         </Suspense>
     )
 }
-
