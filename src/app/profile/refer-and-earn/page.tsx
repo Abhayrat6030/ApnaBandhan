@@ -31,7 +31,7 @@ export default function ReferAndEarnPage() {
                 setIsGenerating(true);
                 try {
                     const displayName = userProfile.displayName || user.displayName || 'User';
-                    const newReferralCode = `${displayName.replace(/\s+/g, '').toUpperCase().substring(0, 5)}${Math.floor(100 + Math.random() * 900)}`;
+                    const newReferralCode = `${displayName.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
                     
                     await updateDoc(userProfileRef, { referralCode: newReferralCode });
                     

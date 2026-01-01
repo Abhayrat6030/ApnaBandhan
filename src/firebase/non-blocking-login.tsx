@@ -32,7 +32,7 @@ export async function initiateEmailSignUp(
         const userDocRef = doc(db, 'users', userCredential.user.uid);
         
         // Generate the new user's own referral code
-        const ownReferralCode = `${displayName.replace(/\s+/g, '').toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
+        const ownReferralCode = `${displayName.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
 
         const userProfile = {
             uid: userCredential.user.uid,
