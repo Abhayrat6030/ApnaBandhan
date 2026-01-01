@@ -10,18 +10,19 @@ export const runtime = 'nodejs';
 // Initialize the admin app
 initializeAdminApp();
 
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
+
 export async function DELETE(req: NextRequest) {
     try {
         // 1. Verify the session cookie before proceeding
         const sessionCookie = cookies().get("__session")?.value;
         if (!sessionCookie) {
-            return NextResponse.json({ error: "Unauthorized: No session cookie." }, { status: 401 });
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        try {
-            await admin.auth().verifySessionCookie(sessionCookie, true);
-        } catch (error) {
-            return NextResponse.json({ error: "Unauthorized: Invalid session." }, { status: 403 });
+        const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
+        if (decodedClaims.email !== ADMIN_EMAIL) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         // 2. Proceed with the deletion logic
@@ -39,6 +40,11 @@ export async function DELETE(req: NextRequest) {
 
     } catch (error: any) {
         console.error("Error deleting user:", error);
+        
+        if (error.code === 'auth/session-cookie-expired' || error.code === 'auth/invalid-session-cookie') {
+             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         let message = "An internal server error occurred.";
         if (error.code === 'auth/user-not-found') {
             message = "User not found in Firebase Authentication. It might have been already deleted.";

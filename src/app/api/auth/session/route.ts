@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     // Set the cookie on the response.
     cookies().set("__session", sessionCookie, {
-      maxAge: expiresIn, // maxAge is in seconds
+      maxAge: expiresIn,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       path: '/',
