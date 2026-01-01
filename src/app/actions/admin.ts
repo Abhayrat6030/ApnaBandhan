@@ -27,77 +27,6 @@ async function verifyAdmin(): Promise<admin.auth.DecodedIdToken> {
     }
 }
 
-// --- DASHBOARD ---
-export async function getAdminDashboardData() {
-    await verifyAdmin();
-    const db = admin.firestore();
-
-    const ordersSnapshot = await db.collection('orders').get();
-    const allOrders: Order[] = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-    
-    const servicesSnapshot = await db.collection('services').get();
-    const packagesSnapshot = await db.collection('comboPackages').get();
-    const allServices = servicesSnapshot.docs.map(doc => doc.data());
-    const allPackages = packagesSnapshot.docs.map(doc => doc.data());
-    
-    const serviceMap = new Map([...allServices, ...allPackages].map(item => [item.id || item.slug, item]));
-
-    const totalRevenue = allOrders.reduce((acc, order) => {
-        if (order.paymentStatus === 'Paid') {
-            const serviceOrPackage = serviceMap.get(order.selectedServiceId);
-            if (serviceOrPackage) {
-                let price = 0;
-                if (typeof serviceOrPackage.price === 'number') {
-                    price = serviceOrPackage.price;
-                } else if (typeof serviceOrPackage.price === 'string') {
-                    price = parseFloat(serviceOrPackage.price.replace(/[^0-9.-]+/g, ''));
-                }
-                return acc + price;
-            }
-        }
-        return acc;
-    }, 0);
-
-    const recentOrdersSnapshot = await db.collection('orders').orderBy('orderDate', 'desc').limit(5).get();
-    const recentOrders = recentOrdersSnapshot.docs.map(doc => {
-        const order = { id: doc.id, ...doc.data() } as Order;
-        return {
-            ...order,
-            serviceName: serviceMap.get(order.selectedServiceId)?.name || 'Unknown Service',
-        };
-    });
-
-    return {
-        stats: {
-            totalRevenue,
-            totalOrders: allOrders.length,
-            completedOrders: allOrders.filter(o => o.status === 'Delivered').length,
-        },
-        recentOrders,
-    };
-}
-
-
-// --- ORDERS ---
-export async function getAllOrders() {
-    await verifyAdmin();
-    const db = admin.firestore();
-    const ordersSnapshot = await db.collection('orders').orderBy('orderDate', 'desc').get();
-    
-    const servicesSnapshot = await db.collection('services').get();
-    const packagesSnapshot = await db.collection('comboPackages').get();
-    const allServices = servicesSnapshot.docs.map(doc => doc.data());
-    const allPackages = packagesSnapshot.docs.map(doc => doc.data());
-    const serviceMap = new Map([...allServices, ...allPackages].map(item => [item.id || item.slug, item.name]));
-
-    return ordersSnapshot.docs.map(doc => {
-        const order = { id: doc.id, ...doc.data() } as Order;
-        return {
-            ...order,
-            serviceName: serviceMap.get(order.selectedServiceId) || 'Unknown Service',
-        };
-    });
-}
 
 export async function updateOrderStatus(data: { orderId: string, newStatus: Order['status'] }) {
     await verifyAdmin();
@@ -113,16 +42,6 @@ export async function updatePaymentStatus(data: { orderId: string, newStatus: Or
     await db.collection('orders').doc(data.orderId).update({ paymentStatus: data.newStatus });
     revalidatePath('/admin/orders');
     revalidatePath('/admin/dashboard');
-}
-
-// --- USERS ---
-export async function getAllUsers() {
-    await verifyAdmin();
-    const db = admin.firestore();
-    const usersSnapshot = await db.collection('users').orderBy('createdAt', 'desc').get();
-    const users = usersSnapshot.docs.map(doc => doc.data() as UserProfile);
-    const usersMap = new Map(users.map(u => [u.uid, u]));
-    return { users, usersMap };
 }
 
 export async function updateUserStatus(data: { userId: string, newStatus: 'active' | 'blocked' }) {
@@ -213,38 +132,4 @@ export async function deleteServiceOrPackage(data: { id: string, type: 'Service'
     const collectionName = data.type === 'Service' ? 'services' : 'comboPackages';
     await db.collection(collectionName).doc(data.id).delete();
     revalidatePath('/admin/services');
-}
-
-export async function getAllServicesAndPackages() {
-    await verifyAdmin();
-    const db = admin.firestore();
-    const servicesSnapshot = await db.collection('services').get();
-    const packagesSnapshot = await db.collection('comboPackages').get();
-
-    const services = servicesSnapshot.docs.map(doc => ({ ...doc.data(), type: 'Service', id: doc.id } as Service & { type: 'Service'}));
-    const packages = packagesSnapshot.docs.map(doc => ({ ...doc.data(), type: 'Package', id: doc.id } as Package & { type: 'Package'}));
-
-    const allItems = [...services, ...packages].map(item => ({
-        ...item,
-        price: typeof item.price === 'string' ? parseFloat(item.price.replace(/[^0-9.-]+/g, '')) : item.price,
-    }));
-    
-    return allItems.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
-}
-
-export async function getServiceOrPackage(slug: string) {
-    await verifyAdmin();
-    const db = admin.firestore();
-
-    const serviceDoc = await db.collection('services').doc(slug).get();
-    if (serviceDoc.exists) {
-        return { ...serviceDoc.data(), id: serviceDoc.id, type: 'Service' } as Service & { type: 'Service' };
-    }
-
-    const packageDoc = await db.collection('comboPackages').doc(slug).get();
-    if (packageDoc.exists) {
-        return { ...packageDoc.data(), id: packageDoc.id, type: 'Package' } as Package & { type: 'Package' };
-    }
-
-    return null;
 }

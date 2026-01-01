@@ -1,55 +1,56 @@
 
-import { Suspense } from 'react';
+'use client';
+
+import { useMemo } from 'react';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Order } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { getAllOrders } from '@/app/actions/admin';
+import { packages, services as staticServices } from '@/lib/data';
 
-async function OrdersList() {
-    const allOrders = await getAllOrders();
-    return (
-        <Card>
-            <CardHeader>
-            <CardTitle>Orders</CardTitle>
-            <CardDescription>A list of all the orders from your customers.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-            {allOrders && allOrders.length > 0 ? (
-                <OrderTable orders={allOrders} />
-            ) : (
-                <div className="p-6 text-center text-muted-foreground">
-                <p>No orders found.</p>
-                </div>
-            )}
-            </CardContent>
-        </Card>
-    );
-}
-
-function OrdersSkeleton() {
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Orders</CardTitle>
-                <CardDescription>A list of all the orders from your customers.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-4">
-                <div className="space-y-2">
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-            </CardContent>
-        </Card>
-    )
-}
-
+export const dynamic = 'force-dynamic';
 
 export default function AdminOrdersPage() {
+  const db = useFirestore();
+
+  const ordersQuery = useMemoFirebase(() => {
+      if (!db) return null;
+      return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
+  }, [db]);
+
+  const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+
+  const allServicesMap = useMemo(() => {
+    const map = new Map<string, string>();
+    staticServices.forEach(s => map.set(s.id, s.name));
+    packages.forEach(p => map.set(p.id, p.name));
+    return map;
+  }, []);
+
+  const ordersWithServiceNames = useMemo(() => {
+    if (!allOrders) return [];
+    return allOrders.map(order => ({
+      ...order,
+      serviceName: allServicesMap.get(order.selectedServiceId) || 'Unknown Service',
+    }));
+  }, [allOrders, allServicesMap]);
+  
+  const isLoading = areOrdersLoading;
+
+  const renderSkeleton = () => (
+    <div className="p-4 space-y-4">
+        {[...Array(3)].map((_, i) => (
+             <Skeleton key={i} className="h-24 w-full rounded-lg" />
+        ))}
+    </div>
+  );
+
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
       <div className="flex items-center">
         <h1 className="font-headline text-lg font-semibold md:text-2xl">All Orders</h1>
         <div className="ml-auto flex items-center gap-2">
@@ -61,9 +62,24 @@ export default function AdminOrdersPage() {
             </Button>
         </div>
       </div>
-      <Suspense fallback={<OrdersSkeleton />}>
-        <OrdersList />
-      </Suspense>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Orders</CardTitle>
+          <CardDescription>A list of all the orders from your customers.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoading ? (
+            renderSkeleton()
+          ) : allOrders && allOrders.length > 0 ? (
+            <OrderTable orders={ordersWithServiceNames} />
+          ) : (
+             <div className="p-6 text-center text-muted-foreground">
+               <p>No orders found.</p>
+             </div>
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }
