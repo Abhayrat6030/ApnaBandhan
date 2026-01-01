@@ -45,7 +45,7 @@ export default function ServicesPage() {
                     <div className="p-3 bg-primary/10 rounded-lg">
                         <Icon className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle className="font-bold text-xl">{category.name}</CardTitle>
+                    <CardTitle className="font-bold text-xl min-h-[2.5rem]">{category.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow pt-0">
                     <CardDescription className="line-clamp-2">{category.description}</CardDescription>
