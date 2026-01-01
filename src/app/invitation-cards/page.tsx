@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -46,13 +45,28 @@ export default function InvitationCardsPage() {
     <div className="bg-background overflow-hidden">
       <div className="container mx-auto px-4 py-8 md:py-12">
         
+        <div className="text-center mb-8">
+            <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-primary">
+                Invitation Cards
+            </h1>
+            <p className="mt-2 max-w-3xl mx-auto text-muted-foreground text-lg">
+                Beautiful Invitation Cards for Every Occasion
+            </p>
+        </div>
+
         {/* Browse by Category */}
         <section className="mb-12">
             <h2 className="font-bold text-2xl tracking-tight mb-4">Browse by Category</h2>
             <Tabs value={filter} onValueChange={setFilter} className="w-full">
-              <TabsList className="h-auto justify-start flex-wrap">
+              <TabsList className="h-auto justify-start flex-wrap bg-transparent p-0">
                 {cardFilters.map(f => (
-                    <TabsTrigger key={f.value} value={f.value} className="m-1">{f.label}</TabsTrigger>
+                    <TabsTrigger 
+                        key={f.value} 
+                        value={f.value} 
+                        className="m-1 rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-muted hover:bg-muted/80"
+                    >
+                        {f.label}
+                    </TabsTrigger>
                 ))}
               </TabsList>
             </Tabs>
@@ -107,7 +121,7 @@ export default function InvitationCardsPage() {
               </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
-            {filteredServices.map(service => (
+            {cardServices.map(service => (
               <ServiceCard key={service.id} service={service} />
             ))}
           </div>
