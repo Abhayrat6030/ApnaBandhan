@@ -24,28 +24,23 @@ export default function AdminLoginPage() {
         e.preventDefault();
         setIsLoading(true);
 
-        signInWithEmailAndPassword(auth, email, password)
-            .then(() => {
-                toast({ title: "Login Successful", description: "Redirecting to dashboard..." });
-                // Use replace to avoid a race condition with middleware.
-                // The onIdTokenChanged listener will create the session, and then the user
-                // will be able to access the dashboard. A push can be too fast.
-                router.replace('/admin/dashboard');
-            })
-            .catch((error: any) => {
-                let errorMessage = "An unexpected error occurred.";
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                    errorMessage = "Invalid email or password.";
-                }
-                toast({
-                    title: "Login Failed",
-                    description: errorMessage,
-                    variant: "destructive",
-                });
-            })
-            .finally(() => {
-                setIsLoading(false);
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            toast({ title: "Login Successful", description: "Redirecting to dashboard..." });
+            router.push('/admin/dashboard');
+        } catch (error: any) {
+            let errorMessage = "An unexpected error occurred.";
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                errorMessage = "Invalid email or password.";
+            }
+            toast({
+                title: "Login Failed",
+                description: errorMessage,
+                variant: "destructive",
             });
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (

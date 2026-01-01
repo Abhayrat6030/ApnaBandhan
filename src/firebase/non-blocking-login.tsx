@@ -1,4 +1,3 @@
-
 'use client';
 import {
   Auth,
@@ -18,41 +17,26 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
 }
 
 /** Initiate email/password sign-up (non-blocking). */
-export function initiateEmailSignUp(
+export async function initiateEmailSignUp(
     authInstance: Auth, 
     email: string, 
     password: string, 
     displayName: string,
-    onSuccess: () => void,
-    onError: (error: any) => void
 ) {
-  createUserWithEmailAndPassword(authInstance, email, password)
-    .then(userCredential => {
-        if (userCredential.user) {
-            updateProfile(userCredential.user, { displayName }).then(() => {
-                const userDocRef = doc(db, 'users', userCredential.user.uid);
-                
-                const userProfile = {
-                    uid: userCredential.user.uid,
-                    displayName: displayName,
-                    email: email,
-                    createdAt: new Date().toISOString(),
-                };
+    const userCredential = await createUserWithEmailAndPassword(authInstance, email, password);
+    if (userCredential.user) {
+        await updateProfile(userCredential.user, { displayName });
+        const userDocRef = doc(db, 'users', userCredential.user.uid);
+        
+        const userProfile = {
+            uid: userCredential.user.uid,
+            displayName: displayName,
+            email: email,
+            createdAt: new Date().toISOString(),
+        };
 
-                setDoc(userDocRef, userProfile).then(() => {
-                    onSuccess();
-                }).catch(dbError => {
-                    onError(dbError);
-                });
-                
-            }).catch(profileError => {
-                onError(profileError);
-            });
-        }
-    })
-    .catch(error => {
-        onError(error);
-    });
+        await setDoc(userDocRef, userProfile);
+    }
 }
 
 /** Initiate email/password sign-in (non-blocking). */

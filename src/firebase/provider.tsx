@@ -1,10 +1,9 @@
-
 'use client';
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
-import { Auth, User, onIdTokenChanged } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { auth as authInstance, db as firestoreInstance } from './config';
 import { getApp } from 'firebase/app';
@@ -26,21 +25,6 @@ export interface FirebaseContextState {
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
-const createSession = async (idToken: string) => {
-  await fetch('/api/auth/session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idToken }),
-  });
-};
-
-const clearSession = async () => {
-  await fetch('/api/auth/session', {
-    method: 'DELETE',
-  });
-};
-
-
 export const FirebaseProvider: React.FC<{children: ReactNode}> = ({
   children
 }) => {
@@ -55,28 +39,12 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({
   const firestore = useMemo(() => firestoreInstance, []);
 
   useEffect(() => {
-    const unsubscribe = onIdTokenChanged(
-      auth,
-      async (firebaseUser) => {
-        if (firebaseUser) {
-          try {
-            const idToken = await firebaseUser.getIdToken();
-            await createSession(idToken);
-            setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
-          } catch (error) {
-             console.error("FirebaseProvider: Error creating session:", error);
-             setUserAuthState({ user: null, isUserLoading: false, userError: error as Error });
-          }
-        } else {
-          await clearSession();
-          setUserAuthState({ user: null, isUserLoading: false, userError: null });
-        }
-      },
-      (error) => {
-        console.error("FirebaseProvider: onIdTokenChanged error:", error);
-        setUserAuthState({ user: null, isUserLoading: false, userError: error });
-      }
-    );
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
+    }, (error) => {
+      console.error("FirebaseProvider: onAuthStateChanged error:", error);
+      setUserAuthState({ user: null, isUserLoading: false, userError: error });
+    });
     return () => unsubscribe();
   }, [auth]);
 

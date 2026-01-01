@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -45,16 +44,15 @@ export default function SignupPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     
-    const handleSuccess = () => {
+    try {
+        await initiateEmailSignUp(auth, values.email, values.password, values.name);
         setIsLoading(false);
         toast({
           title: "Account Created!",
           description: "Welcome to ApnaBandhan. You're now logged in.",
         });
         router.push('/profile');
-    };
-
-    const handleError = (error: any) => {
+    } catch (error: any) {
         setIsLoading(false);
         let description = 'An unexpected error occurred.';
         if (error.code === 'auth/email-already-in-use') {
@@ -65,9 +63,7 @@ export default function SignupPage() {
             description: description,
             variant: 'destructive',
         });
-    };
-
-    initiateEmailSignUp(auth, values.email, values.password, values.name, handleSuccess, handleError);
+    }
   }
 
   return (
