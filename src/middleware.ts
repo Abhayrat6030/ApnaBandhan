@@ -12,33 +12,9 @@ export async function middleware(request: NextRequest) {
       url.pathname = '/admin/login';
       return NextResponse.redirect(url);
     }
-
-    try {
-      const response = await fetch(`${request.nextUrl.origin}/api/auth/verify`, {
-        headers: {
-          Cookie: `__session=${sessionCookie}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Verification failed');
-      }
-
-      const { isAdmin } = await response.json();
-
-      if (!isAdmin) {
-         throw new Error('Not an admin');
-      }
-
-    } catch (error) {
-       const url = request.nextUrl.clone();
-       url.pathname = '/admin/login';
-       // Clear the invalid cookie
-       url.cookies.delete('__session');
-       const response = NextResponse.redirect(url);
-       response.cookies.delete('__session');
-       return response;
-    }
+    // The verification of the cookie's validity and admin status
+    // will now be handled within each server action via verifyAdmin().
+    // This makes the middleware simpler and more efficient.
   }
 
   return NextResponse.next();
