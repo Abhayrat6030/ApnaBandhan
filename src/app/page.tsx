@@ -19,7 +19,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 
 
 const topRatedVideos = services.filter(s => s.topRated && s.category === 'invitation-videos');
-const topRatedCards = services.filter(s => s.topRated && s.category === 'invitation-cards');
+const topRatedCards = services.filter(s => s.category === 'invitation-cards');
 const topRatedAlbums = services.filter(s => s.topRated && s.category === 'album-design');
 const topRatedVideoEditing = services.filter(s => s.topRated && s.category === 'video-editing');
 
