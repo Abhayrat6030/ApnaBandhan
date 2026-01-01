@@ -45,7 +45,7 @@ export default function Home() {
   return (
     <div className="flex flex-col overflow-hidden">
       {/* Hero Section */}
-      <section className="relative h-[30vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
+      <section className="relative h-[40vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
         <Image
           src={placeholderImages.hero.imageUrl}
           alt={placeholderImages.hero.description}
@@ -56,13 +56,13 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-transparent" />
         <div className="relative z-10 p-4 flex flex-col items-center animate-fade-in-up">
-          <h1 className="font-bold text-4xl md:text-6xl tracking-tight !leading-tight">
+          <h1 className="font-bold text-3xl md:text-6xl tracking-tight !leading-tight">
             {siteConfig.name}
           </h1>
-          <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90">
+          <p className="mt-2 md:mt-4 max-w-2xl text-base md:text-xl text-primary-foreground/90">
             {siteConfig.tagline}
           </p>
-          <div className="mt-8 flex justify-center gap-4">
+          <div className="mt-6 flex flex-wrap justify-center gap-4">
             <Button asChild variant="secondary" size="sm">
               <Link href="/services">
                 View Samples <ArrowRight className="ml-2 h-5 w-5" />
