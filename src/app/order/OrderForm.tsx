@@ -179,7 +179,7 @@ function OrderFormComponent() {
                     <FormItem>
                       <FormLabel>Phone Number (with country code)</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. +919876543210" {...field} />
+                        <Input placeholder="e.g. +91 9876543210" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

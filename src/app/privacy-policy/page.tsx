@@ -106,7 +106,7 @@ export default function PrivacyPolicyPage() {
                       <p>If you have any questions about this Privacy Policy, please contact us:</p>
                       <ul className="!my-4">
                           <li className="flex items-center"><Mail className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span>By email: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></span></li>
-                          <li className="flex items-center"><Phone className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span>By phone/WhatsApp: <a href={`https://wa.me/${siteConfig.phone}`}>{siteConfig.phone}</a></span></li>
+                          <li className="flex items-center"><Phone className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span>By phone/WhatsApp: <a href={`https://wa.me/${siteConfig.phone.replace(/[\s+]/g, '')}`}>{siteConfig.phone}</a></span></li>
                           <li className="flex items-center"><Info className="inline-block mr-2 h-5 w-5 shrink-0 text-accent" /> <span>By visiting our <Link href="/contact">Contact Page</Link></span></li>
                       </ul>
                     </div>

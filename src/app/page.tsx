@@ -69,7 +69,7 @@ export default function Home() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm" className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white">
-               <Link href={`https://wa.me/${siteConfig.phone}`} target="_blank">
+               <Link href={`https://wa.me/${siteConfig.phone.replace(/[\s+]/g, '')}`} target="_blank">
                 WhatsApp Order
               </Link>
             </Button>
@@ -109,7 +109,7 @@ export default function Home() {
       </section>
 
       {/* Top Rated Videos Section */}
-      {topRatedVideos.length > 0 && <section id="top-videos" className="pt-8 pb-8 bg-secondary/30">
+      {topRatedVideos.length > 0 && <section id="top-videos" className="py-4 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -133,7 +133,7 @@ export default function Home() {
       </section>}
       
       {/* Top Rated Cards Section */}
-      {topRatedCards.length > 0 && <section id="top-cards" className="pt-8 pb-8 bg-background">
+      {topRatedCards.length > 0 && <section id="top-cards" className="py-4 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -157,7 +157,7 @@ export default function Home() {
       </section>}
 
        {/* Top Rated Album Designs Section */}
-      {topRatedAlbums.length > 0 && <section id="top-albums" className="pt-8 pb-8 bg-secondary/30">
+      {topRatedAlbums.length > 0 && <section id="top-albums" className="py-4 bg-secondary/30">
         <div className="container mx-auto px-4">
            <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -181,7 +181,7 @@ export default function Home() {
       </section>}
 
        {/* Top Rated Video Editing Section */}
-      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="pt-8 pb-8 bg-background">
+      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="py-4 bg-background">
         <div className="container mx-auto px-4">
            <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -205,7 +205,7 @@ export default function Home() {
       </section>}
 
       {/* Combo Packages Section */}
-      {comboPackages.length > 0 && <section id="combo-packages" className="pt-8 pb-8 bg-secondary/30">
+      {comboPackages.length > 0 && <section id="combo-packages" className="py-4 bg-secondary/30">
         <div className="container mx-auto px-4">
            <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -229,7 +229,7 @@ export default function Home() {
       </section>}
       
       {/* CDR Files Section */}
-      {cdrFileServices.length > 0 && <section id="cdr-files" className="pt-8 pb-8 bg-background">
+      {cdrFileServices.length > 0 && <section id="cdr-files" className="py-4 bg-background">
         <div className="container mx-auto px-4">
            <div className="text-center mb-4">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
@@ -253,7 +253,7 @@ export default function Home() {
       </section>}
 
       {/* Website Development Section */}
-      <section id="website-development" className="pt-8 pb-8 bg-secondary/30">
+      <section id="website-development" className="py-8 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center bg-card p-8 rounded-2xl shadow-lg">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-2 text-primary">

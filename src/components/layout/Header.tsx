@@ -59,7 +59,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
         <div className="flex flex-1 items-center justify-end space-x-2 pr-4">
           <Button asChild variant="ghost" className="hidden lg:flex items-center">
-             <a href={`tel:${siteConfig.phone}`}>
+             <a href={`tel:${siteConfig.phone.replace(/[\s+]/g, '')}`}>
                 <Phone className="mr-2 h-4 w-4" />
                 {siteConfig.phone}
              </a>
