@@ -225,3 +225,5 @@ A protected area for managing the website. Access is not restricted by a login p
 
 - Uses **Genkit** for generative AI functionality.
 - **`enhance-wedding-photos.ts`:** Defines a flow that takes an image data URI, sends it to a Google AI model (`gemini-pro-vision`), and returns the enhanced image. This is used by the AI Enhancer page in the admin panel.
+
+    
