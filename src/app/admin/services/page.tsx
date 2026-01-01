@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { collection } from 'firebase/firestore';
+import { collection, doc, deleteDoc } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -31,7 +31,6 @@ import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { deleteItem } from './actions';
 
 type CombinedService = (Partial<Service> & Partial<Package>) & { id: string; name: string; type: 'Service' | 'Package', slug?: string };
 
@@ -75,18 +74,20 @@ export default function AdminServicesPage() {
   };
   
   const confirmDelete = async () => {
-    if (!itemToDelete || !user) {
-        toast({ title: "Error", description: "Could not delete item. User not found.", variant: 'destructive' });
+    if (!itemToDelete || !user || !db) {
+        toast({ title: "Error", description: "Could not delete item. User not found or DB not available.", variant: 'destructive' });
         return;
     }
 
     setIsDeleting(itemToDelete.id);
-    const result = await deleteItem(itemToDelete.slug || itemToDelete.id, itemToDelete.type);
     
-    if (result.success) {
-      toast({ title: "Success", description: `${itemToDelete.name} has been deleted.` });
-    } else {
-      toast({ title: "Error", description: result.error, variant: 'destructive' });
+    try {
+        const collectionName = itemToDelete.type === 'Service' ? 'services' : 'comboPackages';
+        const itemRef = doc(db, collectionName, itemToDelete.slug || itemToDelete.id);
+        await deleteDoc(itemRef);
+        toast({ title: "Success", description: `${itemToDelete.name} has been deleted.` });
+    } catch (error: any) {
+        toast({ title: "Error", description: error.message || 'Failed to delete item.', variant: 'destructive' });
     }
 
     setIsDeleting(null);

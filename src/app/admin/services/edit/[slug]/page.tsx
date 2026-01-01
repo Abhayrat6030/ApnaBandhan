@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect } from 'react';
 import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { doc, updateDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,9 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { updateService } from '../../actions';
 import { useDoc, useMemoFirebase, useFirestore, useUser } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -110,26 +109,47 @@ export default function EditServicePage() {
   }, [serviceData, packageData, form]);
 
   async function onSubmit(values: FormValues) {
-    if (!user) {
+    if (!user || !db) {
         toast({ title: 'Authentication Error', description: 'You must be logged in.', variant: 'destructive' });
         return;
     }
     setIsLoading(true);
-    const result = await updateService(slug as string, values);
-    
-    if (result.success) {
-      toast({
-        title: 'Success!',
-        description: `${values.itemType === 'service' ? 'Service' : 'Package'} updated successfully.`,
-      });
-      router.push('/admin/services');
-    } else {
-      toast({
-        title: 'Error',
-        description: result.error || 'Something went wrong.',
-        variant: 'destructive',
-      });
+
+    try {
+        if (values.itemType === 'service') {
+            const serviceRef = doc(db, 'services', slug as string);
+            await updateDoc(serviceRef, {
+                name: values.name,
+                description: values.description,
+                category: values.category,
+                price: values.price,
+                priceType: values.priceType,
+                deliveryTime: values.deliveryTime,
+                inclusions: values.inclusions?.map(i => i.value).filter(Boolean),
+            });
+        } else { // package
+            const packageRef = doc(db, 'comboPackages', slug as string);
+            await updateDoc(packageRef, {
+                name: values.name,
+                description: values.description,
+                price: values.priceString,
+                features: values.features?.map(f => f.value).filter(Boolean),
+            });
+        }
+
+        toast({
+            title: 'Success!',
+            description: `${values.itemType === 'service' ? 'Service' : 'Package'} updated successfully.`,
+        });
+        router.push('/admin/services');
+    } catch (error: any) {
+        toast({
+            title: 'Error',
+            description: error.message || 'Something went wrong.',
+            variant: 'destructive',
+        });
     }
+
     setIsLoading(false);
   }
 

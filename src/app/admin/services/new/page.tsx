@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
 import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { addService } from '../actions';
+import { useFirestore, useUser } from '@/firebase';
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
@@ -47,6 +48,8 @@ export default function NewServicePage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [itemType, setItemType] = useState('service');
+  const { user } = useUser();
+  const db = useFirestore();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -79,22 +82,50 @@ export default function NewServicePage() {
   }
 
   async function onSubmit(values: FormValues) {
-    setIsLoading(true);
-    const result = await addService(values);
-    
-    if (result.success) {
-      toast({
-        title: 'Success!',
-        description: `${values.itemType === 'service' ? 'Service' : 'Package'} added successfully.`,
-      });
-      router.push('/admin/services');
-    } else {
-      toast({
-        title: 'Error',
-        description: result.error || 'Something went wrong.',
-        variant: 'destructive',
-      });
+    if (!user || !db) {
+        toast({ title: 'Error', description: 'You must be logged in to perform this action.', variant: 'destructive' });
+        return;
     }
+    setIsLoading(true);
+
+    try {
+        if (values.itemType === 'service' && values.slug) {
+            const serviceRef = doc(db, 'services', values.slug);
+            await setDoc(serviceRef, {
+                name: values.name,
+                slug: values.slug,
+                description: values.description,
+                category: values.category,
+                price: values.price,
+                priceType: values.priceType,
+                deliveryTime: values.deliveryTime,
+                inclusions: values.inclusions?.map(i => i.value).filter(Boolean)
+            });
+        } else if (values.itemType === 'package') {
+            const slug = values.name.toLowerCase().replace(/\s+/g, '-');
+            const packageRef = doc(db, 'comboPackages', slug);
+            await setDoc(packageRef, {
+                name: values.name,
+                description: values.description,
+                price: values.priceString,
+                features: values.features?.map(f => f.value).filter(Boolean),
+            });
+        }
+        toast({
+            title: 'Success!',
+            description: `${values.itemType === 'service' ? 'Service' : 'Package'} added successfully.`,
+        });
+        router.push('/admin/services');
+
+    } catch (error: any) {
+        console.error("Error adding service:", error);
+        toast({
+            title: 'Error',
+            description: error.message || 'Something went wrong.',
+            variant: 'destructive',
+        });
+    }
+
 
     setIsLoading(false);
   }

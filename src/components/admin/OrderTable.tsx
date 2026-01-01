@@ -27,8 +27,9 @@ import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, MessageSquare, Loader2 } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import Link from 'next/link';
-import { updateOrderStatus, updatePaymentStatus } from '@/app/admin/orders/actions';
 import { useToast } from '@/hooks/use-toast';
+import { doc, updateDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 interface OrderTableProps {
   orders: (Order & { serviceName?: string })[];
@@ -36,6 +37,7 @@ interface OrderTableProps {
 
 export default function OrderTable({ orders }: OrderTableProps) {
   const { toast } = useToast();
+  const db = useFirestore();
   const [isSubmitting, setIsSubmitting] = React.useState<string | null>(null);
 
   const getStatusVariant = (status: Order['status']) => {
@@ -58,23 +60,27 @@ export default function OrderTable({ orders }: OrderTableProps) {
   }
 
   const handleStatusUpdate = async (orderId: string, newStatus: Order['status']) => {
+    if (!db) return;
     setIsSubmitting(`status-${orderId}`);
-    const result = await updateOrderStatus(orderId, newStatus);
-    if (result.success) {
+    try {
+      const orderRef = doc(db, 'orders', orderId);
+      await updateDoc(orderRef, { status: newStatus });
       toast({ title: "Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-    } else {
-      toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
+    } catch (error: any) {
+      toast({ title: "Update Failed", description: error.message, variant: 'destructive'});
     }
     setIsSubmitting(null);
   }
 
   const handlePaymentUpdate = async (orderId: string, newStatus: Order['paymentStatus']) => {
+    if (!db) return;
     setIsSubmitting(`payment-${orderId}`);
-    const result = await updatePaymentStatus(orderId, newStatus);
-    if (result.success) {
-      toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
-    } else {
-      toast({ title: "Update Failed", description: result.error, variant: 'destructive'});
+    try {
+        const orderRef = doc(db, 'orders', orderId);
+        await updateDoc(orderRef, { paymentStatus: newStatus });
+        toast({ title: "Payment Status Updated", description: `Order ${orderId} marked as ${newStatus}`});
+    } catch (error: any) {
+        toast({ title: "Update Failed", description: error.message, variant: 'destructive'});
     }
     setIsSubmitting(null);
   }
