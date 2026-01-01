@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { services } from '@/lib/data';
 import { Service } from '@/lib/types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronRight, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import Autoplay from "embla-carousel-autoplay"
 
 import {
   Carousel,
@@ -109,6 +110,10 @@ function NewInvitationProductCard({ service }: { service: Service }) {
 
 export default function InvitationCardsPage() {
   const [filter, setFilter] = useState('all');
+  
+  const hotSellersPlugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true })
+  );
 
   const filteredServices = filter === 'all'
     ? cardServices
@@ -204,42 +209,52 @@ export default function InvitationCardsPage() {
                 <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
-             <div className="relative h-[400px] flex items-center justify-center">
-              {hotSellers.map((service, index) => {
-                const primaryImage = service.samples.find(s => s.type === 'image');
-                if (!primaryImage) return null;
-                
-                const zIndex = hotSellers.length - index;
-                const scale = 1 - (index * 0.05);
-                const translateY = -index * 10;
-                const isFront = index === 0;
+            <Carousel
+              plugins={[hotSellersPlugin.current]}
+              onMouseEnter={hotSellersPlugin.current.stop}
+              onMouseLeave={hotSellersPlugin.current.reset}
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-4">
+                {hotSellers.map((service, index) => {
+                   const primaryImage = service.samples.find(s => s.type === 'image');
+                   if (!primaryImage) return null;
 
-                return (
-                  <Link href={`/services/${service.slug}`} key={service.id} className="group block absolute transition-all duration-300 ease-out" style={{ zIndex, transform: `scale(${scale}) translateY(${translateY}px)` }}>
-                     <Card className="overflow-hidden rounded-xl bg-white shadow-2xl transition-all duration-300 w-64 group-hover:scale-105">
-                        <CardContent className="p-0 relative">
-                            <div className="relative aspect-[3/4] w-full bg-muted/30">
-                              <Image 
-                                src={primaryImage.url}
-                                alt={service.name}
-                                fill
-                                className="object-contain"
-                                data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
-                              />
-                              {isFront && service.isFeatured && (
-                                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                                     <div className="bg-red-500 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg transform transition-transform group-hover:scale-110">
-                                         HOT
+                  return (
+                    <CarouselItem key={service.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                       <Link href={`/services/${service.slug}`} className="group block">
+                        <Card className="overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 w-full group-hover:scale-105">
+                            <CardContent className="p-0 relative">
+                                <div className="relative aspect-[3/4] w-full bg-muted/30">
+                                  <Image 
+                                    src={primaryImage.url}
+                                    alt={service.name}
+                                    fill
+                                    className="object-contain"
+                                    data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
+                                  />
+                                   {service.isFeatured && (
+                                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+                                         <div className="bg-red-500 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg transform transition-transform group-hover:scale-110">
+                                             HOT
+                                         </div>
                                      </div>
-                                 </div>
-                              )}
-                            </div>
-                        </CardContent>
-                     </Card>
-                   </Link>
-                )
-              })}
-             </div>
+                                  )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                      </Link>
+                    </CarouselItem>
+                  )
+                })}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
           </div>
         )}
         
