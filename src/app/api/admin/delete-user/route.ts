@@ -1,21 +1,14 @@
 
-import 'dotenv/config';
 import { NextRequest, NextResponse } from "next/server";
 import admin from "firebase-admin";
-
-// The admin app is initialized in middleware.ts, so we can assume it's available here.
-// A check is added just in case for safety.
-const ensureAdminApp = () => {
-    if (admin.apps.length === 0) {
-        throw new Error("Firebase admin app is not initialized. This should not happen if middleware is correct.");
-    }
-};
+import { initializeAdminApp } from "@/firebase/admin";
 
 export async function DELETE(req: NextRequest) {
     // The middleware has already verified that this request is from an authenticated admin.
     // We can proceed with the deletion logic.
     try {
-        ensureAdminApp();
+        // Ensure admin app is initialized, as this route can be accessed directly.
+        initializeAdminApp();
 
         const { uid } = await req.json();
         if (!uid) {
@@ -34,8 +27,9 @@ export async function DELETE(req: NextRequest) {
     } catch (error: any) {
         console.error("Error deleting user:", error);
         let message = "An internal server error occurred.";
+        // The error might not have a `code` property if it's not a Firebase error
         if (error.code === 'auth/user-not-found') {
-            message = "User not found in Firebase Authentication.";
+            message = "User not found in Firebase Authentication. It might have been already deleted.";
         } else if (error.message) {
             message = error.message;
         }
