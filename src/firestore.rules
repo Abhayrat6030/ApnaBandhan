@@ -16,15 +16,9 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // Admin check is now based on the email directly.
     function isAdmin() {
         return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
     }
-
-    function hasOnlyFields(fields) {
-      return request.resource.data.keys().removeAll(fields).size() == 0;
-    }
-
 
     // =====================================================================
     // USERS COLLECTION
@@ -69,23 +63,16 @@ service cloud.firestore {
     // =====================================================================
     match /orders/{orderId} {
     
-      // Admin can get any order. Users can only get their own.
-      allow get: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
+      // Read access: Admin can read any order. Users can read their own.
+      allow read: if isAdmin() || (resource.data.userId != null && isOwner(resource.data.userId));
 
-      // Admin can list all orders. Users can list their own orders.
-      allow list: if isAdmin() || (isSignedIn() && request.query.where[0] == "userId" && request.query.where[1] == "==" && request.query.where[2] == request.auth.uid);
-
-      // Users can create orders for themselves with specific initial data.
-      allow create: if isSignedIn()
-                      && request.resource.data.userId == request.auth.uid
-                      && request.resource.data.status == "Pending"
-                      && request.resource.data.paymentStatus == "Pending"
-                      && hasOnlyFields(['userId', 'fullName', 'phoneNumber', 'email', 'weddingDate', 'selectedServiceId', 'messageNotes', 'orderDate', 'status', 'paymentStatus']);
+      // Create access: Signed-in users can create orders for themselves.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
                       
-      // Only Admin can update any order.
+      // Update access: Only Admin can update any order.
       allow update: if isAdmin();
 
-      // Deleting orders is disallowed for safety.
+      // Delete access: Deleting orders is disallowed for safety.
       allow delete: if false;
     }
   }
