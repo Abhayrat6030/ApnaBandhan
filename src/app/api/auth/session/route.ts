@@ -4,11 +4,14 @@ import admin from "firebase-admin";
 import { cookies } from "next/headers";
 import { initializeAdminApp } from "@/firebase/admin";
 
+// Ensure the runtime is Node.js
+export const runtime = 'nodejs';
+
+// Initialize admin app safely
+initializeAdminApp();
 
 export async function POST(req: Request) {
   try {
-    initializeAdminApp();
-
     const { idToken } = await req.json();
     if (!idToken) {
         return NextResponse.json({ error: "ID token is required." }, { status: 400 });
@@ -16,13 +19,11 @@ export async function POST(req: Request) {
 
     const decoded = await admin.auth().verifyIdToken(idToken);
     
-    // The middleware will handle the non-admin case, but this is an extra layer of security.
     if (decoded.email !== "abhayrat603@gmail.com") {
       return NextResponse.json({ error: "Unauthorized: Not an admin." }, { status: 403 });
     }
     
-    // Set session expiration to 5 days.
-    const expiresIn = 60 * 60 * 24 * 5 * 1000;
+    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
     
     const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
 
