@@ -20,26 +20,72 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
+
+/**
+ * This component is responsible for synchronizing the client-side Firebase Auth state
+ * with a server-side session cookie (`__session`). This is crucial for authenticating
+ * server actions and API routes.
+ */
+function SessionManager() {
+  const { user } = useUser();
+  const { toast } = useToast();
+  const [isSyncing, setIsSyncing] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      if (user.email === ADMIN_EMAIL) {
+        // User is an admin, ensure server session exists.
+        user.getIdToken().then(async (idToken) => {
+          const response = await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken }),
+          });
+
+          if (!response.ok) {
+            console.error("Failed to create server session");
+            toast({
+              title: "Session Sync Failed",
+              description: "Could not authenticate with the server. Some actions may not work.",
+              variant: "destructive",
+            });
+          }
+           setIsSyncing(false);
+        });
+      } else {
+         // User is not an admin, no server session needed for them here.
+         setIsSyncing(false);
+      }
+    } else if (user === null) {
+      // User is logged out, clear any server session.
+      fetch('/api/auth/session', { method: 'DELETE' });
+      setIsSyncing(false);
+    }
+  }, [user, toast]);
+  
+  // While syncing, show a loading state to prevent premature rendering or actions
+  if (isSyncing) {
+       return (
+          <div className="flex min-h-screen w-full items-center justify-center bg-muted/40">
+            <div className="p-8">
+                <Skeleton className="h-32 w-full max-w-md" />
+            </div>
+          </div>
+       );
+  }
+
+  return null; // This component doesn't render anything itself
+}
+
 
 function AdminAuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-
-  useEffect(() => {
-    if (!isUserLoading) {
-      if (user?.email === ADMIN_EMAIL) {
-        setIsAuthorized(true);
-      } else {
-        setIsAuthorized(false);
-        // Optional: redirect to a more graceful "access-denied" page
-        // For now, we'll just show the unauthorized message.
-      }
-    }
-  }, [user, isUserLoading, router]);
-
+  
+  // Show a loading screen while the user state is being determined.
   if (isUserLoading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-muted/40">
@@ -50,7 +96,8 @@ function AdminAuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isAuthorized) {
+  // Once user state is loaded, check for authorization.
+  if (user?.email !== ADMIN_EMAIL) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 p-4">
         <Card className="max-w-md text-center">
@@ -71,7 +118,13 @@ function AdminAuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  // If authorized, render the session manager and the actual content.
+  return (
+    <>
+      <SessionManager />
+      {children}
+    </>
+  );
 }
 
 
