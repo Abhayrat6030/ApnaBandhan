@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, Edit, Loader2, IndianRupee } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -96,26 +96,33 @@ export default function AdminServicesPage() {
   }
   
   const renderSkeleton = () => (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Service Name</TableHead>
-            <TableHead className="hidden md:table-cell">Category</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead><span className="sr-only">Actions</span></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-            {[...Array(5)].map((_, i) => (
-                <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-32 sm:w-48" /></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                    <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
-                </TableRow>
-            ))}
-        </TableBody>
-      </Table>
+      <div className="p-4 md:p-0">
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Service Name</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead><span className="sr-only">Actions</span></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+                {[...Array(5)].map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-4 w-32 sm:w-48" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                        <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="block md:hidden space-y-4">
+            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-lg" />)}
+        </div>
+      </div>
   )
 
   return (
@@ -141,62 +148,105 @@ export default function AdminServicesPage() {
           <CardDescription>Add, edit, or remove services offered on the website.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-            {isLoading ? <div className="p-4">{renderSkeleton()}</div> : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Service Name</TableHead>
-                    <TableHead className="hidden md:table-cell">Category</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead><span className="sr-only">Actions</span></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            {isLoading ? renderSkeleton() : (
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Service Name</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead><span className="sr-only">Actions</span></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allItems.map(item => (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium truncate max-w-[250px]">{item.name}</TableCell>
+                          <TableCell className="capitalize">
+                            <Badge variant={item.type === 'Package' ? 'secondary' : 'outline'}>
+                                {item.category?.replace('-', ' ') || 'Package'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>₹{item.price?.toLocaleString('en-IN')}</TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isDeleting}>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Toggle menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/admin/services/edit/${item.slug || item.id}`}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Edit
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  className="text-destructive" 
+                                  onClick={() => handleDeleteClick(item)}
+                                  disabled={isDeleting === item.id}
+                                >
+                                  {isDeleting === item.id ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                  )}
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+              </div>
+
+               {/* Mobile Cards */}
+              <div className="block md:hidden p-4 space-y-4">
                   {allItems.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium truncate max-w-[150px]">{item.name}</TableCell>
-                      <TableCell className="hidden md:table-cell capitalize">
-                        <Badge variant={item.type === 'Package' ? 'secondary' : 'outline'}>
-                            {item.category?.replace('-', ' ') || 'Package'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>₹{item.price?.toLocaleString('en-IN')}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isDeleting}>
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem asChild>
-                                <Link href={`/admin/services/edit/${item.slug || item.id}`}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Edit
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              className="text-destructive" 
-                              onClick={() => handleDeleteClick(item)}
-                              disabled={isDeleting === item.id}
-                            >
-                              {isDeleting === item.id ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="mr-2 h-4 w-4" />
-                              )}
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
+                      <Card key={item.id} className="w-full">
+                          <CardHeader className="flex flex-row items-start justify-between p-4">
+                              <div>
+                                <CardTitle className="text-base">{item.name}</CardTitle>
+                                 <Badge variant={item.type === 'Package' ? 'secondary' : 'outline'} className="mt-1 capitalize">
+                                    {item.category?.replace('-', ' ') || 'Package'}
+                                </Badge>
+                              </div>
+                               <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isDeleting} className="-mt-2 -mr-2">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem asChild>
+                                        <Link href={`/admin/services/edit/${item.slug || item.id}`}><Edit className="mr-2 h-4 w-4" />Edit</Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDeleteClick(item)} className="text-destructive">
+                                        {isDeleting === item.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                                        Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                          </CardHeader>
+                          <CardContent className="p-4 pt-0">
+                               <div className="flex items-center text-lg font-semibold">
+                                  <IndianRupee className="h-4 w-4 mr-1" />
+                                  {item.price?.toLocaleString('en-IN')}
+                               </div>
+                          </CardContent>
+                      </Card>
                   ))}
-                </TableBody>
-              </Table>
+              </div>
+            </>
             )}
         </CardContent>
          <CardFooter>

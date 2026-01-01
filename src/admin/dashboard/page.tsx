@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
         </h2>
         <Card>
           <CardContent className="p-0">
-            {isLoading ? <div className="p-4"><Skeleton className="h-20 w-full" /></div> :
+            {isLoading ? <div className="p-4"><Skeleton className="h-40 w-full" /></div> :
              recentOrdersWithServiceNames && recentOrdersWithServiceNames.length > 0 ? <OrderTable orders={recentOrdersWithServiceNames} /> : 
              <div className="p-6 text-center text-muted-foreground"><p>No recent orders found.</p></div>}
           </CardContent>
