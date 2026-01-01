@@ -2,6 +2,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import admin from '@/firebase/admin';
 
+export const runtime = 'nodejs';
+
+// This guard is necessary for some environments.
 export const unstable_allowDynamic = [
   '**/node_modules/firebase-admin/lib/app/credential-internal.js',
   '**/node_modules/firebase-admin/lib/app/firebase-namespace-internal.js',
