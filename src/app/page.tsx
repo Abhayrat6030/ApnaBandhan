@@ -115,7 +115,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Invitation Videos
             </h2>
-            <p className="text-lg text-muted-foreground">Stunning videos to announce your special day.</p>
+            <p className="text-lg text-muted-foreground mt-1">Stunning videos to announce your special day.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedVideos.map((service) => (
@@ -139,7 +139,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Invitation Cards
             </h2>
-            <p className="text-lg text-muted-foreground">Elegant digital and printable invitations.</p>
+            <p className="text-lg text-muted-foreground mt-1">Elegant digital and printable invitations.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedCards.map((service) => (
@@ -163,7 +163,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Album Designs
             </h2>
-            <p className="text-lg text-muted-foreground">Timeless designs to preserve your memories.</p>
+            <p className="text-lg text-muted-foreground mt-1">Timeless designs to preserve your memories.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedAlbums.map((service) => (
@@ -187,7 +187,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Wedding Video Editing
             </h2>
-            <p className="text-lg text-muted-foreground">Cinematic edits of your precious moments.</p>
+            <p className="text-lg text-muted-foreground mt-1">Cinematic edits of your precious moments.</p>
           </div>
           <div className="grid grid-cols-2 md-grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {topRatedVideoEditing.map((service) => (
@@ -211,7 +211,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               Combo Packages
             </h2>
-            <p className="text-lg text-muted-foreground">Get the best value with our curated packages.</p>
+            <p className="text-lg text-muted-foreground mt-1">Get the best value with our curated packages.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {comboPackages.map((service) => (
@@ -235,7 +235,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
               CDR Files
             </h2>
-            <p className="text-lg text-muted-foreground">Get print-ready source files for your cards.</p>
+            <p className="text-lg text-muted-foreground mt-1">Get print-ready source files for your cards.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {cdrFileServices.map((service) => (
@@ -255,5 +255,7 @@ export default function Home() {
     </div>
   );
 }
+
+    
 
     
