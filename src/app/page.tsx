@@ -22,6 +22,8 @@ const topRatedVideos = services.filter(s => s.topRated && s.category === 'invita
 const topRatedCards = services.filter(s => s.category === 'invitation-cards');
 const topRatedAlbums = services.filter(s => s.topRated && s.category === 'album-design');
 const topRatedVideoEditing = services.filter(s => s.topRated && s.category === 'video-editing');
+const cdrFileServices = services.filter(s => s.id.includes('cdr-file'));
+const comboPackages = services.filter(s => s.category === 'combo-packages');
 
 
 const categoryIcons = {
@@ -202,7 +204,56 @@ export default function Home() {
         </div>
       </section>}
 
+      {/* Combo Packages Section */}
+      {comboPackages.length > 0 && <section id="combo-packages" className="pt-4 pb-8 bg-secondary/30">
+        <div className="container mx-auto px-4">
+           <div className="text-center mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
+              Combo Packages
+            </h2>
+            <p className="text-lg text-muted-foreground">Get the best value with our curated packages.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {comboPackages.map((service) => (
+              <ProductCard key={service.id} service={service} />
+            ))}
+          </div>
+           <div className="text-center mt-4">
+            <Button asChild variant="outline">
+              <Link href="/packages">
+                View All Packages <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>}
+      
+      {/* CDR Files Section */}
+      {cdrFileServices.length > 0 && <section id="cdr-files" className="pt-4 pb-8 bg-background">
+        <div className="container mx-auto px-4">
+           <div className="text-center mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
+              CDR Files
+            </h2>
+            <p className="text-lg text-muted-foreground">Get print-ready source files for your cards.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {cdrFileServices.map((service) => (
+              <ProductCard key={service.id} service={service} />
+            ))}
+          </div>
+          <div className="text-center mt-4">
+            <Button asChild variant="outline">
+              <Link href="/invitation-cards">
+                View All Cards <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>}
 
     </div>
   );
 }
+
+    
