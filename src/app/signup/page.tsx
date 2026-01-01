@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -50,7 +50,7 @@ function SignupFormComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const [formState, formAction] = useFormState(signUpUser, initialState);
+  const [formState, formAction] = useActionState(signUpUser, initialState);
   const [showPassword, setShowPassword] = useState(false);
   const auth = useAuth();
 
