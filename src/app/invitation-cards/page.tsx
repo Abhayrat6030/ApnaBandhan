@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -5,7 +6,7 @@ import { services } from '@/lib/data';
 import { Service } from '@/lib/types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Star, ArrowRight } from 'lucide-react';
+import { ChevronRight, Star, ArrowRight, ChevronLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Autoplay from "embla-carousel-autoplay"
@@ -189,8 +190,12 @@ const HotSellersSection = () => {
             </div>
           </div>
             <div className="hidden md:block">
-                <CarouselPrevious onClick={scrollPrev} className="absolute left-0 top-1/2 -translate-y-1/2 z-10" />
-                <CarouselNext onClick={scrollNext} className="absolute right-0 top-1/2 -translate-y-1/2 z-10" />
+                <Button onClick={scrollPrev} variant="outline" size="icon" className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button onClick={scrollNext} variant="outline" size="icon" className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
             </div>
         </div>
       </div>
