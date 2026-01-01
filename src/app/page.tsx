@@ -9,7 +9,7 @@ import Autoplay from "embla-carousel-autoplay";
 
 
 import { Button } from '@/components/ui/button';
-import { services, serviceCategories } from '@/lib/data';
+import { services, packages, serviceCategories } from '@/lib/data';
 import { siteConfig } from '@/lib/constants';
 import placeholderImages from '@/lib/placeholder-images.json';
 import { ProductCard } from '@/components/shared/ProductCard';
@@ -22,8 +22,8 @@ const topRatedVideos = services.filter(s => s.category === 'invitation-videos');
 const topRatedCards = services.filter(s => s.category === 'invitation-cards');
 const topRatedAlbums = services.filter(s => s.category === 'album-design');
 const topRatedVideoEditing = services.filter(s => s.category === 'video-editing');
-const cdrFileServices = services.filter(s => s.id.includes('cdr-file'));
-const comboPackages = services.filter(s => s.category === 'combo-packages');
+const cdrFileServices = services.filter(s => s.tags?.includes('cdr-file'));
+const comboPackages = packages;
 
 
 const categoryIcons = {
@@ -214,9 +214,11 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mt-1">Get the best value with our curated packages.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {comboPackages.slice(0, 4).map((service) => (
-              <ProductCard key={service.id} service={service} />
-            ))}
+            {comboPackages.slice(0, 4).map((pkg) => {
+              const service = services.find(s => s.id === pkg.id);
+              if (!service) return null;
+              return <ProductCard key={service.id} service={service} />;
+            })}
           </div>
            <div className="text-center mt-4">
             <Button asChild variant="outline">
