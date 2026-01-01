@@ -29,7 +29,7 @@ export default function TermsAndConditionsPage() {
                           <ul className="!my-4">
                               <li>All services are provided as described on their respective pages on our website. Any deviation from this scope must be agreed upon in writing.</li>
                               <li>Delivery timelines provided are estimates and may vary based on project complexity, the timeliness of client feedback, and the number of revisions. While we strive to meet deadlines, we do not guarantee exact delivery dates.</li>
-                              <li>The final deliverables will be provided in standard digital formats (e.g., MP4, JPEG, PDF) via a secure download link, email, or WhatsApp. No physical products will be shipped unless explicitly stated as part of the service.</li>
+                              <li>The final deliverables will be provided in standard digital formats (e.g., MP4, JPEG, PDF). We provide design services only. No physical products will be shipped.</li>
                           </ul>
                         </div>
 

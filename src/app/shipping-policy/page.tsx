@@ -19,7 +19,7 @@ export default function ShippingPolicyPage() {
                 <div className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:font-bold prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 dark:prose-invert">
                     <div className="space-y-8">
                         <div>
-                          <p>This policy outlines how ApnaBandhan handles the delivery of our digital products and services. As we exclusively provide digital goods, no physical items will be shipped.</p>
+                          <p>This policy outlines how ApnaBandhan handles the delivery of our digital products and services. As we exclusively provide digital goods, no physical items will be shipped. We only provide digital design services and do not deliver any physical products (like printed cards or albums).</p>
                         </div>
 
                         <div>
