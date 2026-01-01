@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,8 +64,10 @@ export default function ProfilePage() {
     // Effect to create user profile document if it doesn't exist (for new sign-ups)
     useEffect(() => {
         const createUserProfileIfNeeded = async () => {
-            if (user && !isUserLoading && !isProfileLoading && !userProfile && userProfileRef) {
+            // Conditions to run: user is loaded and authenticated, profile is checked and doesn't exist, and we have a DB connection.
+            if (user && !user.isAnonymous && !isUserLoading && !isProfileLoading && !userProfile && userProfileRef && db) {
                 console.log("User profile doesn't exist, creating one...");
+
                 const displayName = user.displayName || "New User";
                 const referralCodeInput = searchParams.get('ref');
 
@@ -81,38 +82,39 @@ export default function ProfilePage() {
                     referredUsers: []
                 };
 
-                try {
-                     if (referralCodeInput) {
-                        const usersRef = collection(db, 'users');
-                        const q = query(usersRef, where("referralCode", "==", referralCodeInput));
-                        const querySnapshot = await getDocs(q);
+                // Check for a valid referral code first
+                if (referralCodeInput) {
+                    const usersRef = collection(db, 'users');
+                    const q = query(usersRef, where("referralCode", "==", referralCodeInput));
+                    const querySnapshot = await getDocs(q);
 
-                        if (!querySnapshot.empty) {
-                            const referrerDoc = querySnapshot.docs[0];
-                            if (referrerDoc.id !== user.uid) {
-                                newUserProfileData.referredBy = referrerDoc.id;
+                    if (!querySnapshot.empty) {
+                        const referrerDoc = querySnapshot.docs[0];
+                        // Ensure user is not referring themselves
+                        if (referrerDoc.id !== user.uid) {
+                            newUserProfileData.referredBy = referrerDoc.id;
 
-                                // Use a batch to update both documents atomically
-                                const batch = writeBatch(db);
-                                batch.set(userProfileRef, newUserProfileData); // Create new user doc
-                                
-                                const referredUsers = referrerDoc.data().referredUsers || [];
-                                batch.update(referrerDoc.ref, { // Update referrer doc
-                                    referredUsers: [...referredUsers, user.uid]
-                                });
+                            // Use a batch to update both documents atomically
+                            const batch = writeBatch(db);
+                            batch.set(userProfileRef, newUserProfileData); // Create new user doc
+                            
+                            const referredUsers = referrerDoc.data().referredUsers || [];
+                            batch.update(referrerDoc.ref, { // Update referrer doc
+                                referredUsers: [...referredUsers, user.uid]
+                            });
 
-                                await batch.commit();
-                                toast({ title: "Welcome!", description: "Your account and referral have been registered." });
-                                return; // Exit after batch commit
-                            }
+                            await batch.commit();
+                            toast({ title: "Welcome!", description: "Your account and referral have been registered." });
+                            return; // Exit after successful batch commit
                         }
                     }
-                    
-                    // If no valid referral code, just set the new user's document
+                }
+                
+                // If there was no referral code, or it was invalid/self-referral, just create the new user's document.
+                try {
                     await setDoc(userProfileRef, newUserProfileData);
                     toast({ title: "Welcome!", description: "Your account has been created." });
-
-                } catch (error: any) {
+                } catch (error) {
                     console.error("Error creating user profile:", error);
                     toast({ title: "Error", description: "Could not save user profile.", variant: "destructive" });
                 }
