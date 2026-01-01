@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Home } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function GlobalError({
   error,
@@ -12,6 +13,11 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+  
   return (
     <html>
       <body>
@@ -35,7 +41,7 @@ export default function GlobalError({
                     )}
                     <p className="text-muted-foreground">You can try to refresh the page or go back to the homepage.</p>
                     <div className="flex justify-center gap-4">
-                        <Button onClick={() => reset()} variant="outline">Try Again</Button>
+                        <Button onClick={() => window.location.reload()} variant="outline">Try Again</Button>
                         <Button asChild>
                             <Link href="/"><Home className="mr-2 h-4 w-4" /> Go Home</Link>
                         </Button>
