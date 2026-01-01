@@ -10,23 +10,23 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/firebase'; 
 import { Loader2 } from 'lucide-react';
 
 
 export default function AdminLoginPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const auth = useAuth();
     const [email, setEmail] = useState('abhayrat603@gmail.com');
     const [password, setPassword] = useState('Abhay@1986*%%');
     const [isLoading, setIsLoading] = useState(false);
-    const auth = useAuth();
-
+    
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
 
-        if (!auth) {
+        if (!auth) { 
             toast({
                 title: "Login Failed",
                 description: "Firebase authentication service is not available. Please try again later.",

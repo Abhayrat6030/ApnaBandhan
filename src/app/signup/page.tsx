@@ -14,8 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Lock, Phone, Gift, Eye, EyeOff } from 'lucide-react';
-import { initiateEmailSignUp } from '@/firebase';
-import { useAuth } from '@/firebase';
+import { initiateEmailSignUp, useAuth } from '@/firebase';
 
 
 const formSchema = z.object({
@@ -29,9 +28,9 @@ const formSchema = z.object({
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const auth = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

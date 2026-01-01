@@ -8,7 +8,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from '@/firebase/provider';
+import { db } from '@/firebase';
 
 
 /** Initiate anonymous sign-in (non-blocking). */
