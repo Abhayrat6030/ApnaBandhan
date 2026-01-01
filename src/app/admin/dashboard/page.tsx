@@ -35,7 +35,7 @@ export default function AdminDashboardPage() {
   
   const allServicesAndPackages = useMemo(() => {
     const combined: (ServiceType | PackageType)[] = [...staticServices, ...staticPackages];
-    return new Map(combined.map(item => [item.id, item]));
+    return new Map(combined.map(item => [item.id, item.name]));
   }, []);
 
   const stats = useMemo(() => {
@@ -47,13 +47,13 @@ export default function AdminDashboardPage() {
       ];
     }
     const totalRevenue = allOrders.reduce((acc, order) => {
-        const service = allServicesAndPackages.get(order.selectedServiceId);
-        if (order.paymentStatus === 'Paid' && service) {
+        const serviceOrPackage = [...staticServices, ...staticPackages].find(item => item.id === order.selectedServiceId);
+        if (order.paymentStatus === 'Paid' && serviceOrPackage) {
             let price = 0;
-            if ('price' in service && typeof service.price === 'number') {
-                price = service.price; // It's a Service
-            } else if ('price' in service && typeof service.price === 'string') {
-                price = parseFloat(service.price.replace(/[^0-9.-]+/g,"")); // It's a Package
+            if ('price' in serviceOrPackage && typeof serviceOrPackage.price === 'number') {
+                price = serviceOrPackage.price;
+            } else if ('price' in serviceOrPackage && typeof serviceOrPackage.price === 'string') {
+                price = parseFloat(serviceOrPackage.price.replace(/[^0-9.-]+/g,""));
             }
             return acc + price;
         }
@@ -68,8 +68,16 @@ export default function AdminDashboardPage() {
         { title: 'Total Orders', value: totalOrders, icon: ShoppingBag },
         { title: 'Completed Orders', value: completedOrders, icon: CheckCircle },
       ];
-  }, [allOrders, allServicesAndPackages]);
+  }, [allOrders]);
   
+  const recentOrdersWithServiceNames = useMemo(() => {
+    if (!recentOrders) return [];
+    return recentOrders.map(order => ({
+      ...order,
+      serviceName: allServicesAndPackages.get(order.selectedServiceId) || 'Unknown Service',
+    }));
+  }, [recentOrders, allServicesAndPackages]);
+
   const isLoading = isUserLoading || areAllOrdersLoading || areRecentOrdersLoading;
 
   if (isUserLoading && !user) {
@@ -141,7 +149,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardContent className="p-0">
             {isLoading ? <div className="p-4"><Skeleton className="h-20 w-full" /></div> :
-             recentOrders && recentOrders.length > 0 ? <OrderTable orders={recentOrders} /> : 
+             recentOrdersWithServiceNames && recentOrdersWithServiceNames.length > 0 ? <OrderTable orders={recentOrdersWithServiceNames} /> : 
              <div className="p-6 text-center text-muted-foreground"><p>No recent orders found.</p></div>}
           </CardContent>
         </Card>
