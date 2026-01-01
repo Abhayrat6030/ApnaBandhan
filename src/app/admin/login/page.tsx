@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -51,10 +52,23 @@ export default function AdminLoginPage() {
             }
 
         } catch (error: any) {
+            console.error("Login Error:", error);
             let errorMessage = "An unexpected error occurred.";
-            if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                errorMessage = "Invalid email or password.";
+            if (error.code) {
+                switch(error.code) {
+                    case 'auth/invalid-credential':
+                    case 'auth/wrong-password':
+                    case 'auth/user-not-found':
+                        errorMessage = "Invalid email or password.";
+                        break;
+                    case 'auth/network-request-failed':
+                         errorMessage = "Network error. Please check your internet connection.";
+                         break;
+                }
+            } else if (error.message.includes("server session")) {
+                errorMessage = "Could not create a server session. Please try again.";
             }
+
             toast({
                 title: "Login Failed",
                 description: errorMessage,
