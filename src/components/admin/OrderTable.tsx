@@ -17,10 +17,6 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-    DropdownMenuSub,
-    DropdownMenuSubTrigger,
-    DropdownMenuSubContent,
-    DropdownMenuPortal
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -139,33 +135,18 @@ export default function OrderTable({ orders }: OrderTableProps) {
                                 Reply on WhatsApp
                             </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                         
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger disabled={isUpdating('status', order.id)}>
-                            <span>Change Status</span>
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Pending')} disabled={order.status === 'Pending'}>Pending</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'In Progress')} disabled={order.status === 'In Progress'}>In Progress</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Delivered')} disabled={order.status === 'Delivered'}>Delivered</DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenuSub>
-
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger disabled={isUpdating('payment', order.id)}>
-                                <span>Update Payment</span>
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Pending')} disabled={order.paymentStatus === 'Pending'}>Pending</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Advance')} disabled={order.paymentStatus === 'Advance'}>Advance</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Paid')} disabled={order.paymentStatus === 'Paid'}>Paid</DropdownMenuItem>
-                            </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenuSub>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Pending')} disabled={order.status === 'Pending' || isUpdating('status', order.id)}>Pending</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'In Progress')} disabled={order.status === 'In Progress' || isUpdating('status', order.id)}>In Progress</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Delivered')} disabled={order.status === 'Delivered' || isUpdating('status', order.id)}>Delivered</DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>Update Payment</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Pending')} disabled={order.paymentStatus === 'Pending' || isUpdating('payment', order.id)}>Pending</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Advance')} disabled={order.paymentStatus === 'Advance' || isUpdating('payment', order.id)}>Advance</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Paid')} disabled={order.paymentStatus === 'Paid' || isUpdating('payment', order.id)}>Paid</DropdownMenuItem>
 
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -182,7 +163,7 @@ export default function OrderTable({ orders }: OrderTableProps) {
                  <Card key={order.id} className="w-full">
                     <CardHeader className="flex flex-row items-start justify-between p-4 pb-2">
                         <div>
-                            <CardTitle className="text-base">{order.fullName}</CardTitle>
+                            <CardTitle className="text-base truncate">{order.fullName}</CardTitle>
                             <CardDescription>{order.phoneNumber}</CardDescription>
                         </div>
                         <DropdownMenu>
@@ -192,10 +173,17 @@ export default function OrderTable({ orders }: OrderTableProps) {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                {/* Actions can be simplified for mobile if needed */}
                                 <DropdownMenuItem asChild><Link href={`https://wa.me/${order.phoneNumber.replace('+', '')}`} target="_blank"><MessageSquare className="mr-2 h-4 w-4" />WhatsApp</Link></DropdownMenuItem>
-                                <DropdownMenuSub><DropdownMenuSubTrigger>Change Status</DropdownMenuSubTrigger>{/* ... */}</DropdownMenuSub>
-                                <DropdownMenuSub><DropdownMenuSubTrigger>Update Payment</DropdownMenuSubTrigger>{/* ... */}</DropdownMenuSub>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Pending')} disabled={order.status === 'Pending' || isUpdating('status', order.id)}>Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'In Progress')} disabled={order.status === 'In Progress' || isUpdating('status', order.id)}>In Progress</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Delivered')} disabled={order.status === 'Delivered' || isUpdating('status', order.id)}>Delivered</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>Update Payment</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Pending')} disabled={order.paymentStatus === 'Pending' || isUpdating('payment', order.id)}>Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Advance')} disabled={order.paymentStatus === 'Advance' || isUpdating('payment', order.id)}>Advance</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handlePaymentUpdate(order.id, 'Paid')} disabled={order.paymentStatus === 'Paid' || isUpdating('payment', order.id)}>Paid</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </CardHeader>
