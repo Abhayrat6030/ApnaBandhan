@@ -38,12 +38,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 const formSchema = z.object({
   target: z.enum(['all', 'specific']),
@@ -387,7 +381,9 @@ export default function AdminNotificationsPage() {
                                 <Card key={notif.path}>
                                     <CardHeader className="p-4">
                                         <CardTitle className="text-base">{notif.title}</CardTitle>
-                                        <CardDescription>{notif.userName} - {new Date(notif.date).toLocaleString()}</CardDescription>
+                                        <CardDescription>
+                                            {notif.userName} ({notif.userEmail}) - {new Date(notif.date).toLocaleString()}
+                                        </CardDescription>
                                     </CardHeader>
                                     <CardContent className="p-4 pt-0">
                                         <p className="text-sm text-muted-foreground">{notif.description}</p>
@@ -476,5 +472,3 @@ export default function AdminNotificationsPage() {
     </>
   );
 }
-
-    
