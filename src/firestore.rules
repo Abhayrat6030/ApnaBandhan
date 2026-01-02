@@ -8,11 +8,6 @@ service cloud.firestore {
       return request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
-    // Admin has global access to read anything
-    match /{document=**} {
-      allow read: if isAdmin();
-    }
-
     /* ===============================
        HELPER FUNCTIONS
     =============================== */
@@ -24,36 +19,30 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /* ===============================
-       USERS
-       /users/{userId}
-    =============================== */
+    // --- USER DATA ACCESS RULES ---
+
+    // Rule for reading/writing INDIVIDUAL user documents
     match /users/{userId} {
-      // Allow signed-in users to read their own profile, and admins to read any.
-      allow get: if isOwner(userId) || isAdmin();
-      
-      // Allow any user (even unauthenticated) to query the users collection.
-      // This is required to validate referral codes during signup.
-      allow list: if true;
-      
-      // New users can create their own profile document.
+      allow get, update: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId);
-
-      // Users can update their own profile, admins can update any.
-      allow update: if isOwner(userId) || isAdmin();
-
-      // Only admins can delete user documents.
       allow delete: if isAdmin();
-
+      
+      // Rules for user sub-collections
       match /notifications/{notificationId} {
         allow read: if isOwner(userId) || isAdmin();
-        allow write: if isAdmin(); // Only admin can send notifications
+        allow write: if isAdmin();
       }
-
       match /downloadableProducts/{productId} {
         allow read: if isOwner(userId) || isAdmin();
-        allow write: if isAdmin(); // Only admin can add downloadable products
+        allow write: if isAdmin();
       }
+    }
+
+    // Rule for LISTING/QUERYING the users collection
+    // This is crucial for checking referral codes during signup.
+    // Admin also needs this to list all users.
+    match /users/{document=**} {
+      allow list: if true;
     }
 
     /* ===============================
