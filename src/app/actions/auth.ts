@@ -4,7 +4,6 @@
 import { z } from 'zod';
 import { initializeAdminApp } from '@/firebase/admin';
 import admin from 'firebase-admin';
-import { getDocs, query } from 'firebase-admin/firestore';
 
 const signupSchema = z.object({
   name: z.string().min(2),
@@ -62,7 +61,6 @@ export async function signUpUser(prevState: any, formData: FormData) {
         const displayName = name || "New User";
 
         const newUserProfileData = {
-            uid: newUserUid,
             displayName: displayName,
             email: email,
             createdAt: new Date().toISOString(),
