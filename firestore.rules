@@ -79,8 +79,11 @@ service cloud.firestore {
     }
 
     match /coupons/{couponId} {
-      allow read: if true; // All users can read coupons to apply them
-      allow write: if isAdmin(); // Only admin can create/update/delete coupons
+      // Allow signed-in users to read coupons to apply them
+      allow read: if isSignedIn() || isAdmin();
+      // Allow admins to manage coupons
+      allow write: if isAdmin();
+      allow update: if isAdmin() || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uses']));
     }
 
     /* ===============================
@@ -94,7 +97,8 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
-        && request.resource.data.paymentStatus == "Pending";
+        && request.resource.data.paymentStatus == "Pending"
+        && (!request.resource.data.keys().hasAny(['id']));
       
       // Allow users to read their own orders.
       allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;

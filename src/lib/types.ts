@@ -62,6 +62,9 @@ export type Order = {
     status: 'Pending' | 'Paid' | 'In Progress' | 'Delivered';
     paymentStatus: 'Pending' | 'Advance' | 'Paid';
     orderDate: string | Date;
+    couponCode?: string;
+    discountAmount?: number;
+    totalPrice?: number;
 }
 
 export type Notification = {

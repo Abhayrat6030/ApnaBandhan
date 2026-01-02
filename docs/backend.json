@@ -53,6 +53,18 @@
         "paymentMethod": {
           "type": "string",
           "description": "Method of payment used for the order (e.g., UPI, Google Pay)."
+        },
+        "couponCode": {
+          "type": "string",
+          "description": "The coupon code applied to the order, if any."
+        },
+        "discountAmount": {
+            "type": "number",
+            "description": "The amount discounted from the order, if any."
+        },
+        "totalPrice": {
+            "type": "number",
+            "description": "The final price of the order after discounts."
         }
       },
       "required": [

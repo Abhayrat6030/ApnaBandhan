@@ -5,27 +5,32 @@ import { useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, Tag, X, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { useState, useEffect, Suspense } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
+import { useState, useEffect, Suspense, useMemo } from 'react';
+import { collection, addDoc, query, where, getDocs, updateDoc, doc, increment } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { services, packages } from '@/lib/data';
+import { services as staticServices, packages as staticPackages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, errorEmitter, useFirestore } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
+import type { Coupon } from '@/lib/types';
 
 
-const allServicesAndPackages = [...services, ...packages].map(s => ({ id: s.id, name: s.name }));
+const allServicesAndPackages = [...staticServices, ...staticPackages].map(s => ({ 
+    id: s.id, 
+    name: s.name, 
+    price: typeof s.price === 'string' ? parseFloat(s.price.replace(/[^0-9.-]+/g,"")) : s.price 
+}));
 const uniqueServices = Array.from(new Map(allServicesAndPackages.map(item => [item.id, item])).values());
 
 
@@ -48,6 +53,11 @@ function OrderFormComponent() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { user } = useUser();
   const db = useFirestore();
+  
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [isCouponLoading, setIsCouponLoading] = useState(false);
+  const [discount, setDiscount] = useState(0);
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -60,7 +70,17 @@ function OrderFormComponent() {
     },
   });
 
-  // Set default values once user data is available
+  const selectedServiceId = form.watch('selectedService');
+  const servicePrice = useMemo(() => {
+    if (!selectedServiceId) return 0;
+    const service = uniqueServices.find(s => s.id === selectedServiceId);
+    return service?.price || 0;
+  }, [selectedServiceId]);
+
+  const finalPrice = useMemo(() => {
+    return Math.max(0, servicePrice - discount);
+  }, [servicePrice, discount]);
+
   useEffect(() => {
     if (user) {
       form.reset({
@@ -72,6 +92,67 @@ function OrderFormComponent() {
       });
     }
   }, [user, form, serviceId]);
+  
+  useEffect(() => {
+      // Recalculate discount if service price changes
+      if (appliedCoupon) {
+          calculateDiscount(appliedCoupon, servicePrice);
+      }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [servicePrice, appliedCoupon]);
+
+  const calculateDiscount = (coupon: Coupon, price: number) => {
+    let calculatedDiscount = 0;
+    if (coupon.discountType === 'percentage') {
+        calculatedDiscount = (price * coupon.discountValue) / 100;
+    } else { // fixed
+        calculatedDiscount = coupon.discountValue;
+    }
+    setDiscount(calculatedDiscount);
+  }
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim() || !db) return;
+    setIsCouponLoading(true);
+
+    try {
+        const couponsRef = collection(db, 'coupons');
+        const q = query(couponsRef, where('code', '==', couponInput.trim().toUpperCase()));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            toast({ title: 'Invalid Coupon', description: 'This coupon code does not exist.', variant: 'destructive' });
+            setIsCouponLoading(false);
+            return;
+        }
+
+        const couponDoc = querySnapshot.docs[0];
+        const couponData = { id: couponDoc.id, ...couponDoc.data() } as Coupon;
+        
+        const isExpired = new Date(couponData.expiryDate) < new Date();
+        if (!couponData.isActive || isExpired) {
+             toast({ title: 'Invalid Coupon', description: 'This coupon is either inactive or has expired.', variant: 'destructive' });
+             setIsCouponLoading(false);
+             return;
+        }
+
+        setAppliedCoupon(couponData);
+        calculateDiscount(couponData, servicePrice);
+        toast({ title: 'Coupon Applied!', description: `You've received a discount.` });
+
+    } catch (error) {
+        toast({ title: 'Error', description: 'Could not apply coupon. Please try again.', variant: 'destructive' });
+    }
+
+    setIsCouponLoading(false);
+  }
+  
+  const removeCoupon = () => {
+      setAppliedCoupon(null);
+      setCouponInput('');
+      setDiscount(0);
+      toast({ title: 'Coupon Removed' });
+  }
 
 
   async function onSubmit(data: OrderFormValues) {
@@ -80,55 +161,62 @@ function OrderFormComponent() {
     if (!user || !db) {
         toast({
             title: "Authentication Error",
-            description: "You must be logged in to place an order. Please wait a moment for services to load.",
+            description: "You must be logged in to place an order.",
             variant: "destructive",
         });
         setIsSubmitting(false);
         return;
     }
 
-    const ordersCollection = collection(db, 'orders');
-
     const newOrder = {
         userId: user.uid,
         fullName: data.fullName,
         phoneNumber: data.phone,
         email: data.email,
-        weddingDate: data.weddingDate.toISOString().split('T')[0], // format to YYYY-MM-DD
+        weddingDate: data.weddingDate.toISOString().split('T')[0],
         selectedServiceId: data.selectedService,
         messageNotes: data.message || '',
         orderDate: new Date().toISOString(),
         status: 'Pending' as const,
         paymentStatus: 'Pending' as const,
+        couponCode: appliedCoupon?.code || '',
+        discountAmount: discount,
+        totalPrice: finalPrice,
     };
 
-    addDoc(ordersCollection, newOrder)
-        .then(() => {
-            toast({
-                title: "Order Submitted Successfully!",
-                description: "We have received your details and will contact you shortly.",
-                variant: "default"
-            });
-            form.reset();
-            setIsSubmitted(true);
-        })
-        .catch((error) => {
-            console.error("Order submission error:", error);
-            const contextualError = new FirestorePermissionError({
-              path: ordersCollection.path,
-              operation: 'create',
-              requestResourceData: newOrder
-            });
-            errorEmitter.emit('permission-error', contextualError);
-            toast({
-                title: "Submission Failed",
-                description: "Something went wrong. Please check your connection and try again.",
-                variant: "destructive",
-            });
-        })
-        .finally(() => {
-            setIsSubmitting(false);
-        });
+    try {
+      await addDoc(collection(db, 'orders'), newOrder);
+
+      // Increment coupon usage if one was applied
+      if (appliedCoupon) {
+          const couponRef = doc(db, 'coupons', appliedCoupon.id);
+          await updateDoc(couponRef, {
+              uses: increment(1)
+          });
+      }
+
+      toast({
+          title: "Order Submitted Successfully!",
+          description: "We have received your details and will contact you shortly.",
+      });
+      form.reset();
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Order submission error:", error);
+      const contextualError = new FirestorePermissionError({
+        path: 'orders',
+        operation: 'create',
+        requestResourceData: newOrder
+      });
+      errorEmitter.emit('permission-error', contextualError);
+      toast({
+          title: "Submission Failed",
+          description: "Something went wrong. Please check permissions and try again.",
+          variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (isSubmitted) {
@@ -286,6 +374,56 @@ function OrderFormComponent() {
                   </FormItem>
                 )}
               />
+
+              <div>
+                <FormLabel>Coupon Code</FormLabel>
+                {appliedCoupon ? (
+                     <div className="flex items-center gap-2 mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span className="font-semibold text-green-700">{appliedCoupon.code}</span>
+                        <p className="text-sm text-green-600 flex-1">Coupon applied!</p>
+                        <Button type="button" variant="ghost" size="icon" onClick={removeCoupon} className="h-6 w-6">
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2 mt-2">
+                        <Input 
+                          placeholder="Enter coupon code" 
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value)}
+                          className="max-w-xs"
+                        />
+                        <Button type="button" variant="outline" onClick={handleApplyCoupon} disabled={isCouponLoading || !couponInput.trim()}>
+                            {isCouponLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Apply
+                        </Button>
+                    </div>
+                )}
+              </div>
+
+               <Card className="bg-muted/50">
+                  <CardHeader className="pb-2 pt-4">
+                      <CardTitle className="text-lg">Order Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                          <span>Subtotal</span>
+                          <span>₹{servicePrice.toLocaleString('en-IN')}</span>
+                      </div>
+                      {discount > 0 && (
+                          <div className="flex justify-between text-green-600">
+                              <span>Discount ({appliedCoupon?.code})</span>
+                              <span>- ₹{discount.toLocaleString('en-IN')}</span>
+                          </div>
+                      )}
+                      <div className="flex justify-between font-bold text-base border-t pt-2 mt-2">
+                          <span>Total</span>
+                          <span>₹{finalPrice.toLocaleString('en-IN')}</span>
+                      </div>
+                  </CardContent>
+              </Card>
+
               <Button type="submit" disabled={isSubmitting || !user || !db} className="w-full" size="lg">
                 {isSubmitting ? (
                     <>
