@@ -218,6 +218,23 @@
         "orderId": { "type": "string" }
       },
       "required": ["id", "name", "type", "deliveryDate", "downloadUrl", "orderId"]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "type": "object",
+      "description": "Represents a discount coupon for services.",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "discountType": { "type": "string", "enum": ["percentage", "fixed"] },
+        "discountValue": { "type": "number" },
+        "expiryDate": { "type": "string", "format": "date-time" },
+        "maxUses": { "type": "number" },
+        "currentUses": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "code", "discountType", "discountValue", "expiryDate", "isActive", "createdAt"]
     }
   },
   "auth": {
@@ -275,9 +292,15 @@
               "schema": {"$ref": "#/backend/entities/DownloadableProduct"},
               "description": "Stores products available for download for a specific user."
           }
+      },
+      {
+        "path": "/coupons/{couponId}",
+        "definition": {
+          "entityName": "Coupon",
+          "schema": { "$ref": "#/backend/entities/Coupon"},
+          "description": "Stores discount coupons for the application."
+        }
       }
     ]
   }
 }
-
-    

@@ -97,3 +97,14 @@ export type UserProfile = {
 export type AppSettings = {
     downloadAppLink: string;
 };
+
+export type Coupon = {
+    id: string;
+    code: string;
+    discountType: 'percentage' | 'fixed';
+    discountValue: number;
+    expiryDate: string;
+    isActive: boolean;
+    createdAt: string;
+    uses: number;
+}

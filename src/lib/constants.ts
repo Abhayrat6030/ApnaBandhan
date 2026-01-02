@@ -28,7 +28,7 @@ export const adminNavItems: NavItem[] = [
   { label: 'Downloads', href: '/admin/downloads' },
   { label: 'AI Enhancer', href: '/admin/ai-enhancer' },
   { label: 'Requests', href: '/admin/requests' },
-  { label: 'Rewards', href: '/admin/rewards' },
+  { label: 'Coupons / Rewards', href: '/admin/rewards' },
   { label: 'Referrals', href: '/admin/referrals' },
   { label: 'App Settings', href: '/admin/settings' },
 ];

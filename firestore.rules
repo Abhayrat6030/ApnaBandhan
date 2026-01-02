@@ -62,7 +62,7 @@ service cloud.firestore {
     }
     
     /* ===============================
-       PUBLIC COLLECTIONS
+       PUBLIC & ADMIN COLLECTIONS
     =============================== */
     match /services/{serviceId} {
       allow read: if true;
@@ -76,6 +76,11 @@ service cloud.firestore {
      match /media/{mediaId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    match /coupons/{couponId} {
+      allow read: if true; // All users can read coupons to apply them
+      allow write: if isAdmin(); // Only admin can create/update/delete coupons
     }
 
     /* ===============================
