@@ -20,6 +20,7 @@ export default function NotificationsPage() {
 
     const notificationsQuery = useMemoFirebase(() => {
         if (!user || !db) return null;
+        // Fetch notifications of type 'general' or 'order'
         return query(
             collection(db, 'users', user.uid, 'notifications'), 
             where('type', 'in', ['general', 'order']),
