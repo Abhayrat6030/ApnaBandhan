@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect, Suspense } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { collection, doc, getDocs, query, where, runTransaction } from 'firebase/firestore';
+import { collection, doc, getDocs, query, where, runTransaction, writeBatch, arrayUnion } from 'firebase/firestore';
 
 
 import { Button } from '@/components/ui/button';
@@ -83,37 +83,36 @@ function SignupFormComponent() {
             referrerUid = null;
         }
 
-        // 3. Create user profile and update referrer in a single transaction
-        await runTransaction(db, async (transaction) => {
-            const newUserRef = doc(db, 'users', newUser.uid);
-            
-            const newReferralCode = `${values.name.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
-            const newUserProfileData = {
-                uid: newUser.uid, // Ensure UID is part of the document data
-                displayName: values.name,
-                email: newUser.email,
-                createdAt: new Date().toISOString(),
-                referralCode: newReferralCode,
-                referredBy: referrerUid,
-                status: 'active' as const,
-                referredUsers: [],
-                photoURL: newUser.photoURL || '',
-            };
+        // 3. Use a write batch to create the user profile and update the referrer
+        const batch = writeBatch(db);
 
-            transaction.set(newUserRef, newUserProfileData);
+        // Define the new user's profile document
+        const newUserRef = doc(db, 'users', newUser.uid);
+        const newReferralCode = `${values.name.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
+        const newUserProfileData = {
+            uid: newUser.uid,
+            displayName: values.name,
+            email: newUser.email,
+            createdAt: new Date().toISOString(),
+            referralCode: newReferralCode,
+            referredBy: referrerUid,
+            status: 'active' as const,
+            referredUsers: [],
+            photoURL: newUser.photoURL || '',
+        };
+        batch.set(newUserRef, newUserProfileData);
 
-            // If there was a valid referrer, update their document
-            if (referrerUid) {
-                const referrerRef = doc(db, 'users', referrerUid);
-                const referrerDoc = await transaction.get(referrerRef);
-                if (referrerDoc.exists()) {
-                    const referredUsers = referrerDoc.data()?.referredUsers || [];
-                    transaction.update(referrerRef, {
-                        referredUsers: [...referredUsers, newUser.uid]
-                    });
-                }
-            }
-        });
+        // If there's a referrer, update their document
+        if (referrerUid) {
+            const referrerRef = doc(db, 'users', referrerUid);
+            batch.update(referrerRef, {
+                referredUsers: arrayUnion(newUser.uid)
+            });
+        }
+        
+        // Commit the batch
+        await batch.commit();
+
 
         toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
         router.push('/profile');
