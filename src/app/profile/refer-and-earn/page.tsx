@@ -6,16 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Gift, Copy, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useEffect, useState } from 'react';
 
 export default function ReferAndEarnPage() {
     const { toast } = useToast();
     const { user, isUserLoading } = useUser();
     const db = useFirestore();
-    const [isGenerating, setIsGenerating] = useState(false);
 
     const userProfileRef = useMemoFirebase(() => {
         if (!user || !db) return null;
@@ -24,37 +22,7 @@ export default function ReferAndEarnPage() {
 
     const { data: userProfile, isLoading: isProfileLoading, error } = useDoc<UserProfile>(userProfileRef);
 
-    useEffect(() => {
-        // Function to generate and save referral code if it doesn't exist
-        const generateAndSaveCode = async () => {
-            if (user && userProfile && !userProfile.referralCode && userProfileRef) {
-                setIsGenerating(true);
-                try {
-                    const displayName = userProfile.displayName || user.displayName || 'User';
-                    const newReferralCode = `${displayName.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
-                    
-                    await updateDoc(userProfileRef, { referralCode: newReferralCode });
-                    
-                    toast({
-                        title: "Referral Code Generated!",
-                        description: "You can now share your unique code with friends.",
-                    });
-                } catch (e) {
-                    console.error("Error generating referral code:", e);
-                    toast({
-                        title: "Could not generate referral code",
-                        variant: "destructive",
-                    });
-                } finally {
-                    setIsGenerating(false);
-                }
-            }
-        };
-
-        generateAndSaveCode();
-    }, [user, userProfile, userProfileRef, toast]);
-    
-    const isLoading = isUserLoading || isProfileLoading || isGenerating;
+    const isLoading = isUserLoading || isProfileLoading;
 
     const referralCode = userProfile?.referralCode || '...';
     const referralLink = `https://apnabandhan.com/signup?ref=${referralCode}`;

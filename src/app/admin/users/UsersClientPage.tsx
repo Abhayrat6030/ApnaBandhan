@@ -67,7 +67,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
   }
   
   const handleDeleteUser = async () => {
-    if (!userToDelete || !db || !auth.currentUser) return;
+    if (!userToDelete || !db || !auth?.currentUser) return;
     
     startTransition(async () => {
         try {
@@ -85,6 +85,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                 description: `${userToDelete.displayName}'s profile has been deleted. Auth user still exists.`,
             });
             setUserToDelete(null);
+            router.refresh();
         } catch (error: any) {
             console.error("Deletion Error:", error);
             toast({

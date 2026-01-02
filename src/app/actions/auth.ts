@@ -60,11 +60,13 @@ export async function signUpUser(prevState: any, formData: FormData) {
         const newUserRef = db.collection('users').doc(newUserUid);
         const displayName = name || "New User";
 
+        const newReferralCode = `${displayName.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
+
         const newUserProfileData = {
             displayName: displayName,
             email: email,
             createdAt: new Date().toISOString(),
-            referralCode: `${displayName.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`,
+            referralCode: newReferralCode,
             referredBy: referrerUid,
             status: 'active',
             referredUsers: []
@@ -91,6 +93,7 @@ export async function signUpUser(prevState: any, formData: FormData) {
     if (error.code === 'auth/email-already-exists') {
       message = 'This email is already in use. Please log in instead.';
     }
+    console.error("Signup Error:", error);
     return { success: false, message };
   }
 }
