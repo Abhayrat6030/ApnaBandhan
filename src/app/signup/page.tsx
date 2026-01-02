@@ -16,7 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Mail, Lock, Gift, Eye, EyeOff } from 'lucide-react';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore, errorEmitter } from '@/firebase';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
 const formSchema = z.object({
@@ -60,7 +61,7 @@ function SignupFormComponent() {
         let referrerUid: string | null = null;
         let referrerDoc: any = null;
 
-        // 1. Validate referral code if provided, BEFORE creating the user.
+        // 1. Validate referral code if provided
         if (values.referralCode) {
             const usersRef = collection(db, 'users');
             const q = query(usersRef, where('referralCode', '==', values.referralCode.toUpperCase()));
@@ -79,18 +80,15 @@ function SignupFormComponent() {
         const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
         const newUser = userCredential.user;
         
-        // Update user profile in Auth
         await updateProfile(newUser, { displayName: values.name });
 
-        // Prevent a user from referring themselves (edge case)
         if (referrerUid === newUser.uid) {
             referrerUid = null;
         }
 
-        // 3. Use a write batch to create the user profile and update the referrer atomically
+        // 3. Create the user profile and update referrer in a batch
         const batch = writeBatch(db);
 
-        // Define the new user's profile document
         const newUserRef = doc(db, 'users', newUser.uid);
         const newReferralCode = `${values.name.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
         
@@ -107,7 +105,6 @@ function SignupFormComponent() {
         };
         batch.set(newUserRef, newUserProfileData);
 
-        // If there's a referrer, update their document
         if (referrerUid) {
             const referrerRef = doc(db, 'users', referrerUid);
             batch.update(referrerRef, {
@@ -115,16 +112,21 @@ function SignupFormComponent() {
             });
         }
         
-        // Commit the batch
         await batch.commit();
 
         toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
         router.push('/profile');
 
     } catch (error: any) {
-        let message = 'An unknown error occurred.';
+        let message = 'An unknown error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') {
             message = 'This email is already in use. Please log in instead.';
+        } else if (error.code === 'permission-denied') {
+            message = 'A permission error occurred. Please check security rules.';
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: 'users',
+                operation: 'list' // This is the likely failing operation
+            }));
         }
         
         toast({ title: 'Sign Up Failed', description: message, variant: 'destructive' });

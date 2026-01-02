@@ -77,14 +77,11 @@ function buildAuthObject(currentUser: User | null): FirebaseAuthObject | null {
 function buildRequestObject(context: SecurityRuleContext): SecurityRuleRequest {
   let authObject: FirebaseAuthObject | null = null;
   try {
-    // Safely attempt to get the current user.
     const firebaseAuth = getAuth();
     const currentUser = firebaseAuth.currentUser;
-    if (currentUser) {
-      authObject = buildAuthObject(currentUser);
-    }
+    authObject = buildAuthObject(currentUser);
   } catch {
-    // This will catch errors if the Firebase app is not yet initialized.
+     // This will catch errors if the Firebase app is not yet initialized.
     // In this case, we'll proceed without auth information.
   }
 
@@ -102,7 +99,15 @@ function buildRequestObject(context: SecurityRuleContext): SecurityRuleRequest {
  * @returns A string containing the error message and the JSON payload.
  */
 function buildErrorMessage(requestObject: SecurityRuleRequest): string {
-  return `Missing or insufficient permissions: The following request was denied by Firestore Security Rules:
+  const op = requestObject.method.toUpperCase();
+  const path = requestObject.path;
+  const authStatus = requestObject.auth ? `Authenticated as UID: ${requestObject.auth.uid}` : 'Unauthenticated';
+
+  return `Firestore Security Rules Denied Request:
+- Operation: ${op}
+- Path: ${path}
+- Auth Status: ${authStatus}
+- Full Request Details:
 ${JSON.stringify(requestObject, null, 2)}`;
 }
 

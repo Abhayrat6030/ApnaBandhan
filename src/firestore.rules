@@ -1,55 +1,107 @@
 
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    function isAdmin() {
+      return request.auth.token.email == 'abhayrat603@gmail.com';
+    }
 
-    // Helper functions
+    // Admin has global access to read anything
+    match /{document=**} {
+      allow read: if isAdmin();
+    }
+
+    /* ===============================
+       HELPER FUNCTIONS
+    =============================== */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Public read-only collections
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /* ===============================
+       USERS
+       /users/{userId}
+    =============================== */
+    match /users/{userId} {
+      // Allow any user to read user profiles. This is necessary for referral code lookup during signup
+      // before the new user is authenticated. Write access is still restricted.
+      allow read: if true;
+      
+      // New users can create their own profile document.
+      allow create: if isOwner(userId);
+
+      // Users can update their own profile, admins can update any.
+      allow update: if isOwner(userId) || isAdmin();
+
+      // Only admins can delete user documents.
+      allow delete: if isAdmin();
+
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin(); // Only admin can send notifications
+      }
+
+      match /downloadableProducts/{productId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin(); // Only admin can add downloadable products
+      }
+    }
+
+    /* ===============================
+       SETTINGS (PUBLIC READ, ADMIN WRITE)
+    =============================== */
+    match /app-settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    /* ===============================
+       PUBLIC & ADMIN COLLECTIONS
+    =============================== */
     match /services/{serviceId} {
       allow read: if true;
-      allow write: if false; // All writes must come from a verified admin via server actions
+      allow write: if isAdmin();
     }
-    match /comboPackages/{pkgId} {
+
+    match /comboPackages/{comboId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
      match /media/{mediaId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
 
-    // User-specific data
-    match /users/{userId} {
-      // Users can read/write their own profile
-      allow read, write: if request.auth.uid == userId;
-
-      match /notifications/{notificationId} {
-        allow read: if request.auth.uid == userId;
-        allow write: if false; // Notifications are written by the server
-      }
-      match /downloadableProducts/{productId} {
-        allow read: if request.auth.uid == userId;
-        allow write: if false; // Products are added by the server
-      }
+    match /coupons/{couponId} {
+      // Allow signed-in users to read coupons to apply them
+      allow read: if isSignedIn() || isAdmin();
+      // Allow admins to manage coupons
+      allow write: if isAdmin();
+      allow update: if isAdmin() || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uses']));
     }
 
-    // Orders
-    match /orders/{orderId} {
-      // Users can create orders for themselves
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      // Users can read their own orders
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      // No direct updates or deletes from the client for orders
-      allow update, delete: if false;
-    }
-
-    // Default deny all other paths
-     match /{path=**} {
-      allow read, write: if false;
+    /* ===============================
+       ORDERS (SECURE)
+    =============================== */
+     match /orders/{orderId} {
+      // Admins can read/write any order.
+      allow read, write: if isAdmin();
+      
+      // Users can create orders for themselves with specific initial data.
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "Pending"
+        && request.resource.data.paymentStatus == "Pending"
+        && (!request.resource.data.keys().hasAny(['id']));
+      
+      // Allow users to read their own orders.
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
   }
 }
