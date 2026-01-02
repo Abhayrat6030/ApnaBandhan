@@ -12,7 +12,7 @@ service cloud.firestore {
        HELPER FUNCTIONS
     =============================== */
     function isSignedIn() {
-      return request.auth.id != null;
+      return request.auth.uid != null;
     }
 
     function isOwner(userId) {
@@ -24,12 +24,6 @@ service cloud.firestore {
     match /users/{userId} {
       // Admins can read any profile. Users can only read their own.
       allow get: if isOwner(userId) || isAdmin();
-
-      // Anyone can query the user collection. This is required to validate referral codes.
-      // The query itself will only return documents that the user has `get` permission for,
-      // which is handled by Firestore's rules logic. For this to work for our signup
-      // referral check, we will need to adjust the query on the client, but the `list` rule is a prerequisite.
-      allow list: if true;
       
       // A new user can create their own profile document.
       allow create: if isOwner(userId);
@@ -51,6 +45,13 @@ service cloud.firestore {
         allow write: if isAdmin(); // Only admin can add/edit downloadable products
       }
     }
+    
+    // This block is separate and crucial for referral code validation.
+    // It allows any authenticated user to query the users collection.
+    match /users/{document=**} {
+        allow list: if request.auth.uid != null;
+    }
+
 
     /* ===============================
        SETTINGS (PUBLIC READ, ADMIN WRITE)

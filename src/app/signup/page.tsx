@@ -78,8 +78,10 @@ function SignupFormComponent() {
                 const referrerDoc = querySnapshot.docs[0];
                 if (referrerDoc.id !== newUser.uid) { // Prevent self-referral
                     referrerUid = referrerDoc.id;
-                    // Note: We are no longer updating the referrer's doc from the client side.
-                    // This will be handled by a backend function in a future step for security.
+                    const referrerRef = doc(db, "users", referrerUid);
+                    batch.update(referrerRef, {
+                        referredUsers: (referrerDoc.data().referredUsers || []).concat(newUser.uid)
+                    });
                 }
             } else {
                  toast({ title: 'Sign Up Warning', description: 'The referral code was not found, but your account was created successfully.', variant: 'default' });
@@ -110,9 +112,19 @@ function SignupFormComponent() {
         router.push('/profile');
 
     } catch (error: any) {
+        console.error("SIGNUP ERROR FULL 👉", error);
+        
         let message = 'An unknown error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') {
             message = 'This email is already in use. Please log in instead.';
+        } else if (error.code === 'permission-denied') {
+            message = 'A permission error occurred. Please check security rules.';
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: 'users',
+                operation: 'list' // This is the likely failing operation
+            }));
+        } else {
+            alert(error?.message || error?.code || JSON.stringify(error));
         }
         
         toast({ title: 'Sign Up Failed', description: message, variant: 'destructive' });
