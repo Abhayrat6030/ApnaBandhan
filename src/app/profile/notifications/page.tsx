@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Bell, CheckCircle, Gift, Loader2 } from 'lucide-react';
 import { useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, where } from 'firebase/firestore';
 import type { Notification } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -20,7 +20,11 @@ export default function NotificationsPage() {
 
     const notificationsQuery = useMemoFirebase(() => {
         if (!user || !db) return null;
-        return query(collection(db, 'users', user.uid, 'notifications'), orderBy('date', 'desc'));
+        return query(
+            collection(db, 'users', user.uid, 'notifications'), 
+            where('type', 'in', ['general', 'order']),
+            orderBy('date', 'desc')
+        );
     }, [user, db]);
 
     const { data: notifications, isLoading: areNotificationsLoading } = useCollection<Notification>(notificationsQuery);
@@ -47,7 +51,7 @@ export default function NotificationsPage() {
             <Card className="max-w-2xl mx-auto">
                 <CardHeader>
                     <CardTitle className="text-2xl">Notifications</CardTitle>
-                    <CardDescription>Stay updated with your orders and special offers.</CardDescription>
+                    <CardDescription>Stay updated with your orders and general announcements.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? renderSkeleton() : (

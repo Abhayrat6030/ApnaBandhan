@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useMemo, useEffect } from 'react';
-import { Loader2, Send, Trash2, Edit, MoreHorizontal } from 'lucide-react';
+import { Loader2, Send, Trash2, Edit } from 'lucide-react';
 import { collection, addDoc, doc, writeBatch, getDocs, deleteDoc, updateDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,6 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import type { UserProfile, Notification } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,7 +81,6 @@ export default function AdminNotificationsPage() {
 
   const usersQuery = useMemoFirebase(() => db ? collection(db, 'users') : null, [db]);
   const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersQuery);
-  const usersMap = useMemo(() => new Map(users?.map(u => [u.uid, u])), [users]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -147,7 +145,7 @@ export default function AdminNotificationsPage() {
     }
     setIsLoading(true);
 
-    const newNotification = {
+    const newNotification: Omit<Notification, 'id'> = {
         title: values.title,
         description: values.description,
         type: values.type,
@@ -168,14 +166,14 @@ export default function AdminNotificationsPage() {
             await batch.commit();
             toast({
                 title: 'Success!',
-                description: `Notification sent to all ${users.length} users.`,
+                description: `Message sent to all ${users.length} users.`,
             });
         } else if (values.target === 'specific' && values.userId) {
             const notificationsCollection = collection(db, `users/${values.userId}/notifications`);
             await addDoc(notificationsCollection, newNotification);
              toast({
                 title: 'Success!',
-                description: `Notification sent to user.`,
+                description: `Message sent to user.`,
             });
         }
         form.reset({ target: 'all', title: '', description: '', type: 'general' });
@@ -201,11 +199,11 @@ export default function AdminNotificationsPage() {
               title: values.title,
               description: values.description,
           });
-          toast({ title: "Notification updated successfully" });
+          toast({ title: "Message updated successfully" });
           setSentNotifications(prev => prev.map(n => n.path === itemToEdit.path ? {...n, ...values} : n));
           setItemToEdit(null);
       } catch (error: any) {
-          toast({ title: "Error updating notification", description: error.message, variant: 'destructive' });
+          toast({ title: "Error updating message", description: error.message, variant: 'destructive' });
       }
       setIsEditing(false);
   }
@@ -219,7 +217,7 @@ export default function AdminNotificationsPage() {
     setIsDeleting(true);
     try {
         await deleteDoc(doc(db, itemToDelete.path));
-        toast({title: "Notification Deleted"});
+        toast({title: "Message Deleted"});
         setSentNotifications(prev => prev.filter(n => n.path !== itemToDelete!.path));
     } catch(error: any) {
         toast({title: "Error deleting", description: error.message, variant: 'destructive'})
@@ -242,8 +240,8 @@ export default function AdminNotificationsPage() {
       <div className="mx-auto w-full max-w-2xl">
           <Card>
             <CardHeader>
-              <CardTitle>Compose Notification</CardTitle>
-              <CardDescription>Send a custom notification to your users.</CardDescription>
+              <CardTitle>Send Message / Reward</CardTitle>
+              <CardDescription>Send a custom notification or reward to your users.</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -310,16 +308,16 @@ export default function AdminNotificationsPage() {
                   )}/>
 
                   <FormField control={form.control} name="description" render={({ field }) => (
-                    <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the notification..." {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Description / Coupon Code</FormLabel><FormControl><Textarea placeholder="Describe the message or provide a coupon code..." {...field} /></FormControl><FormMessage /></FormItem>
                   )}/>
                   
                   <FormField
                     control={form.control}
                     name="type"
                     render={({ field }) => (
-                        <FormItem><FormLabel>Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl><SelectContent>
-                            <SelectItem value="general">General</SelectItem>
-                            <SelectItem value="offer">Offer</SelectItem>
+                        <FormItem><FormLabel>Message Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl><SelectContent>
+                            <SelectItem value="general">General Notification</SelectItem>
+                            <SelectItem value="offer">Offer / Reward</SelectItem>
                             <SelectItem value="order">Order Update</SelectItem>
                         </SelectContent></Select><FormMessage /></FormItem>
                     )}
@@ -327,7 +325,7 @@ export default function AdminNotificationsPage() {
 
                   <Button type="submit" disabled={isLoading} className="w-full">
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                    Send Notification
+                    Send Message
                   </Button>
                 </form>
               </Form>
@@ -337,8 +335,8 @@ export default function AdminNotificationsPage() {
       
       <Card className="mt-8">
         <CardHeader>
-            <CardTitle>Sent Notifications</CardTitle>
-            <CardDescription>A list of the most recent notifications sent to users.</CardDescription>
+            <CardTitle>Sent Messages</CardTitle>
+            <CardDescription>A list of the most recent messages sent to users.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
             {isFetchingSent ? <p className="p-4 text-center">Loading...</p> : (
@@ -351,6 +349,7 @@ export default function AdminNotificationsPage() {
                                     <TableRow>
                                         <TableHead>User</TableHead>
                                         <TableHead>Title</TableHead>
+                                        <TableHead>Type</TableHead>
                                         <TableHead>Date</TableHead>
                                         <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
@@ -363,6 +362,7 @@ export default function AdminNotificationsPage() {
                                                 <div className="text-sm text-muted-foreground">{notif.userEmail}</div>
                                             </TableCell>
                                             <TableCell>{notif.title}</TableCell>
+                                            <TableCell className="capitalize">{notif.type}</TableCell>
                                             <TableCell>{new Date(notif.date).toLocaleDateString()}</TableCell>
                                             <TableCell className="text-right">
                                                <div className="flex gap-2 justify-end">
@@ -396,11 +396,11 @@ export default function AdminNotificationsPage() {
                             ))}
                         </div>
                     </div>
-                ) : <p className="p-6 text-center text-muted-foreground">No notifications sent yet.</p>
+                ) : <p className="p-6 text-center text-muted-foreground">No messages sent yet.</p>
             )}
         </CardContent>
         <CardFooter>
-            <p className="text-xs text-muted-foreground">Showing last 15 notifications.</p>
+            <p className="text-xs text-muted-foreground">Showing last 15 sent messages.</p>
         </CardFooter>
       </Card>
 
@@ -410,7 +410,7 @@ export default function AdminNotificationsPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This will permanently delete the notification titled "{itemToDelete?.title}". This action cannot be undone.
+                    This will permanently delete the message titled "{itemToDelete?.title}". This action cannot be undone.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -425,9 +425,9 @@ export default function AdminNotificationsPage() {
     <Dialog open={!!itemToEdit} onOpenChange={(open) => !open && setItemToEdit(null)}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Edit Notification</DialogTitle>
+                <DialogTitle>Edit Message</DialogTitle>
                 <DialogDescription>
-                    Update the title and description for this notification.
+                    Update the title and description for this message.
                 </DialogDescription>
             </DialogHeader>
             <Form {...editForm}>
