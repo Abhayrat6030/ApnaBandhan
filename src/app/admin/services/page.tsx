@@ -57,7 +57,16 @@ export default function AdminServicesPage() {
   const allItems: CombinedService[] = useMemo(() => {
       const items: CombinedService[] = [];
       if(services) items.push(...services.map(s => ({...s, type: 'Service' } as CombinedService)));
-      if(packages) items.push(...packages.map(p => ({...p, name: p.name, id: p.slug || p.name.toLowerCase().replace(/\s+/g, '-'), type: 'Package', price: parseFloat(p.price.replace(/[^0-9.-]+/g,"")) } as CombinedService)));
+      if(packages) items.push(...packages.map(p => {
+        const priceString = p.price || '0';
+        return {
+          ...p,
+          name: p.name,
+          id: p.slug || p.name.toLowerCase().replace(/\s+/g, '-'),
+          type: 'Package',
+          price: parseFloat(priceString.replace(/[^0-9.-]+/g,""))
+        } as CombinedService
+      }));
       return items.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
   }, [services, packages]);
   

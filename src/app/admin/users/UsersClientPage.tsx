@@ -111,7 +111,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                 <Input
                   type="search"
                   placeholder="Search by name, email, or referral..."
-                  className="pl-8 sm:w-[300px]"
+                  className="w-full sm:w-[300px] pl-8"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
