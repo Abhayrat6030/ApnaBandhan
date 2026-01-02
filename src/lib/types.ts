@@ -94,7 +94,6 @@ export type UserProfile = {
   referralCode?: string; // The user's own referral code
   referredBy?: string | null; // UID of the user who referred them
   status?: 'active' | 'blocked';
-  referredUsers?: string[]; // Array of UIDs of users they have referred
 }
 
 export type AppSettings = {

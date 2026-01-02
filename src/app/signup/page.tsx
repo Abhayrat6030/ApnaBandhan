@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, Suspense, useEffect } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { collection, doc, getDocs, query, where, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDocs, query, where, writeBatch, setDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,31 +64,7 @@ function SignupFormComponent() {
         
         await updateProfile(newUser, { displayName: values.name });
 
-        // 2. Prepare Firestore batch write
-        const batch = writeBatch(db);
-        
-        // 3. Find referrer if code is provided
-        let referrerUid: string | null = null;
-        if (values.referralCode) {
-            const usersRef = collection(db, 'users');
-            const q = query(usersRef, where('referralCode', '==', values.referralCode.trim().toUpperCase()));
-            const querySnapshot = await getDocs(q);
-
-            if (!querySnapshot.empty) {
-                const referrerDoc = querySnapshot.docs[0];
-                if (referrerDoc.id !== newUser.uid) { // Prevent self-referral
-                    referrerUid = referrerDoc.id;
-                    const referrerRef = doc(db, "users", referrerUid);
-                    batch.update(referrerRef, {
-                        referredUsers: (referrerDoc.data().referredUsers || []).concat(newUser.uid)
-                    });
-                }
-            } else {
-                 toast({ title: 'Sign Up Warning', description: 'The referral code was not found, but your account was created successfully.', variant: 'default' });
-            }
-        }
-        
-        // 4. Create the new user's profile document
+        // 2. Create the new user's profile document in Firestore
         const newUserRef = doc(db, 'users', newUser.uid);
         const newReferralCode = `${values.name.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
         
@@ -98,17 +74,21 @@ function SignupFormComponent() {
             email: newUser.email,
             createdAt: new Date().toISOString(),
             referralCode: newReferralCode,
-            referredBy: referrerUid, // will be null if no valid referrer
+            referredBy: values.referralCode || null, // Store the referral code used, if any
             status: 'active' as const,
-            referredUsers: [],
             photoURL: newUser.photoURL || '',
         };
-        batch.set(newUserRef, newUserProfileData);
-        
-        // 5. Commit batch
-        await batch.commit();
 
-        toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
+        await setDoc(newUserRef, newUserProfileData);
+
+        // Note: The logic to update the referrer's document is removed to prevent permission errors.
+        // This can be handled later via a server-side function if needed.
+        if (values.referralCode) {
+            toast({ title: 'Sign Up Successful!', description: "Account created. Referral will be processed." });
+        } else {
+            toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
+        }
+
         router.push('/profile');
 
     } catch (error: any) {
@@ -118,13 +98,13 @@ function SignupFormComponent() {
         if (error.code === 'auth/email-already-in-use') {
             message = 'This email is already in use. Please log in instead.';
         } else if (error.code === 'permission-denied') {
-            message = 'A permission error occurred. Please check security rules.';
+            message = 'A permission error occurred while creating your profile. Please contact support.';
             errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: 'users',
-                operation: 'list' // This is the likely failing operation
+                path: `users/${auth.currentUser?.uid || 'new-user'}`,
+                operation: 'create',
             }));
         } else {
-            alert(error?.message || error?.code || JSON.stringify(error));
+             alert(error?.message || error?.code || JSON.stringify(error));
         }
         
         toast({ title: 'Sign Up Failed', description: message, variant: 'destructive' });

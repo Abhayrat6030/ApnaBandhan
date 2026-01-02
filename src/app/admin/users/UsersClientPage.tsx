@@ -126,16 +126,13 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                             <TableRow>
                             <TableHead>User</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Referred By</TableHead>
                             <TableHead>Own Code</TableHead>
-                             <TableHead>Referrals</TableHead>
                             <TableHead>Joined</TableHead>
                             <TableHead><span className="sr-only">Actions</span></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {filteredUsers.length > 0 ? filteredUsers.map(user => {
-                                const referrer = user.referredBy ? initialUsersMap.get(user.referredBy) : null;
                                 return (
                                 <TableRow key={user.uid}>
                                     <TableCell>
@@ -156,20 +153,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                    {referrer ? (
-                                        <div className="grid">
-                                            <div className="font-medium text-xs">{referrer.displayName}</div>
-                                            <div className="text-xs text-muted-foreground">{referrer.email}</div>
-                                        </div>
-                                    ) : (
-                                        <span className="text-muted-foreground text-xs">N/A</span>
-                                    )}
-                                    </TableCell>
-                                    <TableCell>
                                     <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      <span className="font-medium">{(user.referredUsers || []).length}</span>
                                     </TableCell>
                                     <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</TableCell>
                                     <TableCell className="text-right">
@@ -213,7 +197,6 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                 {/* Mobile Cards */}
                 <div className="block md:hidden p-4 space-y-4">
                     {filteredUsers.length > 0 ? filteredUsers.map(user => {
-                      const referrer = user.referredBy ? initialUsersMap.get(user.referredBy) : null;
                       return (
                         <Card key={user.uid}>
                             <CardHeader className="flex flex-row items-start justify-between p-4 pb-2">
@@ -260,14 +243,6 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                                 <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">Own Code</span>
                                      <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
-                                </div>
-                                 <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Referred By</span>
-                                    <span>{referrer ? referrer.displayName : 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-muted-foreground">Referrals</span>
-                                    <span className="font-medium">{(user.referredUsers || []).length}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">Joined</span>
