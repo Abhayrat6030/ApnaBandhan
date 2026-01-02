@@ -59,12 +59,13 @@ export default function AdminServicesPage() {
       if(services) items.push(...services.map(s => ({...s, type: 'Service' } as CombinedService)));
       if(packages) items.push(...packages.map(p => {
         const priceString = p.price || '0';
+        const priceNumber = parseFloat(priceString.replace(/[^0-9.-]+/g,""));
         return {
           ...p,
           name: p.name,
           id: p.slug || p.name.toLowerCase().replace(/\s+/g, '-'),
           type: 'Package',
-          price: parseFloat(priceString.replace(/[^0-9.-]+/g,""))
+          price: isNaN(priceNumber) ? 0 : priceNumber
         } as CombinedService
       }));
       return items.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
