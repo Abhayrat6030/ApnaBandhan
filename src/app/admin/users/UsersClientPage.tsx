@@ -129,6 +129,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                             <TableHead>Status</TableHead>
                             <TableHead>Referred By</TableHead>
                             <TableHead>Own Code</TableHead>
+                            <TableHead>Referrals</TableHead>
                             <TableHead>Joined</TableHead>
                             <TableHead><span className="sr-only">Actions</span></TableHead>
                             </TableRow>
@@ -159,6 +160,9 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                                     </TableCell>
                                     <TableCell>
                                     <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="font-semibold">{user.referrals || 0}</span>
                                     </TableCell>
                                     <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</TableCell>
                                     <TableCell className="text-right">
@@ -252,6 +256,10 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                                 <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">Own Code</span>
                                      <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Referrals</span>
+                                     <span className="font-semibold">{user.referrals || 0}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">Joined</span>

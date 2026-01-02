@@ -94,6 +94,7 @@ export type UserProfile = {
   referralCode?: string; // The user's own referral code
   referredBy?: string | null; // The referral code they used to sign up
   status?: 'active' | 'blocked';
+  referrals?: number; // Total number of users referred
 }
 
 export type AppSettings = {

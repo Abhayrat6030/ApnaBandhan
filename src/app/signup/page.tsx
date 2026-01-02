@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, Suspense } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { setDoc, doc } from 'firebase/firestore';
+import { setDoc, doc, collection, query, where, getDocs, writeBatch, increment } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,6 +64,8 @@ function SignupFormComponent() {
         
         await updateProfile(newUser, { displayName: values.name });
 
+        const batch = writeBatch(db);
+
         // 2. Create the new user's profile document in Firestore
         const newUserRef = doc(db, 'users', newUser.uid);
         const newReferralCode = `${values.name.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
@@ -74,16 +76,33 @@ function SignupFormComponent() {
             email: newUser.email,
             createdAt: new Date().toISOString(),
             referralCode: newReferralCode,
-            referredBy: values.referralCode || null, // Store the referral code used, if any
+            referredBy: values.referralCode || null,
             status: 'active' as const,
             photoURL: newUser.photoURL || '',
+            referrals: 0,
         };
+        batch.set(newUserRef, newUserProfileData);
+        
+        // 3. If a referral code was used, find the owner and update their referral count
+        if (values.referralCode) {
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("referralCode", "==", values.referralCode));
+            const querySnapshot = await getDocs(q);
 
-        // This will create the user document. The permission is checked by `isOwner` rule.
-        await setDoc(newUserRef, newUserProfileData);
+            if (!querySnapshot.empty) {
+                const referrerDoc = querySnapshot.docs[0];
+                const referrerRef = doc(db, 'users', referrerDoc.id);
+                batch.update(referrerRef, { referrals: increment(1) });
+            } else {
+                 console.warn("Referral code provided but no owner found. Continuing signup.");
+                 // Optionally, you could toast a message to the user here.
+            }
+        }
+        
+        // 4. Commit all batched writes
+        await batch.commit();
         
         toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
-        
         router.push('/profile');
 
     } catch (error: any) {
@@ -96,10 +115,8 @@ function SignupFormComponent() {
             message = 'A permission error occurred while creating your profile. Please check security rules.';
             errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: `users/${auth.currentUser?.uid || 'new-user'}`,
-                operation: 'create',
+                operation: 'write',
             }));
-        } else {
-             alert(error?.message || error?.code || JSON.stringify(error));
         }
         
         toast({ title: 'Sign Up Failed', description: message, variant: 'destructive' });
