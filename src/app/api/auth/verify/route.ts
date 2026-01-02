@@ -1,7 +1,6 @@
 
 import { cookies } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
-import admin from 'firebase-admin';
 import { initializeAdminApp } from '@/firebase/admin';
 
 export const runtime = 'nodejs';
@@ -9,8 +8,13 @@ export const runtime = 'nodejs';
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export async function GET(request: NextRequest) {
+  const admin = initializeAdminApp();
+  if (!admin) {
+    // If admin isn't initialized (e.g., during build), assume not admin.
+    return NextResponse.json({ isAdmin: false }, { status: 401 });
+  }
+
   try {
-    initializeAdminApp();
     const sessionCookie = cookies().get('__session')?.value || '';
 
     if (!sessionCookie) {

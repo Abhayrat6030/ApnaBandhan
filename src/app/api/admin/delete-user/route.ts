@@ -1,14 +1,17 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import admin from "firebase-admin";
 import { initializeAdminApp } from "@/firebase/admin";
 import { cookies } from "next/headers";
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export async function DELETE(req: NextRequest) {
+    const admin = initializeAdminApp();
+    if (!admin) {
+        return NextResponse.json({ error: "Firebase Admin not initialized. Server configuration issue." }, { status: 503 });
+    }
+
     try {
-        initializeAdminApp();
         const sessionCookie = cookies().get("__session")?.value;
         if (!sessionCookie) {
             return NextResponse.json({ error: "Unauthorized: No session cookie." }, { status: 401 });

@@ -2,11 +2,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { initializeAdminApp } from "@/firebase/admin";
-import admin from "firebase-admin";
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export async function POST(req: NextRequest) {
+  const admin = initializeAdminApp();
+  if (!admin) {
+    return NextResponse.json({ error: "Firebase Admin not initialized. Server configuration issue." }, { status: 503 });
+  }
+
   try {
     const body = await req.json();
     const { idToken } = body;
@@ -14,8 +18,6 @@ export async function POST(req: NextRequest) {
     if (!idToken) {
         return NextResponse.json({ error: "ID token is required." }, { status: 400 });
     }
-
-    initializeAdminApp();
     
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     
