@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, ShoppingBag, Bell, Download, Gift, Award, Settings, LogOut, FileText, Smartphone, CreditCard, Shield } from "lucide-react";
+import { User, ShoppingBag, Bell, Download, Gift, Award, Settings, LogOut, FileText, Smartphone, CreditCard, Shield, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 const primaryMenuItems = [
     { label: "Profile", icon: User, href: "/profile/settings" },
     { label: "Notifications", icon: Bell, href: "/profile/notifications", badgeKey: "notifications" },
+    { label: "AI Assistant", icon: Wand2, href: "/ai-assistant" },
     { label: "My Requests", icon: FileText, href: "/profile/requests" },
     { label: "Order History", icon: ShoppingBag, href: "/profile/orders" },
     { label: "Downloads", icon: Download, href: "/profile/downloads" },
