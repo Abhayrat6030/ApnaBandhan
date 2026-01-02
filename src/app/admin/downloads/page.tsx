@@ -19,6 +19,7 @@ import type { UserProfile, DownloadableProduct } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 
 const addFormSchema = z.object({
   userId: z.string().min(1, 'Please select a user.'),
@@ -270,3 +271,5 @@ export default function AdminDownloadsPage() {
     </>
   );
 }
+
+    
