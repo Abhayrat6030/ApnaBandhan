@@ -5,10 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { collection, doc, getDocs, query, where, writeBatch } from 'firebase/firestore';
-
+import { collection, doc, getDocs, query, where, writeBatch, arrayUnion } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,6 +58,7 @@ function SignupFormComponent() {
 
     try {
         let referrerUid: string | null = null;
+        let referrerDoc: any = null;
 
         // 1. Validate referral code if provided, BEFORE creating the user.
         if (values.referralCode) {
@@ -67,12 +67,12 @@ function SignupFormComponent() {
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                // Stop the process if the referral code is invalid.
                 toast({ title: 'Sign Up Failed', description: 'The referral code you entered is not valid. Please check and try again.', variant: 'destructive' });
                 setIsLoading(false);
                 return;
             }
-            referrerUid = querySnapshot.docs[0].id;
+            referrerDoc = querySnapshot.docs[0];
+            referrerUid = referrerDoc.id;
         }
 
         // 2. Create user in Firebase Auth
