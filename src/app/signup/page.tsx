@@ -23,7 +23,7 @@ import { useAuth, useFirestore } from '@/firebase';
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email.' }),
-  password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
   referralCode: z.string().optional(),
 });
 
@@ -89,6 +89,7 @@ function SignupFormComponent() {
         // Define the new user's profile document
         const newUserRef = doc(db, 'users', newUser.uid);
         const newReferralCode = `${values.name.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
+        
         const newUserProfileData = {
             uid: newUser.uid,
             displayName: values.name,
@@ -190,7 +191,7 @@ function SignupFormComponent() {
                             {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                         </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">Password must be at least 8 characters.</p>
+                    <p className="text-xs text-muted-foreground mt-1">Password must be at least 6 characters.</p>
                      <FormMessage />
                   </FormItem>
                 )}

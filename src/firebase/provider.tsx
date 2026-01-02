@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp, initializeApp, getApps, getApp } from 'firebase/app';
 import { Firestore, getFirestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged, getAuth, signInAnonymously } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { firebaseConfig } from './config';
 
@@ -109,3 +110,19 @@ export const useUser = (): UserHookResult => {
   const { user, isUserLoading, userError } = useFirebase();
   return { user, isUserLoading, userError };
 };
+
+// --- Authentication Functions ---
+
+/**
+ * Initiates an anonymous sign-in process.
+ * This is useful for allowing non-logged-in users to interact with the app
+ * while still having a temporary, anonymous user identity.
+ * @param auth The Firebase Auth instance.
+ */
+export async function initiateAnonymousSignIn(auth: Auth) {
+  try {
+    await signInAnonymously(auth);
+  } catch (error) {
+    console.error("Anonymous sign-in failed:", error);
+  }
+}
