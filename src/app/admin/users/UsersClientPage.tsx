@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
@@ -126,6 +127,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                             <TableRow>
                             <TableHead>User</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Referred By</TableHead>
                             <TableHead>Own Code</TableHead>
                             <TableHead>Joined</TableHead>
                             <TableHead><span className="sr-only">Actions</span></TableHead>
@@ -151,6 +153,9 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                                         <Badge variant={user.status === 'blocked' ? 'destructive' : 'default'} className="capitalize">
                                             {user.status || 'active'}
                                         </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline">{user.referredBy || 'N/A'}</Badge>
                                     </TableCell>
                                     <TableCell>
                                     <Badge variant="secondary">{user.referralCode || 'N/A'}</Badge>
@@ -239,6 +244,10 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                                     <Badge variant={user.status === 'blocked' ? 'destructive' : 'default'} className="capitalize">
                                         {user.status || 'active'}
                                     </Badge>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-muted-foreground">Referred By</span>
+                                     <Badge variant="outline">{user.referredBy || 'N/A'}</Badge>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-muted-foreground">Own Code</span>

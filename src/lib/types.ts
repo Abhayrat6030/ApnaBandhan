@@ -92,7 +92,7 @@ export type UserProfile = {
   photoURL?: string;
   createdAt: string;
   referralCode?: string; // The user's own referral code
-  referredBy?: string | null; // UID of the user who referred them
+  referredBy?: string | null; // The referral code they used to sign up
   status?: 'active' | 'blocked';
 }
 

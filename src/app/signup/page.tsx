@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { collection, doc, getDocs, query, where, writeBatch, setDoc } from 'firebase/firestore';
+import { setDoc, doc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,16 +79,11 @@ function SignupFormComponent() {
             photoURL: newUser.photoURL || '',
         };
 
+        // This will create the user document. The permission is checked by `isOwner` rule.
         await setDoc(newUserRef, newUserProfileData);
-
-        // Note: The logic to update the referrer's document is removed to prevent permission errors.
-        // This can be handled later via a server-side function if needed.
-        if (values.referralCode) {
-            toast({ title: 'Sign Up Successful!', description: "Account created. Referral will be processed." });
-        } else {
-            toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
-        }
-
+        
+        toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
+        
         router.push('/profile');
 
     } catch (error: any) {
@@ -98,7 +93,7 @@ function SignupFormComponent() {
         if (error.code === 'auth/email-already-in-use') {
             message = 'This email is already in use. Please log in instead.';
         } else if (error.code === 'permission-denied') {
-            message = 'A permission error occurred while creating your profile. Please contact support.';
+            message = 'A permission error occurred while creating your profile. Please check security rules.';
             errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: `users/${auth.currentUser?.uid || 'new-user'}`,
                 operation: 'create',
