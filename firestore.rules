@@ -21,39 +21,21 @@ service cloud.firestore {
 
     // --- USER DATA ACCESS RULES ---
     match /users/{userId} {
-      // Admins can read any profile. Users can only read their own.
       allow get: if isOwner(userId) || isAdmin();
-      
-      // A new user can create their own profile document.
       allow create: if isOwner(userId);
-
-      // A user can update their own profile. Admin can update any.
-      // Or, an authenticated user can update another user's doc ONLY to increment their referral count.
+      // Allow a user to update their own profile, or an admin to update any.
+      // Also, allow any signed-in user to update another user's doc ONLY to increment their referral count.
       allow update: if (isOwner(userId) || isAdmin()) ||
                        (isSignedIn() && request.resource.data.referrals == resource.data.referrals + 1);
-      
-      // Only an admin can delete user profiles.
       allow delete: if isAdmin();
-
-      // --- USER SUB-COLLECTIONS ---
-      match /notifications/{notificationId} {
-        allow get, list: if isOwner(userId) || isAdmin();
-        allow write: if isAdmin(); 
-      }
-
-      match /downloadableProducts/{productId} {
-        allow get, list: if isOwner(userId) || isAdmin();
-        allow write: if isAdmin(); 
-      }
     }
     
-    // This block is separate and crucial for referral code validation.
-    // It allows any authenticated user to query the users collection.
-    match /users/{document=**} {
-      allow list: if isSignedIn();
+    // --- USER SUB-COLLECTION RULES ---
+    // This rule allows owners/admins to access any document within any subcollection of a user.
+    match /users/{userId}/{document=**} {
+      allow read, write: if isOwner(userId) || isAdmin();
     }
-
-
+    
     /* ===============================
        SETTINGS (PUBLIC READ, ADMIN WRITE)
     =============================== */
