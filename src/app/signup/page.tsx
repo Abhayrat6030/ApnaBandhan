@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect, Suspense } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { collection, doc, getDocs, query, where, runTransaction, writeBatch, arrayUnion } from 'firebase/firestore';
+import { collection, doc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 
 
 import { Button } from '@/components/ui/button';
@@ -59,14 +59,18 @@ function SignupFormComponent() {
 
     try {
         let referrerUid: string | null = null;
-        // 1. Validate referral code if provided
+
+        // 1. Validate referral code if provided, BEFORE creating the user.
         if (values.referralCode) {
             const usersRef = collection(db, 'users');
             const q = query(usersRef, where('referralCode', '==', values.referralCode.toUpperCase()));
             const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                throw new Error('Invalid referral code.');
+                // Stop the process if the referral code is invalid.
+                toast({ title: 'Sign Up Failed', description: 'The referral code you entered is not valid. Please check and try again.', variant: 'destructive' });
+                setIsLoading(false);
+                return;
             }
             referrerUid = querySnapshot.docs[0].id;
         }
@@ -78,12 +82,12 @@ function SignupFormComponent() {
         // Update user profile in Auth
         await updateProfile(newUser, { displayName: values.name });
 
-        // Ensure the referrer isn't the user themselves (edge case)
+        // Prevent a user from referring themselves (edge case)
         if (referrerUid === newUser.uid) {
             referrerUid = null;
         }
 
-        // 3. Use a write batch to create the user profile and update the referrer
+        // 3. Use a write batch to create the user profile and update the referrer atomically
         const batch = writeBatch(db);
 
         // Define the new user's profile document
@@ -114,7 +118,6 @@ function SignupFormComponent() {
         // Commit the batch
         await batch.commit();
 
-
         toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
         router.push('/profile');
 
@@ -122,8 +125,6 @@ function SignupFormComponent() {
         let message = 'An unknown error occurred.';
         if (error.code === 'auth/email-already-in-use') {
             message = 'This email is already in use. Please log in instead.';
-        } else if (error.message === 'Invalid referral code.') {
-            message = 'The referral code you entered is not valid. Please check and try again.';
         }
         
         toast({ title: 'Sign Up Failed', description: message, variant: 'destructive' });
