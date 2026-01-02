@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { collection, doc, getDocs, query, where, writeBatch, arrayUnion } from 'firebase/firestore';
+import { collection, doc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,26 +67,22 @@ function SignupFormComponent() {
         // 2. Prepare Firestore batch write
         const batch = writeBatch(db);
         
+        // 3. Find referrer if code is provided
         let referrerUid: string | null = null;
-        
-        // 3. If referral code is provided, find the referrer to update their profile
         if (values.referralCode) {
             const usersRef = collection(db, 'users');
-            const q = query(usersRef, where('referralCode', '==', values.referralCode.toUpperCase()));
+            const q = query(usersRef, where('referralCode', '==', values.referralCode.trim().toUpperCase()));
             const querySnapshot = await getDocs(q);
 
             if (!querySnapshot.empty) {
                 const referrerDoc = querySnapshot.docs[0];
-                // Prevent self-referral
-                if (referrerDoc.id !== newUser.uid) {
+                if (referrerDoc.id !== newUser.uid) { // Prevent self-referral
                     referrerUid = referrerDoc.id;
-                    const referrerRef = doc(db, 'users', referrerUid);
-                    batch.update(referrerRef, {
-                        referredUsers: arrayUnion(newUser.uid)
-                    });
+                    // Note: We are no longer updating the referrer's doc from the client side.
+                    // This will be handled by a backend function in a future step for security.
                 }
             } else {
-                 toast({ title: 'Sign Up Warning', description: 'The referral code was not found, but your account was created.', variant: 'default' });
+                 toast({ title: 'Sign Up Warning', description: 'The referral code was not found, but your account was created successfully.', variant: 'default' });
             }
         }
         
@@ -107,7 +103,7 @@ function SignupFormComponent() {
         };
         batch.set(newUserRef, newUserProfileData);
         
-        // 5. Commit all writes simultaneously
+        // 5. Commit batch
         await batch.commit();
 
         toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
@@ -117,12 +113,6 @@ function SignupFormComponent() {
         let message = 'An unknown error occurred. Please try again.';
         if (error.code === 'auth/email-already-in-use') {
             message = 'This email is already in use. Please log in instead.';
-        } else if (error.code === 'permission-denied') {
-            message = 'A permission error occurred while updating profiles. Please check security rules.';
-            errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: 'users',
-                operation: 'write', // The failing operation is a write (set/update)
-            }));
         }
         
         toast({ title: 'Sign Up Failed', description: message, variant: 'destructive' });
