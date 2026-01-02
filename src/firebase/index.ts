@@ -6,12 +6,6 @@ import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { firebaseConfig } from "./config";
 import React, { DependencyList, useMemo } from 'react';
-import {
-  Query,
-  DocumentData,
-  CollectionReference,
-  DocumentReference,
-} from 'firebase/firestore';
 
 
 // --- 1. SINGLETON INITIALIZATION ---

@@ -58,37 +58,39 @@ function SignupFormComponent() {
     setIsLoading(true);
 
     try {
-        let referrerUid: string | null = null;
-        let referrerDoc: any = null;
-
-        // 1. Validate referral code if provided
-        if (values.referralCode) {
-            const usersRef = collection(db, 'users');
-            const q = query(usersRef, where('referralCode', '==', values.referralCode.toUpperCase()));
-            const querySnapshot = await getDocs(q);
-
-            if (querySnapshot.empty) {
-                toast({ title: 'Sign Up Failed', description: 'The referral code you entered is not valid. Please check and try again.', variant: 'destructive' });
-                setIsLoading(false);
-                return;
-            }
-            referrerDoc = querySnapshot.docs[0];
-            referrerUid = referrerDoc.id;
-        }
-
-        // 2. Create user in Firebase Auth
+        // 1. Create user in Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
         const newUser = userCredential.user;
         
         await updateProfile(newUser, { displayName: values.name });
 
-        if (referrerUid === newUser.uid) {
-            referrerUid = null;
-        }
-
-        // 3. Create the user profile and update referrer in a batch
+        // 2. Prepare Firestore batch write
         const batch = writeBatch(db);
+        
+        let referrerUid: string | null = null;
+        
+        // 3. If referral code is provided, find the referrer to update their profile
+        if (values.referralCode) {
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('referralCode', '==', values.referralCode.toUpperCase()));
+            const querySnapshot = await getDocs(q);
 
+            if (!querySnapshot.empty) {
+                const referrerDoc = querySnapshot.docs[0];
+                // Prevent self-referral
+                if (referrerDoc.id !== newUser.uid) {
+                    referrerUid = referrerDoc.id;
+                    const referrerRef = doc(db, 'users', referrerUid);
+                    batch.update(referrerRef, {
+                        referredUsers: arrayUnion(newUser.uid)
+                    });
+                }
+            } else {
+                 toast({ title: 'Sign Up Warning', description: 'The referral code was not found, but your account was created.', variant: 'default' });
+            }
+        }
+        
+        // 4. Create the new user's profile document
         const newUserRef = doc(db, 'users', newUser.uid);
         const newReferralCode = `${values.name.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
         
@@ -98,20 +100,14 @@ function SignupFormComponent() {
             email: newUser.email,
             createdAt: new Date().toISOString(),
             referralCode: newReferralCode,
-            referredBy: referrerUid,
+            referredBy: referrerUid, // will be null if no valid referrer
             status: 'active' as const,
             referredUsers: [],
             photoURL: newUser.photoURL || '',
         };
         batch.set(newUserRef, newUserProfileData);
-
-        if (referrerUid) {
-            const referrerRef = doc(db, 'users', referrerUid);
-            batch.update(referrerRef, {
-                referredUsers: arrayUnion(newUser.uid)
-            });
-        }
         
+        // 5. Commit all writes simultaneously
         await batch.commit();
 
         toast({ title: "Account Created!", description: "Welcome to ApnaBandhan. You're now logged in." });
@@ -122,10 +118,10 @@ function SignupFormComponent() {
         if (error.code === 'auth/email-already-in-use') {
             message = 'This email is already in use. Please log in instead.';
         } else if (error.code === 'permission-denied') {
-            message = 'A permission error occurred. Please check security rules.';
+            message = 'A permission error occurred while updating profiles. Please check security rules.';
             errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: 'users',
-                operation: 'list' // This is the likely failing operation
+                operation: 'write', // The failing operation is a write (set/update)
             }));
         }
         
