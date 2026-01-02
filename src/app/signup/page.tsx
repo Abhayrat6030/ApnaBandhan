@@ -88,7 +88,8 @@ function SignupFormComponent() {
             const newUserRef = doc(db, 'users', newUser.uid);
             
             const newReferralCode = `${values.name.replace(/\s+/g, '').substring(0, 4).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`;
-            const userProfileData = {
+            const newUserProfileData = {
+                uid: newUser.uid, // Ensure UID is part of the document data
                 displayName: values.name,
                 email: newUser.email,
                 createdAt: new Date().toISOString(),
@@ -99,7 +100,7 @@ function SignupFormComponent() {
                 photoURL: newUser.photoURL || '',
             };
 
-            transaction.set(newUserRef, userProfileData);
+            transaction.set(newUserRef, newUserProfileData);
 
             // If there was a valid referrer, update their document
             if (referrerUid) {
@@ -124,6 +125,7 @@ function SignupFormComponent() {
         } else if (error.message === 'Invalid referral code.') {
             message = 'The referral code you entered is not valid. Please check and try again.';
         }
+        
         toast({ title: 'Sign Up Failed', description: message, variant: 'destructive' });
     } finally {
         setIsLoading(false);
