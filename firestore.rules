@@ -17,7 +17,7 @@ service cloud.firestore {
        HELPER FUNCTIONS
     =============================== */
     function isSignedIn() {
-      return request.auth != null;
+      return request.auth.id != null;
     }
 
     function isOwner(userId) {
@@ -29,12 +29,15 @@ service cloud.firestore {
        /users/{userId}
     =============================== */
     match /users/{userId} {
-      // Allow any signed-in user to read user profiles (needed for referral code lookup).
-      // Write access is still restricted.
-      allow read: if isSignedIn() || isAdmin();
+      // Allow signed-in users to read their own profile, and admins to read any.
+      allow get: if isOwner(userId) || isAdmin();
+      
+      // Allow any user (even unauthenticated) to query the users collection.
+      // This is required to validate referral codes during signup.
+      allow list: if true;
       
       // New users can create their own profile document.
-      allow create: if request.auth.uid == userId;
+      allow create: if isOwner(userId);
 
       // Users can update their own profile, admins can update any.
       allow update: if isOwner(userId) || isAdmin();
