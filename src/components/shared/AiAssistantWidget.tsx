@@ -24,7 +24,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Sparkles, Send, Wand2, User, Bot, X } from 'lucide-react';
-import { generateInvitationText, type GenerateInvitationTextInput } from '@/ai/flows/generate-invitation-text';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -48,7 +47,10 @@ function AiAssistantChat() {
   useEffect(() => {
     // Scroll to the bottom when messages change
     if (scrollAreaRef.current) {
-        scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+        const scrollableNode = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
+        if (scrollableNode) {
+          scrollableNode.scrollTo({ top: scrollableNode.scrollHeight, behavior: 'smooth' });
+        }
     }
   }, [messages]);
 
@@ -63,16 +65,21 @@ function AiAssistantChat() {
     setIsLoading(true);
 
     try {
-      // Prepare history for the AI flow, excluding the last user message which is the new prompt
-      const history = newMessages.slice(0, -1).map(msg => ({
-          role: msg.role,
-          content: msg.content
-      }));
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage.content }),
+      });
 
-      const result = await generateInvitationText({ prompt: userMessage.content, history });
+      if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'The AI service failed to respond.');
+      }
       
-      if (result.response) {
-        const assistantMessage: Message = { role: 'assistant', content: result.response };
+      const result = await response.json();
+      
+      if (result.reply) {
+        const assistantMessage: Message = { role: 'assistant', content: result.reply };
         setMessages(prev => [...prev, assistantMessage]);
       } else {
         throw new Error('AI did not return a response.');
