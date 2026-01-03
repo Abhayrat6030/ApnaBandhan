@@ -1,4 +1,6 @@
 
+'use server';
+
 import { genkit, ai } from 'genkit';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
