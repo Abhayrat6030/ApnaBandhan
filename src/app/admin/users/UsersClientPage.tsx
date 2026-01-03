@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useFirestore, useAuth } from '@/firebase';
-import { deleteUser as deleteFirebaseAuthUser } from 'firebase/auth';
 
 export default function UsersClientPage({ initialUsers, initialUsersMap }: { initialUsers: UserProfile[], initialUsersMap: Map<string, UserProfile>}) {
   const router = useRouter();
@@ -72,26 +71,32 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
     
     startTransition(async () => {
         try {
-            // Firestore rules should prevent non-admins from doing this.
-            // This is a client-side action that will be validated by Firestore rules.
-            await deleteDoc(doc(db, 'users', userToDelete.uid));
-            
-            // IMPORTANT: Deleting a user from Firebase Auth cannot be done from the client-side
-            // SDK for security reasons. This must be done via a secure server environment
-            // (e.g., a Cloud Function or a secure server endpoint).
-            // For now, we will only delete the Firestore record.
+            // This API route will handle both Auth and Firestore user deletion.
+            const response = await fetch('/api/admin/delete-user', {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ uid: userToDelete.uid }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              throw new Error(result.error || 'Failed to delete user.');
+            }
             
             toast({
-                title: "User Deleted from Database",
-                description: `${userToDelete.displayName}'s profile has been deleted. Auth user still exists.`,
+                title: "User Deleted",
+                description: `${userToDelete.displayName}'s profile and auth record have been deleted.`,
             });
             setUserToDelete(null);
             router.refresh();
-        } catch (error: any) => {
+        } catch (error: any) {
             console.error("Deletion Error:", error);
             toast({
                 title: "Deletion Failed",
-                description: "You don't have permission to perform this action.",
+                description: error.message || "You may not have permission for this action.",
                 variant: "destructive",
             });
         }
@@ -100,7 +105,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
 
   return (
     <>
-      <Card>
+      <Card className="overflow-x-auto">
         <CardHeader>
           <CardTitle>All Users</CardTitle>
           <CardDescription>View and manage all registered users.</CardDescription>
@@ -289,7 +294,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the user <span className="font-bold">{userToDelete?.displayName}</span> from the Firestore database. Deleting the user from Firebase Authentication must be done from a secure server environment.
+                    This action cannot be undone. This will permanently delete the user <span className="font-bold">{userToDelete?.displayName}</span> from both Firestore and Firebase Authentication.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
