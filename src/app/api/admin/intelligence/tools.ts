@@ -18,5 +18,3 @@ export async function getAppStatus() {
     console.log("getAppStatus tool called but is disabled");
     return {};
 }
-
-// The createCoupon function has been removed to resolve the build error.

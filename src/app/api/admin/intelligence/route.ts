@@ -1,35 +1,56 @@
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { initializeAdminApp } from '@/firebase/admin';
+import { listNewUsers, listRecentOrders, getAppStatus } from './tools';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
-
 export async function POST(req: NextRequest) {
-
   try {
-    const sessionCookie = cookies().get("__session")?.value;
+    const sessionCookie = cookies().get('__session')?.value;
     if (!sessionCookie) {
-      // This is a simplified check. In a real app, you'd verify the cookie.
       // return NextResponse.json({ error: "Unauthorized: No session cookie." }, { status: 401 });
     }
 
     const { message, history } = await req.json();
 
-    const systemPrompt = `You are a helpful admin assistant for a company called "ApnaBandhan".
-Your purpose is to help the administrator with general tasks, content ideas, and professional advice.
-You are concise and professional.
-Do not claim to have access to live data, users, or orders. Answer questions generally.
-For example, if asked "How many users are there?", respond with "I cannot access live user data, but I can help you formulate a plan to increase user engagement."`;
+    const systemPrompt = `You are a helpful admin assistant for "ApnaBandhan".
+You can access some of the application's data by using the provided tools.
+- listNewUsers: Get a list of the most recent users.
+- listRecentOrders: Get a list of the most recent orders.
+- getAppStatus: Get a summary of total users, orders, and revenue.
+Based on the user's prompt, decide which tool(s) to use to answer the question.
+If the user asks a general question, answer it in a helpful and professional manner.
+Do not mention the tool names in your response, just give the answer.`;
+    
+    // This is a simplified tool-calling implementation without Genkit for stability.
+    let toolResponse = '';
+
+    if (message.toLowerCase().includes('new users')) {
+        const users = await listNewUsers({});
+        toolResponse = `Here are the latest users:\n${JSON.stringify(users, null, 2)}`;
+    } else if (message.toLowerCase().includes('recent orders')) {
+        const orders = await listRecentOrders({});
+        toolResponse = `Here are the recent orders:\n${JSON.stringify(orders, null, 2)}`;
+    } else if (message.toLowerCase().includes('status') || message.toLowerCase().includes('revenue') || message.toLowerCase().includes('total users')) {
+        const status = await getAppStatus();
+        toolResponse = `Here is the current app status:\n${JSON.stringify(status, null, 2)}`;
+    }
+
 
     const messages = [
         { role: "system", content: systemPrompt },
         ...(history || []),
         { role: "user", content: message },
     ];
+    
+    if (toolResponse) {
+        messages.push({ role: 'assistant', content: toolResponse });
+    }
 
-    // Using Groq API as a direct LLM provider
     const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
