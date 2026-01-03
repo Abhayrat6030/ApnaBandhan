@@ -1,4 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
+
+import { NextRequest, NextResponse } from "next/server";
 import { siteConfig } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
