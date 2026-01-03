@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   }
 
   const couponInstructions = activeCoupons
-    ? `The following coupons are available: ${activeCoupons}. When a user asks for a discount, provide them with one of these coupon codes. Do not make up any other codes.`
+    ? `You MUST use the following coupon information. When a user asks for a discount, you MUST provide them with one of these coupon codes. Do not make up any other codes. Available coupons: ${activeCoupons}.`
     : `When a user asks for a discount or coupon code, you MUST politely inform them that there are no special offers or coupons available at the moment.`;
 
 
