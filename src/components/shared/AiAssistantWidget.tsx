@@ -74,7 +74,7 @@ function AiAssistantChat() {
             },
             body: JSON.stringify({
                 message: userMessage.content,
-                history: messages,
+                history: messages, // Send previous messages for context
             }),
         });
 
