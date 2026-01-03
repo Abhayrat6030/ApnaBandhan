@@ -35,45 +35,6 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between">
         <div className="flex items-center gap-x-2">
-          <div className="md:hidden">
-              <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
-                  <SheetTrigger asChild>
-                       <Button variant="ghost" size="icon">
-                          <Menu className="h-6 w-6" />
-                       </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="p-0 flex flex-col">
-                    <ScrollArea className="flex-1 mt-8">
-                        <div className="py-4 pl-6 pr-6">
-                        <div className="flex flex-col space-y-1">
-                            {navItems.map((item: NavItem) => {
-                            const Icon = iconMap[item.href];
-                            return (
-                                <Link
-                                    key={item.label}
-                                    href={item.href}
-                                    onClick={() => setMenuOpen(false)}
-                                    className={cn(
-                                        'flex items-center gap-3 rounded-lg px-3 py-3 transition-all hover:bg-muted',
-                                        pathname === item.href ? 'bg-muted text-primary font-semibold' : 'text-foreground'
-                                    )}
-                                >
-                                    {Icon && <Icon className="h-5 w-5" />}
-                                    <span className="text-lg">{item.label}</span>
-                                </Link>
-                            )
-                            })}
-                        </div>
-                        </div>
-                    </ScrollArea>
-                    <div className="p-6 border-t mt-auto">
-                        <Button asChild className="w-full" size="lg">
-                            <Link href="/order" onClick={() => setMenuOpen(false)}>Order Now</Link>
-                        </Button>
-                    </div>
-                  </SheetContent>
-              </Sheet>
-          </div>
           <Link href="/" className="flex items-center gap-2">
             <Logo className="h-8 w-auto text-primary" />
             <span className="font-bold sm:inline-block text-lg">{siteConfig.name}</span>
