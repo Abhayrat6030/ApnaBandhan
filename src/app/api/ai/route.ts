@@ -1,18 +1,18 @@
 
 'use server';
 
-import { genkit, ai } from 'genkit';
+import { ai } from '@/ai/genkit';
+import { initializeAdminApp } from '@/firebase/admin';
+import { siteConfig } from '@/lib/constants';
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 import {
   collection,
   getDocs,
   query,
-  where,
+  where
 } from 'firebase/firestore';
-import {googleAI} from '@genkit-ai/google-genai';
-import { siteConfig } from '@/lib/constants';
-import { initializeAdminApp } from '@/firebase/admin';
+import { z } from 'zod';
+
 
 // Initialize Firebase Admin for server-side operations
 const admin = initializeAdminApp();
@@ -20,14 +20,6 @@ let db;
 if (admin) {
   db = admin.firestore();
 }
-
-genkit({
-  plugins: [
-    googleAI(),
-  ],
-  logLevel: 'debug',
-  enableTracingAndMetrics: true,
-});
 
 const listServices = async () => {
     if (!db) throw new Error("Firestore is not initialized.");
@@ -49,40 +41,38 @@ const listCoupons = async () => {
     return { coupons };
 };
 
-const assistant = ai.definePrompt(
+const assistantTool = ai.defineTool(
     {
-      name: 'assistant-prompt',
-      input: {
-        schema: z.object({
-          message: z.string(),
-        }),
-      },
-      tools: [
-        ai.defineTool(
-          {
-            name: 'listServices',
-            description: 'Get a list of all available services and combo packages offered by the company.',
-            inputSchema: z.any(),
-            outputSchema: z.object({
-              services: z.array(z.any()),
-              packages: z.array(z.any()),
-            }),
-          },
-          listServices
-        ),
-        ai.defineTool(
-          {
-            name: 'listCoupons',
-            description: 'Get a list of all currently active discount coupons.',
-            inputSchema: z.any(),
-            outputSchema: z.object({
-              coupons: z.array(z.any()),
-            }),
-          },
-          listCoupons
-        ),
-      ],
-      system: `You are an expert wedding content consultant for a company called "ApnaBandhan". Your name is Bandhan. Your personality is creative, warm, and professional.
+      name: 'assistantTool',
+      description: 'Provides information about services and coupons.',
+      inputSchema: z.object({
+        query: z.string(),
+      }),
+      outputSchema: z.any(),
+    },
+    async ({ query }) => {
+      // This is a simplified tool. For a real-world scenario, you might have more complex logic here.
+      if (query.toLowerCase().includes('coupon') || query.toLowerCase().includes('offer')) {
+        return await listCoupons();
+      }
+      if (query.toLowerCase().includes('service') || query.toLowerCase().includes('package') || query.toLowerCase().includes('price')) {
+        return await listServices();
+      }
+      return { info: "I can provide details on services and coupons. What would you like to know?" };
+    }
+  );
+
+
+export async function POST(req: NextRequest) {
+  try {
+    const { message, history } = await req.json();
+
+    const response = await ai.generate({
+        prompt: message,
+        model: 'gemini-1.5-flash-latest',
+        history: history,
+        tools: [assistantTool],
+        system: `You are an expert wedding content consultant for a company called "ApnaBandhan". Your name is Bandhan. Your personality is creative, warm, and professional.
 
 Your primary goal is to provide users with beautiful, elegant, and culturally appropriate text for wedding invitations, save-the-date messages, and other wedding-related content.
 
@@ -99,23 +89,9 @@ Key Instructions:
 6.  **Maintain Persona**: Always act as Bandhan, the helpful assistant from ApnaBandhan. Do not reveal you are an AI model.
 7.  **Concise and Helpful**: Keep your answers helpful and to the point. Avoid overly long responses. When listing items like services or coupons, summarize them nicely.
 `,
-    }
-  );
-
-
-export async function POST(req: NextRequest) {
-  try {
-    const { message, history } = await req.json();
-
-    const response = await ai.generate({
-        prompt: message,
-        model: googleAI.model('gemini-1.5-flash-latest'),
-        history: history,
-        tools: assistant.tools,
-        system: assistant.system,
     });
     
-    return NextResponse.json({ reply: response.text() });
+    return NextResponse.json({ reply: response.text });
 
   } catch(e: any) {
     console.error("AI API Error:", e);
