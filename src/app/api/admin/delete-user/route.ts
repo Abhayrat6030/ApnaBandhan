@@ -19,7 +19,7 @@ export async function DELETE(req: NextRequest) {
 
         const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
         if (decodedClaims.email !== ADMIN_EMAIL) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            return NextResponse.json({ error: "Forbidden: You do not have permission for this action." }, { status: 403 });
         }
 
         const { uid } = await req.json();

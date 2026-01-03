@@ -21,7 +21,7 @@ export const initializeAdminApp = () => {
   // If environment variables are not available (e.g., during build time), do not throw an error.
   // Instead, return null. The calling function will be responsible for handling this case.
   if (!projectId || !clientEmail || !privateKey) {
-    console.warn("Firebase Admin environment variables are not available. Skipping initialization. This is normal during build.");
+    console.warn("Firebase Admin environment variables are not set. Skipping Admin SDK initialization.");
     return null;
   }
 

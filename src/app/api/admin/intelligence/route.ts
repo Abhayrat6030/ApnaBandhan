@@ -47,13 +47,16 @@ async function getGroqChatCompletion(messages: any[], tools: any[] = []) {
 
 export async function POST(req: NextRequest) {
     const admin = initializeAdminApp();
+    if (!admin) {
+        return NextResponse.json({ error: "Firebase Admin SDK is not initialized." }, { status: 503 });
+    }
 
     try {
         const sessionCookie = cookies().get("__session")?.value;
         if (!sessionCookie) {
             return NextResponse.json({ error: "Unauthorized: No session cookie found." }, { status: 401 });
         }
-        if (!admin) throw new Error("Admin SDK not initialized");
+        
         const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
         if (decodedClaims.email !== ADMIN_EMAIL) {
             return NextResponse.json({ error: "Forbidden: You do not have permission to access this." }, { status: 403 });
