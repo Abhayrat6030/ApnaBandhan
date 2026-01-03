@@ -54,8 +54,8 @@ const invitationPrompt = ai.definePrompt({
 {{role}}: {{{content}}}
 {{/each}}
 {{/if}}
-User: {{{prompt}}}
-Assistant:`,
+user: {{{prompt}}}
+assistant:`,
 });
 
 const generateInvitationTextFlow = ai.defineFlow(
