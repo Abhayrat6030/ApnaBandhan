@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -12,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
@@ -21,7 +23,7 @@ import {
 
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Send, Wand2, User, Bot } from 'lucide-react';
+import { Loader2, Sparkles, Send, Wand2, User, Bot, X } from 'lucide-react';
 import { generateInvitationText, type GenerateInvitationTextInput } from '@/ai/flows/generate-invitation-text';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -89,7 +91,7 @@ function AiAssistantChat() {
   };
   
   return (
-    <div className="flex flex-col h-[60vh] md:h-full">
+    <div className="flex flex-col h-full">
         <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
             <div className="space-y-4">
             {messages.map((message, index) => (
@@ -147,7 +149,7 @@ export default function AiAssistantWidget() {
     const sharedTrigger = (
          <Button
             size="icon"
-            className="fixed bottom-20 md:bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl z-50 animate-fade-in-up"
+            className="fixed bottom-24 md:bottom-8 right-6 h-14 w-14 rounded-full shadow-2xl z-50 animate-fade-in-up"
             >
             <Wand2 className="h-7 w-7" />
         </Button>
@@ -157,15 +159,21 @@ export default function AiAssistantWidget() {
         return (
             <Drawer open={open} onOpenChange={setOpen}>
                 <DrawerTrigger asChild>{sharedTrigger}</DrawerTrigger>
-                <DrawerContent>
+                <DrawerContent className="h-[75vh]">
                     <DrawerHeader className="text-left">
                         <DrawerTitle className="flex items-center gap-2">
                              <Wand2 className="h-6 w-6 text-primary" />
                              AI Invitation Assistant
                         </DrawerTitle>
                         <DrawerDescription>Let's craft the perfect words for your special occasion.</DrawerDescription>
+                         <DrawerClose asChild>
+                            <Button variant="ghost" size="icon" className="absolute top-3 right-3">
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Close</span>
+                            </Button>
+                        </DrawerClose>
                     </DrawerHeader>
-                    <div className="overflow-auto">
+                    <div className="overflow-auto flex-1">
                         <AiAssistantChat />
                     </div>
                 </DrawerContent>
@@ -176,7 +184,7 @@ export default function AiAssistantWidget() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{sharedTrigger}</DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-[500px] p-0 gap-0">
+            <DialogContent className="sm:max-w-[425px] md:max-w-[500px] p-0 gap-0 h-[75vh] flex flex-col">
                 <DialogHeader className="p-4 border-b">
                     <DialogTitle className="flex items-center gap-2">
                         <Wand2 className="h-6 w-6 text-primary" />
@@ -185,8 +193,14 @@ export default function AiAssistantWidget() {
                     <DialogDescription>
                         Let's craft the perfect words for your special occasion.
                     </DialogDescription>
+                    <DialogClose asChild>
+                        <Button variant="ghost" size="icon" className="absolute top-3 right-3">
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Close</span>
+                        </Button>
+                    </DialogClose>
                 </DialogHeader>
-                <div className="h-[60vh]">
+                <div className="flex-1 min-h-0">
                     <AiAssistantChat />
                 </div>
             </DialogContent>
