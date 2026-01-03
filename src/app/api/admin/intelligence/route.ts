@@ -51,16 +51,16 @@ export async function POST(req: NextRequest) {
     try {
         const sessionCookie = cookies().get("__session")?.value;
         if (!sessionCookie) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json({ error: "Unauthorized: No session cookie found." }, { status: 401 });
         }
         if (!admin) throw new Error("Admin SDK not initialized");
         const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
         if (decodedClaims.email !== ADMIN_EMAIL) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            return NextResponse.json({ error: "Forbidden: You do not have permission to access this." }, { status: 403 });
         }
 
-    } catch (error) {
-         return NextResponse.json({ error: "Authentication failed." }, { status: 401 });
+    } catch (error: any) {
+         return NextResponse.json({ error: `Authentication failed: ${error.message}` }, { status: 401 });
     }
     
     const { message, history } = await req.json();

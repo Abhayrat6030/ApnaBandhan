@@ -68,15 +68,24 @@ export default function LoginPage() {
                 throw new Error("Your account has been suspended.");
             }
         }
+        
+        // Create server-side session for admin panel access
+        const idToken = await userCredential.user.getIdToken();
+        await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken }),
+        });
 
         toast({
           title: 'Logged In Successfully!',
           description: "Welcome back!",
         });
-        setIsLoading(false);
-        router.push('/profile');
+        
+        // Redirect to admin or profile page
+        const isAdmin = userCredential.user.email === 'abhayrat603@gmail.com';
+        router.push(isAdmin ? '/admin/dashboard' : '/profile');
     } catch (error: any) {
-        setIsLoading(false);
         let description = 'An unexpected error occurred.';
         if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
             description = 'Incorrect email or password. Please try again.';
@@ -88,6 +97,8 @@ export default function LoginPage() {
             description,
             variant: 'destructive',
         });
+    } finally {
+        setIsLoading(false);
     }
   }
 

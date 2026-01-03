@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { initializeAdminApp } from "@/firebase/admin";
 
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
-
 export async function POST(req: NextRequest) {
   const admin = initializeAdminApp();
   if (!admin) {
@@ -17,13 +15,6 @@ export async function POST(req: NextRequest) {
     
     if (!idToken) {
         return NextResponse.json({ error: "ID token is required." }, { status: 400 });
-    }
-    
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    
-    // Ensure the user trying to create a session is the admin
-    if (decodedToken.email !== ADMIN_EMAIL) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
     
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
