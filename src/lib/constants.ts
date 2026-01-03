@@ -5,7 +5,7 @@ export const siteConfig = {
   name: 'ApnaBandhan',
   tagline: 'Wedding Invitations • Videos • Albums • Wedding Card Design',
   phone: '+91 8463062603',
-  email: 'abhayrat600@gmail.com',
+  email: 'abhayrat603@gmail.com',
   address: 'New Delhi, India',
   workingHours: 'Mon-Sat: 10:00 AM - 7:00 PM',
 };
