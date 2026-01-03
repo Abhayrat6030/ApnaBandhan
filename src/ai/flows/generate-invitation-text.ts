@@ -43,7 +43,7 @@ const generateInvitationTextFlow = ai.defineFlow(
   },
   async (input) => {
     // Convert the conversation history from the input into the format expected by the model.
-    const history: Prompt<'assistant' | 'user'>[] = input.history?.map(msg => ({
+    const history: Prompt<'user' | 'assistant'>[] = input.history?.map(msg => ({
       role: msg.role,
       content: [{ text: msg.content }]
     })) || [];
