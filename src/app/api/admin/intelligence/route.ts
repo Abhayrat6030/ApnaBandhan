@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeAdminApp } from '@/firebase/admin';
 import { z } from 'zod';
-import { ai, genkit } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import * as tools from './tools';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
