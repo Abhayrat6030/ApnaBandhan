@@ -2,66 +2,81 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { initializeAdminApp } from '@/firebase/admin';
+import { z } from 'zod';
+import { ai, genkit } from '@/ai/genkit';
+import * as tools from './tools';
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
-
-async function getGroqChatCompletion(messages: any[]) {
-  const body = {
-    model: 'llama-3.1-8b-instant',
-    messages,
-    temperature: 0.1,
-    max_tokens: 4096,
-  };
-
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.json();
-    console.error("Groq API Error:", errorBody);
-    throw new Error(errorBody.error?.message || `Groq API request failed with status ${response.status}`);
-  }
-
-  return response.json();
-}
-
 export async function POST(req: NextRequest) {
-    const { message, history } = await req.json();
-
-    // Simplified: Bypassing Firebase Admin SDK for this endpoint to ensure stability.
-    // In a production app, a robust auth check (e.g., using a session cookie and verifySessionCookie) would be here.
-    // For now, we trust the client-side has handled admin access.
-
-    const systemPrompt = `You are a powerful and knowledgeable admin assistant for the e-commerce website "ApnaBandhan".
-    Your role is to provide the website administrator with clear, concise, and professional advice and insights.
-
-    Key Instructions:
-    1.  **Act as an Expert**: Provide advice on marketing, user engagement, and e-commerce strategy.
-    2.  **Be Proactive**: If a user asks a general question like "How's business?", you can provide general best practices or ask for more specific details, as you no longer have direct database access.
-    3.  **General Knowledge**: Answer general knowledge questions related to running an online business.
-    4.  **Maintain Admin Persona**: You are a professional assistant. Be direct, clear, and helpful. Do not mention you are an AI.`;
-
-    const messages: any[] = [
-        { role: 'system', content: systemPrompt },
-        ...(history || []),
-        { role: 'user', content: message }
-    ];
+    let admin;
+    try {
+        admin = initializeAdminApp();
+    } catch (e: any) {
+        console.error("[Admin AI] Firebase Admin initialization failed:", e.message);
+        return NextResponse.json({ error: "Server configuration error. Could not initialize admin services." }, { status: 503 });
+    }
 
     try {
-        const response = await getGroqChatCompletion(messages);
-        const reply = response.choices[0].message.content;
-        return NextResponse.json({ reply });
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Unauthorized: No token provided.' }, { status: 401 });
+        }
+        const idToken = authHeader.split('Bearer ')[1];
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
 
+        if (decodedToken.email !== ADMIN_EMAIL) {
+            return NextResponse.json({ error: 'Forbidden: You do not have permission for this action.' }, { status: 403 });
+        }
+        
     } catch (error: any) {
-        console.error("Admin Assistant API Error:", error);
-        return NextResponse.json({ error: error.message || 'An unexpected error occurred.' }, { status: 500 });
+        console.error("[Admin AI] Auth verification failed:", error);
+        return NextResponse.json({ error: 'Unauthorized: Invalid or expired token.' }, { status: 401 });
+    }
+    
+    // Auth is successful, proceed with AI logic
+    const { message, history } = await req.json();
+
+    const systemPrompt = `You are a powerful and knowledgeable admin assistant for the e-commerce website "ApnaBandhan".
+    You have access to a set of tools to query the application's live database for information about users and orders.
+    Your role is to provide the website administrator with clear, concise, and accurate data-driven answers.
+
+    Key Instructions:
+    1.  **Use Your Tools**: When the admin asks a question about data (e.g., "how many users," "show me orders," "what's the revenue?"), you MUST use the provided tools to get real-time information. Do not make up answers.
+    2.  **Synthesize, Don't Just Dump**: When a tool returns data, present it in a clean, human-readable format. For example, instead of raw JSON, list users or orders with their key details.
+    3.  **Be Data-Driven**: Base your answers on the output of the tools. If a tool returns no data, say "I couldn't find any data for that request."
+    4.  **Handle Ambiguity**: If a request is unclear (e.g., "how's business?"), ask for clarification or use a general tool like 'getAppStatus' to provide a helpful summary.
+    5.  **Perform Actions**: If the admin asks you to create something, like a coupon, use the appropriate tool (e.g., 'createCoupon'). Confirm the action was successful.
+    6.  **Maintain Admin Persona**: You are a professional assistant. Be direct, clear, and helpful. Do not mention you are an AI model.`;
+
+    const allTools = Object.values(tools);
+
+    const runner = ai.defineFlow(
+      {
+        name: 'adminAssistantRunner',
+        input: { schema: z.string() },
+        output: { schema: z.string() },
+      },
+      async (prompt) => {
+        const llmResponse = await ai.generate({
+          model: 'googleai/gemini-1.5-flash-latest',
+          tools: allTools,
+          prompt: prompt,
+          history: history,
+          system: systemPrompt,
+          config: { temperature: 0.1 },
+        });
+
+        return llmResponse.text;
+      }
+    );
+
+    try {
+        const reply = await runner(message);
+        return NextResponse.json({ reply });
+    } catch (error: any) {
+        console.error("[Admin AI] Genkit runner failed:", error);
+        return NextResponse.json({ error: error.message || 'The AI failed to process the request.' }, { status: 500 });
     }
 }

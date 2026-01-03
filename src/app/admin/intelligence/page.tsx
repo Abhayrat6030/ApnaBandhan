@@ -18,10 +18,10 @@ type Message = {
 };
 
 const examplePrompts = [
-    "Show me the last 3 users who signed up.",
-    "Who were the last 5 orders from?",
-    "Give me the details for the 2 most recent orders.",
-    "How many users signed up this week?",
+    "How many total users do we have?",
+    "Show me the last 3 orders.",
+    "Give me a status update for today.",
+    "Create a 15% discount coupon named 'NEWYEAR15' valid for 60 days.",
 ];
 
 function AdminAssistantChat() {
@@ -84,7 +84,7 @@ function AdminAssistantChat() {
 
     } catch (error: any) {
       toast({ title: 'Request Failed', description: error.message, variant: 'destructive' });
-      setMessages(prev => prev.slice(0, -1)); // Revert optimistic update
+      // Don't revert optimistic update, so user can see their failed message
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -103,7 +103,7 @@ function AdminAssistantChat() {
                 <Sparkles className="h-6 w-6 text-primary" />
                 Admin Intelligence
             </CardTitle>
-            <CardDescription>Ask questions about your users and orders to get real-time insights.</CardDescription>
+            <CardDescription>Ask questions about your users, orders, and revenue to get real-time insights.</CardDescription>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col min-h-0">
             <ScrollArea className="flex-1 p-4 -mx-4" ref={scrollAreaRef}>
