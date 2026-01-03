@@ -4,6 +4,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeAdminApp } from '@/firebase/admin';
 import * as tools from './tools';
+import { cookies } from 'next/headers';
+
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 const availableTools = {
   listNewUsers: tools.listNewUsers,
@@ -38,9 +41,23 @@ async function getGroqChatCompletion(messages: any[], toolConfig?: any) {
 }
 
 export async function POST(req: NextRequest) {
-    // The authentication is now handled by the AdminAuthGuard in the layout,
-    // so we can assume any request reaching this endpoint is from a verified admin.
-    // This simplifies the API route and removes a point of failure.
+    try {
+        const admin = initializeAdminApp();
+        const sessionCookie = cookies().get("__session")?.value;
+
+        if (!sessionCookie) {
+            return NextResponse.json({ error: "Unauthorized: No session cookie." }, { status: 401 });
+        }
+
+        const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
+
+        if (decodedClaims.email !== ADMIN_EMAIL) {
+            return NextResponse.json({ error: "Forbidden: You do not have permission for this action." }, { status: 403 });
+        }
+    } catch (error: any) {
+        console.error("Admin authentication error:", error);
+        return NextResponse.json({ error: "Authentication failed. Please log in again." }, { status: 401 });
+    }
     
     const { message, history } = await req.json();
 
@@ -64,9 +81,6 @@ export async function POST(req: NextRequest) {
     const toolDefinitions = Object.values(availableTools).map(t => t.definition);
 
     try {
-        // Initialize admin here, as it's needed for the tools
-        initializeAdminApp();
-
         const firstResponse = await getGroqChatCompletion(messages, {
             tools: toolDefinitions,
             tool_choice: "auto",
