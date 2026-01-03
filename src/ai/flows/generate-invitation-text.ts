@@ -29,35 +29,6 @@ const GenerateInvitationTextOutputSchema = z.object({
 export type GenerateInvitationTextOutput = z.infer<typeof GenerateInvitationTextOutputSchema>;
 
 
-// This is the structured prompt template. It tells Genkit exactly how to format the request.
-const invitationHelperPrompt = ai.definePrompt(
-  {
-    name: 'invitationHelperPrompt',
-    system: "You are a friendly and helpful AI assistant. Your goal is to be helpful, polite, and answer the user's questions on any topic they ask about. Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.",
-    input: { schema: GenerateInvitationTextInputSchema },
-    output: { schema: GenerateInvitationTextOutputSchema },
-  },
-  async (input) => {
-    // Start with the main user prompt
-    const promptParts = [{ text: input.prompt }];
-
-    // Prepend history if it exists, formatting it correctly
-    if (input.history) {
-      const historyMessages = input.history.map(msg => ({
-        role: msg.role,
-        content: [{ text: msg.content }],
-      }));
-      return {
-        history: historyMessages,
-        prompt: input.prompt,
-      };
-    }
-    
-    return { prompt: input.prompt };
-  }
-);
-
-
 const generateInvitationTextFlow = ai.defineFlow(
   {
     name: 'generateInvitationTextFlow',
@@ -66,7 +37,15 @@ const generateInvitationTextFlow = ai.defineFlow(
   },
   async (input) => {
     // Call the structured prompt, which handles the complex request generation.
-    const { output } = await invitationHelperPrompt(input);
+    const { output } = await ai.generate({
+        system: "You are a friendly and helpful AI assistant. Your goal is to be helpful, polite, and answer the user's questions on any topic they ask about. Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.",
+        history: input.history?.map(msg => ({ role: msg.role, content: [{ text: msg.content }]})),
+        prompt: input.prompt,
+        output: {
+            schema: GenerateInvitationTextOutputSchema,
+        },
+    });
+    
     return { response: output!.response };
   }
 );
