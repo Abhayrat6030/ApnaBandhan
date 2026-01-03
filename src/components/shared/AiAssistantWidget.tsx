@@ -43,6 +43,7 @@ function AiAssistantChat() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Scroll to the bottom when messages change
@@ -101,6 +102,8 @@ function AiAssistantChat() {
       setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
+      // Refocus the input field after submission
+      inputRef.current?.focus();
     }
   };
   
@@ -141,6 +144,7 @@ function AiAssistantChat() {
         <div className="p-4 border-t">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <Input
+                ref={inputRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Ask for ideas or a draft..."
@@ -164,6 +168,7 @@ export default function AiAssistantWidget() {
          <Button
             size="icon"
             className="fixed bottom-20 md:bottom-8 right-6 h-14 w-14 rounded-full shadow-2xl z-50 animate-fade-in-up"
+            onClick={() => setOpen(true)}
             >
             <Wand2 className="h-7 w-7" />
         </Button>
