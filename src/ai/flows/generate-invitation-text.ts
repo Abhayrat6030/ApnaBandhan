@@ -29,13 +29,7 @@ const GenerateInvitationTextOutputSchema = z.object({
 export type GenerateInvitationTextOutput = z.infer<typeof GenerateInvitationTextOutputSchema>;
 
 
-const generateInvitationTextFlow = ai.defineFlow(
-  {
-    name: 'generateInvitationTextFlow',
-    inputSchema: GenerateInvitationTextInputSchema,
-    outputSchema: GenerateInvitationTextOutputSchema,
-  },
-  async (input) => {
+export async function generateInvitationText(input: GenerateInvitationTextInput): Promise<GenerateInvitationTextOutput> {
     const { output } = await ai.generate({
         system: "You are a friendly and helpful AI assistant. Your goal is to be helpful, polite, and answer the user's questions on any topic they ask about. Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.",
         history: input.history?.map(msg => ({ role: msg.role, content: [{ text: msg.content }]})),
@@ -50,9 +44,4 @@ const generateInvitationTextFlow = ai.defineFlow(
     }
     
     return { response: output.response };
-  }
-);
-
-export async function generateInvitationText(input: GenerateInvitationTextInput): Promise<GenerateInvitationTextOutput> {
-  return generateInvitationTextFlow(input);
 }
