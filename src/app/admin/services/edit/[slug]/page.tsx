@@ -6,7 +6,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect } from 'react';
-import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, Wand2 } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDoc, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { generateServiceDescription } from '@/ai/flows/generate-service-description';
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
@@ -53,6 +54,7 @@ export default function EditServicePage() {
   const { slug } = params;
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [itemType, setItemType] = useState<'service' | 'package' | null>(null);
   const { user } = useUser();
   const db = useFirestore();
@@ -107,6 +109,37 @@ export default function EditServicePage() {
         });
     }
   }, [serviceData, packageData, form]);
+
+    const handleGenerateDescription = async () => {
+    const { name, category } = form.getValues();
+    if (!name || !category) {
+        toast({
+            title: 'Name and Category Required',
+            description: 'Please enter a name and select a category before generating a description.',
+            variant: 'destructive',
+        });
+        return;
+    }
+    setIsGenerating(true);
+    try {
+        const result = await generateServiceDescription({ name, category });
+        if (result.description) {
+            form.setValue('description', result.description);
+            toast({ title: 'Description generated successfully!' });
+        } else {
+            throw new Error('AI did not return a description.');
+        }
+    } catch (error) {
+        toast({
+            title: 'Generation Failed',
+            description: 'Could not generate a description at this time.',
+            variant: 'destructive',
+        });
+    } finally {
+        setIsGenerating(false);
+    }
+  };
+
 
   async function onSubmit(values: FormValues) {
     if (!user || !db) {
@@ -177,8 +210,21 @@ export default function EditServicePage() {
               )}/>
               
               <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the item..." {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl><Textarea placeholder="Describe the item..." {...field} rows={4} /></FormControl>
+                    <FormMessage />
+                </FormItem>
               )}/>
+
+               {itemType === 'service' && (
+                 <div className="flex justify-end -mt-4">
+                  <Button type="button" variant="ghost" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
+                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                    Generate with AI
+                  </Button>
+                </div>
+               )}
 
               {itemType === 'service' ? (
                 <>
