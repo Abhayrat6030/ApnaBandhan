@@ -96,7 +96,8 @@ export type UserProfile = {
 }
 
 export type AppSettings = {
-    downloadAppLink: string;
+    downloadAppLink?: string;
+    aiCustomInstructions?: string;
 };
 
 export type Coupon = {

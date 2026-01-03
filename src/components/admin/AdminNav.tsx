@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { adminNavItems, mainAppNavItems } from '@/lib/constants';
 import { Separator } from '@/components/ui/separator';
-import { LayoutDashboard, ShoppingCart, List, Sparkles, Home, Gift, Info, Mail, Package, Users, Bell, Download, FileText, Award, Settings, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, List, Sparkles, Home, Gift, Info, Mail, Package, Users, Bell, Download, FileText, Award, Settings, ArrowLeft, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 
@@ -22,6 +22,7 @@ const icons: { [key: string]: React.ElementType } = {
   '/admin/rewards': Award,
   '/admin/referrals': Gift,
   '/admin/settings': Settings,
+  '/admin/ai-settings': Wand2,
   '/': ArrowLeft,
 };
 

@@ -247,6 +247,15 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "code", "discountType", "discountValue", "expiryDate", "isActive", "createdAt"]
+    },
+    "AppSettings": {
+        "title": "AppSettings",
+        "type": "object",
+        "description": "Global settings for the application.",
+        "properties": {
+            "downloadAppLink": { "type": "string", "format": "uri" },
+            "aiCustomInstructions": { "type": "string" }
+        }
     }
   },
   "auth": {
@@ -311,6 +320,14 @@
           "entityName": "Coupon",
           "schema": { "$ref": "#/backend/entities/Coupon"},
           "description": "Stores discount coupons for the application."
+        }
+      },
+      {
+        "path": "/app-settings/{settingId}",
+        "definition": {
+          "entityName": "AppSettings",
+          "schema": { "$ref": "#/backend/entities/AppSettings"},
+          "description": "Stores global settings for the application."
         }
       }
     ]

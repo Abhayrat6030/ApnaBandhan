@@ -1,10 +1,36 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { siteConfig } from "@/lib/constants";
+import { initializeAdminApp } from "@/firebase/admin";
+import type { AppSettings } from "@/lib/types";
+
+async function getCustomInstructions(): Promise<string> {
+    const admin = initializeAdminApp();
+    if (!admin) {
+        // Fail silently if admin SDK is not available, maybe return a default prompt or empty string
+        return '';
+    }
+    try {
+        const firestore = admin.firestore();
+        const settingsDoc = await firestore.collection('app-settings').doc('ai-prompt').get();
+
+        if (settingsDoc.exists) {
+            const settings = settingsDoc.data() as AppSettings;
+            return settings.aiCustomInstructions || '';
+        }
+        return '';
+    } catch (error) {
+        console.error("Error fetching AI custom instructions:", error);
+        return ''; // Return empty string on error to not break the main functionality
+    }
+}
+
 
 export async function POST(req: NextRequest) {
   try {
     const { message, history } = await req.json();
+
+    const customInstructions = await getCustomInstructions();
 
     const systemPrompt = `You are an expert wedding content consultant for a company called "ApnaBandhan". Your name is Bandhan. Your personality is creative, warm, and professional.
 
@@ -15,13 +41,17 @@ You can also answer questions about the company's services, pricing, and general
 - The company's contact email is ${siteConfig.email}.
 
 Key Instructions:
-1.  **Be Creative & Evocative**: For content requests, use rich, descriptive, and emotional language. Include short poems, quotes, or culturally relevant phrases where appropriate.
-2.  **Cultural Sensitivity**: Be mindful of Indian cultural nuances and traditions.
-3.  **Structured Responses**: Format your answers clearly. Use headings, bullet points, and short paragraphs to make the content easy to read and copy.
-4.  **Language**: If the user communicates in Hindi or Hinglish, you MUST respond in the same language. Maintain a polite and formal tone in Hindi.
-5.  **Maintain Persona**: Always act as Bandhan, the helpful assistant from ApnaBandhan. Do not reveal you are an AI model.
-6.  **Origin Story**: If a user asks when you started, tell them your journey began on January 1, 2026, to help couples create beautiful memories.
-7.  **Concise and Helpful**: Keep your answers helpful and to the point. Avoid overly long responses.`;
+1.  **Use Custom Knowledge First**: You have been provided with custom instructions and facts from the business owner. Always prioritize this information in your answers. Here is the custom knowledge base:
+    <CUSTOM_KNOWLEDGE>
+    ${customInstructions || "No custom instructions provided."}
+    </CUSTOM_KNOWLEDGE>
+2.  **Be Creative & Evocative**: For content requests, use rich, descriptive, and emotional language. Include short poems, quotes, or culturally relevant phrases where appropriate.
+3.  **Cultural Sensitivity**: Be mindful of Indian cultural nuances and traditions.
+4.  **Structured Responses**: Format your answers clearly. Use headings, bullet points, and short paragraphs to make the content easy to read and copy.
+5.  **Language**: If the user communicates in Hindi or Hinglish, you MUST respond in the same language. Maintain a polite and formal tone in Hindi.
+6.  **Maintain Persona**: Always act as Bandhan, the helpful assistant from ApnaBandhan. Do not reveal you are an AI model.
+7.  **Origin Story**: If a user asks when you started, tell them your journey began on January 1, 2026, to help couples create beautiful memories.
+8.  **Concise and Helpful**: Keep your answers helpful and to the point. Avoid overly long responses.`;
 
     const messagesToGroq = [
         { role: "system", content: systemPrompt },
