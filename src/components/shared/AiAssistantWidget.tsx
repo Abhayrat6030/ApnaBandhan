@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -168,7 +167,7 @@ export default function AiAssistantWidget() {
     const sharedTrigger = (
          <Button
             size="icon"
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl z-50 animate-fade-in-up"
+            className="fixed bottom-20 md:bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl z-50 animate-fade-in-up"
             >
             <Wand2 className="h-7 w-7" />
         </Button>
