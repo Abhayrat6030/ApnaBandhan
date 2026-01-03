@@ -29,7 +29,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { generateInvitationText } from '@/ai/flows/generate-invitation-text';
 
 
 type Message = {
@@ -68,13 +67,26 @@ function AiAssistantChat() {
     setIsLoading(true);
 
     try {
-      const result = await generateInvitationText({
-        prompt: userMessage.content,
-        history: messages
-      });
+      const response = await fetch('/api/ai', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: userMessage.content,
+                history: messages,
+            }),
+        });
+
+      if (!response.ok) {
+        const errorBody = await response.json();
+        throw new Error(errorBody.error || `API request failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
       
-      if (result.response) {
-        const assistantMessage: Message = { role: 'assistant', content: result.response };
+      if (result.reply) {
+        const assistantMessage: Message = { role: 'assistant', content: result.reply };
         setMessages(prev => [...prev, assistantMessage]);
       } else {
         throw new Error('AI did not return a response.');
