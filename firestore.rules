@@ -33,9 +33,6 @@ service cloud.firestore {
       // Only an admin can delete user profiles.
       allow delete: if isAdmin();
       
-      // Rule to allow only admin to list all users.
-      allow list: if isAdmin();
-
       // --- USER SUB-COLLECTIONS ---
       match /notifications/{notificationId} {
         allow read: if isOwner(userId) || isAdmin();
@@ -48,10 +45,10 @@ service cloud.firestore {
       }
     }
     
-    // This block is separate and crucial for referral code validation.
-    // It allows any authenticated user to query the users collection to check referral codes.
+    // This block is separate and crucial for allowing specific queries across the users collection.
     match /users/{document=**} {
-        allow list: if isSignedIn();
+        // Admins can list all users. Other signed-in users can query for referral code checks.
+        allow list: if isAdmin() || (isSignedIn() && request.query.keys().hasAny(['where']));
     }
 
 
