@@ -60,13 +60,11 @@ function AdminAssistantChat() {
     setIsLoading(true);
 
     try {
-        const idToken = await auth.currentUser.getIdToken(true);
-
+        // This fetch call automatically includes the secure, http-only __session cookie.
         const response = await fetch('/api/admin/intelligence', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`,
             },
             body: JSON.stringify({ message: userMessage.content, history: messages }),
         });
@@ -84,7 +82,8 @@ function AdminAssistantChat() {
 
     } catch (error: any) {
       toast({ title: 'Request Failed', description: error.message, variant: 'destructive' });
-      // Don't revert optimistic update, so user can see their failed message
+      // Revert the user's message on failure
+      setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
