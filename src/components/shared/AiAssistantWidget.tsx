@@ -24,10 +24,10 @@ import {
 
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Send, Wand2, User, Bot, X } from 'lucide-react';
+import { Loader2, Send, Wand2, User, Bot, X, RotateCcw } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 
@@ -36,18 +36,43 @@ type Message = {
   content: string;
 };
 
+const initialMessage: Message = { role: 'assistant', content: "Hello! I'm Bandhan, your personal wedding content assistant. How can I help you craft the perfect words for your special day?" };
+
 function AiAssistantChat() {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hello! I'm Bandhan, your personal wedding content assistant. How can I help you craft the perfect words for your special day?" }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Load messages from localStorage on initial render
   useEffect(() => {
-    // Scroll to the bottom when messages change
+    try {
+      const storedMessages = localStorage.getItem('ai-chat-history');
+      if (storedMessages) {
+        const parsedMessages = JSON.parse(storedMessages);
+        if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+            setMessages(parsedMessages);
+        }
+      }
+    } catch (error) {
+        console.error("Failed to load chat history from localStorage", error);
+        setMessages([initialMessage]);
+    }
+  }, []);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+     try {
+        localStorage.setItem('ai-chat-history', JSON.stringify(messages));
+     } catch (error) {
+        console.error("Failed to save chat history to localStorage", error);
+     }
+  }, [messages]);
+  
+
+  useEffect(() => {
     if (scrollAreaRef.current) {
         const scrollableNode = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
         if (scrollableNode) {
@@ -55,6 +80,11 @@ function AiAssistantChat() {
         }
     }
   }, [messages]);
+
+  const handleNewChat = () => {
+    setMessages([initialMessage]);
+    toast({ title: "New chat started." });
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +104,7 @@ function AiAssistantChat() {
             },
             body: JSON.stringify({
                 message: userMessage.content,
-                history: messages, // Send previous messages for context
+                history: messages,
             }),
         });
 
@@ -104,11 +134,9 @@ function AiAssistantChat() {
         description: errorMessage,
         variant: 'destructive',
       });
-      // Revert to the state before the failed message
       setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
-      // Refocus the input field after submission
       inputRef.current?.focus();
     }
   };
@@ -149,6 +177,9 @@ function AiAssistantChat() {
         </ScrollArea>
         <div className="p-4 border-t">
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <Button type="button" variant="ghost" size="icon" onClick={handleNewChat} title="Start new chat" disabled={isLoading}>
+                <RotateCcw className="h-4 w-4" />
+            </Button>
             <Input
                 ref={inputRef}
                 value={inputValue}
@@ -174,7 +205,6 @@ export default function AiAssistantWidget() {
          <Button
             size="icon"
             className="fixed bottom-20 md:bottom-8 right-6 h-14 w-14 rounded-full shadow-2xl z-50 animate-fade-in-up"
-            onClick={() => setOpen(true)}
             >
             <Wand2 className="h-7 w-7" />
         </Button>
@@ -184,7 +214,7 @@ export default function AiAssistantWidget() {
         return (
             <Drawer open={open} onOpenChange={setOpen}>
                 <DrawerTrigger asChild>{sharedTrigger}</DrawerTrigger>
-                <DrawerContent className="h-[85vh]">
+                <DrawerContent className="h-[85vh] bg-background">
                     <DrawerHeader className="text-left">
                         <DrawerTitle className="flex items-center gap-2">
                              <Wand2 className="h-6 w-6 text-primary" />
@@ -193,7 +223,7 @@ export default function AiAssistantWidget() {
                         <DrawerDescription>Let's craft the perfect words for your special occasion.</DrawerDescription>
                     </DrawerHeader>
                      <DrawerClose asChild>
-                        <Button variant="ghost" size="icon" className="absolute top-3 right-3">
+                        <Button variant="ghost" size="icon" className="absolute top-3 right-3 z-10">
                             <X className="h-4 w-4" />
                             <span className="sr-only">Close</span>
                         </Button>
@@ -220,7 +250,7 @@ export default function AiAssistantWidget() {
                     </DialogDescription>
                 </DialogHeader>
                 <DialogClose asChild>
-                    <Button variant="ghost" size="icon" className="absolute top-3 right-3">
+                    <Button variant="ghost" size="icon" className="absolute top-3 right-3 z-10">
                         <X className="h-4 w-4" />
                         <span className="sr-only">Close</span>
                     </Button>
