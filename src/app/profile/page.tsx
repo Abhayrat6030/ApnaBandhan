@@ -61,8 +61,15 @@ export default function ProfilePage() {
 
     const handleLogout = async () => {
         if (!auth) return;
-        await auth.signOut();
-        router.push('/login');
+        try {
+            await auth.signOut();
+            // Also clear the server-side session cookie
+            await fetch('/api/auth/signout', { method: 'POST' });
+            toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
+            router.push('/login');
+        } catch (error) {
+            toast({ title: 'Logout Failed', description: 'Could not log out. Please try again.', variant: 'destructive' });
+        }
     };
     
     const isLoading = isUserLoading || areNotificationsLoading || isProfileLoading || areSettingsLoading;
@@ -164,7 +171,7 @@ export default function ProfilePage() {
                             </Button>
                         ))}
                         <Button variant="ghost" className="w-full justify-start text-base py-6" asChild>
-                            <Link href={appSettings?.downloadAppLink || '#'}>
+                            <Link href={appSettings?.downloadAppLink || '#'} target="_blank" rel="noopener noreferrer">
                                 <Smartphone className="mr-4 h-5 w-5 text-muted-foreground" />
                                 Download App
                             </Link>
