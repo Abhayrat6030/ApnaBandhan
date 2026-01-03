@@ -1,9 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,54 +19,61 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Copy, Wand2 } from 'lucide-react';
-import { generateInvitationText } from '@/ai/flows/generate-invitation-text';
+import { Loader2, Sparkles, Send, Wand2, User, Bot } from 'lucide-react';
+import { generateInvitationText, type GenerateInvitationTextInput } from '@/ai/flows/generate-invitation-text';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 
-const formSchema = z.object({
-  brideName: z.string().min(2, "Please enter the bride's name."),
-  groomName: z.string().min(2, "Please enter the groom's name."),
-  eventType: z.string().min(1, "Please select an event type."),
-  tone: z.string().min(1, "Please select a tone."),
-  additionalInfo: z.string().optional(),
-});
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+};
 
-type FormValues = z.infer<typeof formSchema>;
-
-
-function AiAssistantForm() {
-  const [generatedText, setGeneratedText] = useState('');
+function AiAssistantChat() {
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', content: "Hello! How can I help you with your wedding invitation today? You can ask me for ideas, or to write a draft for you." }
+  ]);
+  const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      brideName: '',
-      groomName: '',
-      eventType: 'Wedding',
-      tone: 'Formal',
-      additionalInfo: '',
-    },
-  });
+  useEffect(() => {
+    // Scroll to the bottom when messages change
+    if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+    }
+  }, [messages]);
 
-  async function onSubmit(values: FormValues) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || isLoading) return;
+
+    const userMessage: Message = { role: 'user', content: inputValue };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setInputValue('');
     setIsLoading(true);
-    setGeneratedText('');
+
     try {
-      const result = await generateInvitationText(values);
-      if (result.invitationText) {
-        setGeneratedText(result.invitationText);
-        toast({ title: 'Content Generated!', description: 'Your invitation text is ready.' });
+      // Prepare history for the AI flow, excluding the last user message which is the new prompt
+      const history = newMessages.slice(0, -1).map(msg => ({
+          role: msg.role,
+          content: msg.content
+      }));
+
+      const result = await generateInvitationText({ prompt: userMessage.content, history });
+      
+      if (result.response) {
+        const assistantMessage: Message = { role: 'assistant', content: result.response };
+        setMessages(prev => [...prev, assistantMessage]);
       } else {
-        throw new Error('AI did not return any text.');
+        throw new Error('AI did not return a response.');
       }
     } catch (error: any) {
       toast({
@@ -77,86 +81,62 @@ function AiAssistantForm() {
         description: error.message || 'An unknown error occurred.',
         variant: 'destructive',
       });
+      // OPTIONAL: Remove the user's message if the API call fails
+      setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
-  }
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedText);
-    toast({ title: 'Copied to Clipboard!' });
   };
   
   return (
-    <>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField control={form.control} name="brideName" render={({ field }) => (
-              <FormItem><FormLabel>Bride's Name</FormLabel><FormControl><Input placeholder="e.g., Priya" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="groomName" render={({ field }) => (
-              <FormItem><FormLabel>Groom's Name</FormLabel><FormControl><Input placeholder="e.g., Rohan" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField control={form.control} name="eventType" render={({ field }) => (
-                  <FormItem><FormLabel>Event Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>
-                      <SelectItem value="Wedding">Wedding</SelectItem>
-                      <SelectItem value="Engagement">Engagement</SelectItem>
-                      <SelectItem value="Save the Date">Save the Date</SelectItem>
-                      <SelectItem value="Anniversary">Anniversary</SelectItem>
-                  </SelectContent></Select><FormMessage /></FormItem>
-              )} />
-              <FormField control={form.control} name="tone" render={({ field }) => (
-                  <FormItem><FormLabel>Tone</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>
-                      <SelectItem value="Formal">Formal & Elegant</SelectItem>
-                      <SelectItem value="Modern">Modern & Casual</SelectItem>
-                      <SelectItem value="Funny">Funny & Playful</SelectItem>
-                      <SelectItem value="Traditional">Traditional & Respectful</SelectItem>
-                  </SelectContent></Select><FormMessage /></FormItem>
-              )} />
-          </div>
-           <FormField control={form.control} name="additionalInfo" render={({ field }) => (
-              <FormItem><FormLabel>Additional Details (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Mention our love for travel. Request no gifts." {...field} /></FormControl><FormMessage /></FormItem>
-          )}/>
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
-            ) : (
-              <><Sparkles className="mr-2 h-4 w-4" /> Generate Content</>
-            )}
-          </Button>
-        </form>
-      </Form>
-
-       {(isLoading || generatedText) && (
-        <div className="mt-6">
-            <h3 className="font-semibold mb-2 text-sm">Generated Content:</h3>
-            {isLoading ? (
-            <div className="space-y-2 p-4 bg-muted/50 rounded-md">
-                <div className="h-4 bg-muted rounded w-3/4 animate-pulse"></div>
-                <div className="h-4 bg-muted rounded w-full animate-pulse"></div>
-                <div className="h-4 bg-muted rounded w-5/6 animate-pulse"></div>
+    <div className="flex flex-col h-[60vh] md:h-full">
+        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+            <div className="space-y-4">
+            {messages.map((message, index) => (
+                <div key={index} className={cn("flex items-end gap-2", message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                {message.role === 'assistant' && (
+                    <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></AvatarFallback>
+                    </Avatar>
+                )}
+                <div className={cn("max-w-[80%] rounded-lg p-3 text-sm", message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                </div>
+                 {message.role === 'user' && (
+                    <Avatar className="h-8 w-8">
+                        <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
+                    </Avatar>
+                )}
+                </div>
+            ))}
+             {isLoading && (
+                <div className="flex items-end gap-2 justify-start">
+                     <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></AvatarFallback>
+                    </Avatar>
+                    <div className="max-w-[80%] rounded-lg p-3 text-sm bg-muted flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Thinking...</span>
+                    </div>
+                </div>
+             )}
             </div>
-            ) : (
-            <div className="relative">
-                <pre className="p-4 bg-muted/50 rounded-md whitespace-pre-wrap font-body text-sm text-foreground overflow-auto max-h-[200px]">
-                {generatedText}
-                </pre>
-                <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 h-7 w-7"
-                onClick={copyToClipboard}
-                >
-                <Copy className="h-4 w-4" />
-                </Button>
-            </div>
-            )}
+        </ScrollArea>
+        <div className="p-4 border-t">
+            <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <Input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Ask for ideas or a draft..."
+                autoComplete="off"
+                disabled={isLoading}
+            />
+            <Button type="submit" size="icon" disabled={isLoading || !inputValue.trim()}>
+                <Send className="h-4 w-4" />
+            </Button>
+            </form>
         </div>
-        )}
-    </>
+    </div>
   )
 }
 
@@ -183,10 +163,10 @@ export default function AiAssistantWidget() {
                              <Wand2 className="h-6 w-6 text-primary" />
                              AI Invitation Assistant
                         </DrawerTitle>
-                        <DrawerDescription>Let our AI help you craft the perfect words for your special occasion.</DrawerDescription>
+                        <DrawerDescription>Let's craft the perfect words for your special occasion.</DrawerDescription>
                     </DrawerHeader>
-                    <div className="p-4 overflow-auto">
-                        <AiAssistantForm />
+                    <div className="overflow-auto">
+                        <AiAssistantChat />
                     </div>
                 </DrawerContent>
             </Drawer>
@@ -196,18 +176,18 @@ export default function AiAssistantWidget() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{sharedTrigger}</DialogTrigger>
-            <DialogContent className="sm:max-w-[625px]">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-[425px] md:max-w-[500px] p-0 gap-0">
+                <DialogHeader className="p-4 border-b">
                     <DialogTitle className="flex items-center gap-2">
                         <Wand2 className="h-6 w-6 text-primary" />
                         AI Invitation Assistant
                     </DialogTitle>
                     <DialogDescription>
-                        Let our AI help you craft the perfect words for your special occasion. Fill in the details below to get started.
+                        Let's craft the perfect words for your special occasion.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="py-4">
-                    <AiAssistantForm />
+                <div className="h-[60vh]">
+                    <AiAssistantChat />
                 </div>
             </DialogContent>
         </Dialog>
