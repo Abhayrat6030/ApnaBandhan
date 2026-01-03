@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser } from '@/firebase';
-import { generateServiceDescription } from '@/ai/flows/generate-service-description';
+
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
@@ -90,33 +90,13 @@ export default function NewServicePage() {
   }
 
   const handleGenerateDescription = async () => {
-    const { name, category } = form.getValues();
-    if (!name || (itemType === 'service' && !category)) {
-        toast({
-            title: 'Name and Category Required',
-            description: 'Please enter a name and select a category before generating a description.',
-            variant: 'destructive',
-        });
-        return;
-    }
     setIsGenerating(true);
-    try {
-        const result = await generateServiceDescription({ name, category: category || 'combo package' });
-        if (result.description) {
-            form.setValue('description', result.description);
-            toast({ title: 'Description generated successfully!' });
-        } else {
-            throw new Error('AI did not return a description.');
-        }
-    } catch (error) {
-        toast({
-            title: 'Generation Failed',
-            description: 'Could not generate a description at this time.',
-            variant: 'destructive',
-        });
-    } finally {
-        setIsGenerating(false);
-    }
+    toast({
+        title: 'Feature Unavailable',
+        description: 'The AI description generator is temporarily disabled.',
+        variant: 'destructive',
+    });
+    setIsGenerating(false);
   };
 
   async function onSubmit(values: FormValues) {
