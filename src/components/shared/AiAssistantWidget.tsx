@@ -156,7 +156,7 @@ export default function AiAssistantWidget() {
     const sharedTrigger = (
          <Button
             size="icon"
-            className="fixed bottom-24 md:bottom-8 right-6 h-14 w-14 rounded-full shadow-2xl z-50 animate-fade-in-up"
+            className="fixed bottom-20 md:bottom-8 right-6 h-14 w-14 rounded-full shadow-2xl z-50 animate-fade-in-up"
             >
             <Wand2 className="h-7 w-7" />
         </Button>
@@ -166,7 +166,7 @@ export default function AiAssistantWidget() {
         return (
             <Drawer open={open} onOpenChange={setOpen}>
                 <DrawerTrigger asChild>{sharedTrigger}</DrawerTrigger>
-                <DrawerContent className="h-[75vh]">
+                <DrawerContent className="h-[85vh]">
                     <DrawerHeader className="text-left">
                         <DrawerTitle className="flex items-center gap-2">
                              <Wand2 className="h-6 w-6 text-primary" />
@@ -191,7 +191,7 @@ export default function AiAssistantWidget() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{sharedTrigger}</DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-[500px] p-0 gap-0 h-[75vh] flex flex-col">
+            <DialogContent className="sm:max-w-[425px] md:max-w-[500px] p-0 gap-0 h-[80vh] flex flex-col">
                 <DialogHeader className="p-4 border-b">
                     <DialogTitle className="flex items-center gap-2">
                         <Wand2 className="h-6 w-6 text-primary" />

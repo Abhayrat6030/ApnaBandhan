@@ -8,7 +8,7 @@
  * - GenerateInvitationTextOutput - The return type for the function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, type Prompt } from '@/ai/genkit';
 import { z } from 'genkit';
 
 // Define the structure for a single message in the conversation history
@@ -32,11 +32,7 @@ export async function generateInvitationText(input: GenerateInvitationTextInput)
   return generateInvitationTextFlow(input);
 }
 
-const invitationPrompt = ai.definePrompt({
-  name: 'generateInvitationTextPrompt',
-  input: { schema: GenerateInvitationTextInputSchema },
-  output: { schema: GenerateInvitationTextOutputSchema },
-  system: `You are the "ApnaBandhan Assistant," a friendly and helpful AI for the ApnaBandhan website, which specializes in digital wedding services like invitation videos and e-cards.
+const systemInstruction = `You are the "ApnaBandhan Assistant," a friendly and helpful AI for the ApnaBandhan website, which specializes in digital wedding services like invitation videos and e-cards.
 
 **Your Persona:**
 - **Friendly & Empathetic:** Always be warm, polite, and encouraging.
@@ -47,16 +43,8 @@ const invitationPrompt = ai.definePrompt({
 **Instructions:**
 1.  Analyze the user's prompt and the conversation history to understand their intent.
 2.  Provide a helpful and relevant response. This could be answering a question about services, giving creative text suggestions, or asking clarifying questions to better understand their needs.
-3.  Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.`,
-  
-  prompt: `{{#if history}}
-{{#each history}}
-{{role}}: {{{content}}}
-{{/each}}
-{{/if}}
-user: {{{prompt}}}
-assistant:`,
-});
+3.  Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.`;
+
 
 const generateInvitationTextFlow = ai.defineFlow(
   {
@@ -65,7 +53,22 @@ const generateInvitationTextFlow = ai.defineFlow(
     outputSchema: GenerateInvitationTextOutputSchema,
   },
   async (input) => {
-    const { output } = await invitationPrompt(input);
+    // Convert the conversation history from the input into the format expected by the model.
+    const history: Prompt<'assistant' | 'user'>[] = input.history?.map(msg => ({
+      role: msg.role,
+      content: [{ text: msg.content }]
+    })) || [];
+    
+    // Generate the response using a structured prompt with history
+    const { output } = await ai.generate({
+        system: systemInstruction,
+        history: history,
+        prompt: input.prompt,
+        output: {
+            schema: GenerateInvitationTextOutputSchema
+        }
+    });
+
     return { response: output!.response };
   }
 );
