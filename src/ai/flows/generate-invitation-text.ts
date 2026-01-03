@@ -50,12 +50,12 @@ const invitationPrompt = ai.definePrompt({
 3.  Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.`,
   
   prompt: `{{#if history}}
-  {{#each history}}
-  {{role}}: {{{content}}}
-  {{/each}}
-  {{/if}}
-  User: {{{prompt}}}
-  Assistant:`,
+{{#each history}}
+{{role}}: {{{content}}}
+{{/each}}
+{{/if}}
+User: {{{prompt}}}
+Assistant:`,
 });
 
 const generateInvitationTextFlow = ai.defineFlow(

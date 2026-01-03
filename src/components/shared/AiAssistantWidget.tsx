@@ -79,7 +79,7 @@ function AiAssistantChat() {
       }
     } catch (error: any) {
       let errorMessage = 'An unknown error occurred.';
-      if (error.message && error.message.includes('429')) {
+      if (error.message && (error.message.includes('429') || error.message.toLowerCase().includes('resource has been exhausted'))) {
         errorMessage = "The AI is currently busy due to high demand. Please wait a moment and try again.";
       } else if (error.message) {
         errorMessage = error.message;
