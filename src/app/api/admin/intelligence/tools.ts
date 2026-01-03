@@ -20,4 +20,3 @@ export async function getAppStatus() {
 }
 
 // The createCoupon function has been removed to resolve the build error.
-
