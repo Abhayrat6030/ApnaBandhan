@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -26,7 +27,7 @@ export type GenerateInvitationTextOutput = z.infer<typeof GenerateInvitationText
 
 export async function generateInvitationText(input: GenerateInvitationTextInput): Promise<GenerateInvitationTextOutput> {
     try {
-        const response = await fetch('http://localhost:3000/api/ai', {
+        const response = await fetch('/api/ai', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
