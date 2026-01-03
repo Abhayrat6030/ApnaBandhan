@@ -25,10 +25,17 @@ const GenerateServiceDescriptionOutputSchema = z.object({
 export type GenerateServiceDescriptionOutput = z.infer<typeof GenerateServiceDescriptionOutputSchema>;
 
 
-export async function generateServiceDescription(input: GenerateServiceDescriptionInput): Promise<GenerateServiceDescriptionOutput> {
-  const { text } = await ai.generate({
-    model: googleAI.model('gemini-pro'),
-    prompt: `You are a professional marketing copywriter for a wedding services company called "ApnaBandhan".
+const descriptionPrompt = ai.definePrompt(
+    {
+        name: 'serviceDescriptionPrompt',
+        inputSchema: GenerateServiceDescriptionInputSchema,
+        output: {
+            schema: GenerateServiceDescriptionOutputSchema,
+        }
+    },
+    async (input) => {
+        return {
+            prompt: `You are a professional marketing copywriter for a wedding services company called "ApnaBandhan".
 Your task is to write a compelling, elegant, and brief description for a service.
 The description should be around 20-30 words.
 
@@ -39,13 +46,35 @@ Write a description that is both informative and enticing to potential customers
 Focus on the benefits and the emotional aspect of the service.
 Do not use quotes in your response.
 `,
-    temperature: 0.7,
-  });
-  
-  const description = text;
-  if (!description) {
-    throw new Error("Failed to generate a description.");
-  }
-  
-  return { description };
+            config: {
+                temperature: 0.7,
+            },
+        }
+    }
+);
+
+
+const generateDescriptionFlow = ai.defineFlow(
+    {
+        name: 'generateDescriptionFlow',
+        inputSchema: GenerateServiceDescriptionInputSchema,
+        outputSchema: GenerateServiceDescriptionOutputSchema,
+    },
+    async (input) => {
+        const { output } = await descriptionPrompt.generate({
+            input: input,
+            model: googleAI.model('gemini-pro'),
+        });
+
+        if (!output) {
+            throw new Error("Failed to generate a description.");
+        }
+        
+        return output;
+    }
+);
+
+
+export async function generateServiceDescription(input: GenerateServiceDescriptionInput): Promise<GenerateServiceDescriptionOutput> {
+  return generateDescriptionFlow(input);
 }

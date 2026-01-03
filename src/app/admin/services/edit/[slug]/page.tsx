@@ -112,7 +112,7 @@ export default function EditServicePage() {
 
     const handleGenerateDescription = async () => {
     const { name, category } = form.getValues();
-    if (!name || !category) {
+    if (!name || (itemType === 'service' && !category)) {
         toast({
             title: 'Name and Category Required',
             description: 'Please enter a name and select a category before generating a description.',
@@ -122,7 +122,7 @@ export default function EditServicePage() {
     }
     setIsGenerating(true);
     try {
-        const result = await generateServiceDescription({ name, category });
+        const result = await generateServiceDescription({ name, category: category || 'combo package' });
         if (result.description) {
             form.setValue('description', result.description);
             toast({ title: 'Description generated successfully!' });
@@ -209,22 +209,22 @@ export default function EditServicePage() {
                 <FormItem><FormLabel>Name</FormLabel><FormControl><Input placeholder="e.g. Elegant Wedding E-Invite" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
               
-              <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl><Textarea placeholder="Describe the item..." {...field} rows={4} /></FormControl>
-                    <FormMessage />
-                </FormItem>
-              )}/>
+              <div className="relative">
+                <FormField control={form.control} name="description" render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl><Textarea placeholder="Describe the item..." {...field} rows={4} /></FormControl>
+                      <FormMessage />
+                  </FormItem>
+                )}/>
+                <div className="absolute -bottom-6 right-0">
+                    <Button type="button" variant="ghost" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
+                      {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                      Generate with AI
+                    </Button>
+                  </div>
+              </div>
 
-               {itemType === 'service' && (
-                 <div className="flex justify-end -mt-4">
-                  <Button type="button" variant="ghost" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
-                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                    Generate with AI
-                  </Button>
-                </div>
-               )}
 
               {itemType === 'service' ? (
                 <>

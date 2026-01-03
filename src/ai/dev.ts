@@ -2,5 +2,5 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/generate-invitation-text.ts';
-import '@/ai/flows/generate-service-description.ts';
+// This will register all flows and tools with Genkit
+import '@/ai/flows/generate-invitation-text';

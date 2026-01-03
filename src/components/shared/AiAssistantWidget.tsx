@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -28,6 +29,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { generateInvitationText } from '@/ai/flows/generate-invitation-text';
 
 
 type Message = {
@@ -66,24 +68,13 @@ function AiAssistantChat() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-            message: userMessage.content,
-            history: messages // Send the history *before* the new user message
-        }),
+      const result = await generateInvitationText({
+        prompt: userMessage.content,
+        history: messages
       });
-
-      if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'The AI service failed to respond.');
-      }
       
-      const result = await response.json();
-      
-      if (result.reply) {
-        const assistantMessage: Message = { role: 'assistant', content: result.reply };
+      if (result.response) {
+        const assistantMessage: Message = { role: 'assistant', content: result.response };
         setMessages(prev => [...prev, assistantMessage]);
       } else {
         throw new Error('AI did not return a response.');

@@ -33,6 +33,12 @@ const formSchema = z.object({
   // Package fields
   priceString: z.string().optional(),
   features: z.array(z.object({ value: z.string() })).optional(),
+}).refine(data => data.itemType !== 'service' || !!data.slug, {
+    message: "Slug is required for services.",
+    path: ["slug"],
+}).refine(data => data.itemType !== 'service' || !!data.category, {
+    message: "Category is required for services.",
+    path: ["category"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -85,7 +91,7 @@ export default function NewServicePage() {
 
   const handleGenerateDescription = async () => {
     const { name, category } = form.getValues();
-    if (!name || !category) {
+    if (!name || (itemType === 'service' && !category)) {
         toast({
             title: 'Name and Category Required',
             description: 'Please enter a name and select a category before generating a description.',
@@ -95,7 +101,7 @@ export default function NewServicePage() {
     }
     setIsGenerating(true);
     try {
-        const result = await generateServiceDescription({ name, category });
+        const result = await generateServiceDescription({ name, category: category || 'combo package' });
         if (result.description) {
             form.setValue('description', result.description);
             toast({ title: 'Description generated successfully!' });
@@ -208,23 +214,22 @@ export default function NewServicePage() {
                 <FormItem><FormLabel>Slug</FormLabel><FormControl><Input placeholder="e.g. elegant-wedding-e-invite" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>}
               
-              <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl><Textarea placeholder="Describe the item or generate one with AI..." {...field} rows={4} /></FormControl>
-                    <FormMessage />
-                </FormItem>
-              )}/>
+              <div className="relative">
+                <FormField control={form.control} name="description" render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl><Textarea placeholder="Describe the item or generate one with AI..." {...field} rows={4} /></FormControl>
+                      <FormMessage />
+                  </FormItem>
+                )}/>
+                <div className="absolute -bottom-6 right-0">
+                    <Button type="button" variant="ghost" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
+                      {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                      Generate with AI
+                    </Button>
+                  </div>
+              </div>
               
-               {itemType === 'service' && (
-                 <div className="flex justify-end -mt-4">
-                  <Button type="button" variant="ghost" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
-                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                    Generate with AI
-                  </Button>
-                </div>
-               )}
-
               {itemType === 'service' ? (
                 <>
                     <FormField control={form.control} name="category" render={({ field }) => (

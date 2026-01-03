@@ -23,7 +23,7 @@ export const adminNavItems: NavItem[] = [
   { label: 'Orders', href: '/admin/orders' },
   { label: 'Services', href: '/admin/services' },
   { label: 'Users', href: '/admin/users'},
-  { label: 'Notifications / Rewards', href: '/admin/notifications' },
+  { label: 'Notifications', href: '/admin/notifications' },
   { label: 'Downloads', href: '/admin/downloads' },
   { label: 'Requests', href: '/admin/requests' },
   { label: 'Coupons', href: '/admin/rewards' },

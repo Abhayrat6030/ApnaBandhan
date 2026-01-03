@@ -28,14 +28,25 @@ service cloud.firestore {
       allow update: if (isOwner(userId) || isAdmin()) ||
                        (isSignedIn() && request.resource.data.referrals == resource.data.referrals + 1);
       allow delete: if isAdmin();
+
+       // --- USER SUB-COLLECTIONS ---
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin(); // Only admin can create/update/delete notifications
+      }
+
+      match /downloadableProducts/{productId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin(); // Only admin can add/edit downloadable products
+      }
     }
     
-    // --- USER SUB-COLLECTION RULES ---
-    // This rule allows owners/admins to access any document within any subcollection of a user.
-    match /users/{userId}/{document=**} {
-      allow read, write: if isOwner(userId) || isAdmin();
+    match /users/{document=**} {
+        // This allows Genkit flows with service accounts to list users if needed.
+        allow list: if request.auth.token.email_verified == true;
     }
-    
+
+
     /* ===============================
        SETTINGS (PUBLIC READ, ADMIN WRITE)
     =============================== */
@@ -62,12 +73,10 @@ service cloud.firestore {
     }
 
     match /coupons/{couponId} {
-      // Allow signed-in users to read coupons to apply them
-      allow get, list: if isSignedIn() || isAdmin();
+      // Allow signed-in users and service accounts (for AI tools) to read coupons.
+      allow get, list: if isSignedIn() || request.auth.token.email_verified == true;
       // Allow admins to manage coupons
       allow write: if isAdmin();
-      // Allow a user to increment the 'uses' field, or admin to do anything.
-      allow update: if isAdmin() || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uses']));
     }
 
     /* ===============================
