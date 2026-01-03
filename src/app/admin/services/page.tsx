@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -152,7 +153,7 @@ export default function AdminServicesPage() {
         </div>
       </div>
 
-      <Card>
+      <Card className="overflow-x-auto">
         <CardHeader>
           <CardTitle>All Services & Packages</CardTitle>
           <CardDescription>Add, edit, or remove services offered on the website.</CardDescription>
@@ -224,15 +225,15 @@ export default function AdminServicesPage() {
                   {allItems.map(item => (
                       <Card key={item.id} className="w-full">
                           <CardHeader className="flex flex-row items-start justify-between p-4">
-                              <div>
-                                <CardTitle className="text-base">{item.name}</CardTitle>
+                              <div className="overflow-hidden">
+                                <CardTitle className="text-base truncate">{item.name}</CardTitle>
                                  <Badge variant={item.type === 'Package' ? 'secondary' : 'outline'} className="mt-1 capitalize">
                                     {item.category?.replace('-', ' ') || 'Package'}
                                 </Badge>
                               </div>
                                <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isDeleting} className="-mt-2 -mr-2">
+                                    <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isDeleting} className="-mt-2 -mr-2 flex-shrink-0">
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>

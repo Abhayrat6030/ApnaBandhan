@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
-      <div>
+      <div className="overflow-x-auto">
         <h2 className="font-headline text-xl md:text-2xl font-bold mb-4">
           Recent Orders
         </h2>

@@ -31,8 +31,8 @@ function AdminAuthGuard({ children }: { children: React.ReactNode }) {
   if (isUserLoading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-muted/40">
-        <div className="p-8">
-            <Skeleton className="h-32 w-full max-w-md" />
+        <div className="p-8 w-full max-w-md">
+            <Skeleton className="h-48 w-full" />
         </div>
       </div>
     );
@@ -82,7 +82,7 @@ export default function AdminLayout({
                 <span className="">{siteConfig.name}</span>
               </Link>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 overflow-y-auto">
               <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
                 <AdminNav onLinkClick={() => isSheetOpen && setSheetOpen(false)} />
               </nav>
@@ -103,7 +103,7 @@ export default function AdminLayout({
                   <span className="sr-only">Toggle navigation menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="flex flex-col">
+              <SheetContent side="left" className="flex flex-col w-full max-w-[300px]">
                 <SheetHeader>
                   <SheetTitle>
                     <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setSheetOpen(false)}>
@@ -112,7 +112,7 @@ export default function AdminLayout({
                     </Link>
                   </SheetTitle>
                 </SheetHeader>
-                <nav className="grid gap-2 text-lg font-medium">
+                <nav className="grid gap-2 text-lg font-medium mt-4">
                   <AdminNav onLinkClick={() => setSheetOpen(false)} />
                 </nav>
               </SheetContent>
@@ -128,7 +128,7 @@ export default function AdminLayout({
             </Avatar>
 
           </header>
-          <main className="flex flex-1 flex-col bg-muted/20">
+          <main className="flex-1 overflow-x-hidden bg-muted/20">
             {children}
           </main>
         </div>

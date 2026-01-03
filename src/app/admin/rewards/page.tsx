@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -122,7 +123,7 @@ export default function AdminRewardsPage() {
     return (
         <>
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-7">
                 <Card className="lg:col-span-3">
                     <CardHeader>
                         <CardTitle>Create Coupon</CardTitle>
@@ -186,7 +187,7 @@ export default function AdminRewardsPage() {
                         </form>
                     </CardContent>
                 </Card>
-                <Card className="lg:col-span-4">
+                <Card className="lg:col-span-4 overflow-x-auto">
                     <CardHeader>
                         <CardTitle>Manage Coupons</CardTitle>
                         <CardDescription>View, edit, or deactivate existing coupons.</CardDescription>

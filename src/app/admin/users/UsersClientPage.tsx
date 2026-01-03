@@ -87,7 +87,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
             });
             setUserToDelete(null);
             router.refresh();
-        } catch (error: any) {
+        } catch (error: any) => {
             console.error("Deletion Error:", error);
             toast({
                 title: "Deletion Failed",
@@ -118,7 +118,7 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                 />
               </div>
           </div>
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-x-auto">
             <>
                 {/* Desktop Table */}
                 <div className="hidden md:block">
@@ -209,19 +209,19 @@ export default function UsersClientPage({ initialUsers, initialUsersMap }: { ini
                       return (
                         <Card key={user.uid}>
                             <CardHeader className="flex flex-row items-start justify-between p-4 pb-2">
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 overflow-hidden">
                                     <Avatar>
                                       <AvatarImage src={user.photoURL || `https://avatar.vercel.sh/${user.email}.png`} />
                                       <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                                     </Avatar>
-                                    <div className="grid">
-                                      <div className="font-medium">{user.displayName}</div>
-                                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                                    <div className="grid overflow-hidden">
+                                      <div className="font-medium truncate">{user.displayName}</div>
+                                      <div className="text-xs text-muted-foreground truncate">{user.email}</div>
                                     </div>
                                 </div>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button size="icon" variant="ghost" disabled={isPending} className="-mt-2 -mr-2">
+                                        <Button size="icon" variant="ghost" disabled={isPending} className="-mt-2 -mr-2 flex-shrink-0">
                                             {isPending ? <Loader2 className="h-4 w-4 animate-spin"/> : <MoreHorizontal className="h-4 w-4" />}
                                         </Button>
                                     </DropdownMenuTrigger>

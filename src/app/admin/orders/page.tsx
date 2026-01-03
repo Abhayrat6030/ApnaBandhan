@@ -63,7 +63,7 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      <Card>
+      <Card className="overflow-x-auto">
         <CardHeader>
           <CardTitle>Orders</CardTitle>
           <CardDescription>A list of all the orders from your customers.</CardDescription>

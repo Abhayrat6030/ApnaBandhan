@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -183,7 +184,7 @@ export default function AdminNotificationsPage() {
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
+        <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-7">
           <Card className="lg:col-span-3">
             <CardHeader>
               <CardTitle>Send Message / Reward</CardTitle>
@@ -237,18 +238,18 @@ export default function AdminNotificationsPage() {
                   </Select>
                 </div>
                 
-                <div className="mt-6 border rounded-md">
+                <div className="mt-6 border rounded-md max-h-96 overflow-y-auto">
                     {isFetchingSent ? <p className="p-4 text-center text-sm text-muted-foreground">Loading messages...</p> : (
                         sentNotifications.length > 0 ? (
                             <div className="divide-y">
                                 {sentNotifications.map(notif => (
-                                    <div key={notif.path} className="p-3 flex items-center">
-                                        <div className="flex-1 space-y-1">
-                                            <p className="font-semibold">{notif.title}</p>
-                                            <p className="text-sm text-muted-foreground">{notif.description}</p>
+                                    <div key={notif.path} className="p-3 flex items-start sm:items-center">
+                                        <div className="flex-1 space-y-1 overflow-hidden">
+                                            <p className="font-semibold truncate">{notif.title}</p>
+                                            <p className="text-sm text-muted-foreground truncate">{notif.description}</p>
                                             <p className="text-xs text-muted-foreground capitalize">{notif.type} &bull; {new Date(notif.date).toLocaleDateString()}</p>
                                         </div>
-                                        <div className="flex gap-1">
+                                        <div className="flex gap-1 flex-shrink-0 ml-2">
                                             <Button variant="ghost" size="icon" onClick={() => handleEditClick(notif)}><Edit className="h-4 w-4" /></Button>
                                             <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(notif)} className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                                         </div>
