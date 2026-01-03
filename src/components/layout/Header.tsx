@@ -33,9 +33,9 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="flex items-center">
-          <div className="md:hidden mr-2">
+      <div className="container flex h-14 items-center justify-between">
+        <div className="flex items-center gap-x-2">
+          <div className="md:hidden">
               <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
                   <SheetTrigger asChild>
                        <Button variant="ghost" size="icon">
@@ -43,14 +43,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
                        </Button>
                   </SheetTrigger>
                   <SheetContent side="left" className="p-0 flex flex-col">
-                    <SheetHeader className="p-4 border-b">
-                        <Link href="/" className="flex items-center gap-2" onClick={() => setMenuOpen(false)}>
-                        <Logo className="h-8 w-auto text-primary" />
-                        <span className="font-bold">{siteConfig.name}</span>
-                        </Link>
-                        <SheetTitle className="sr-only">Main Menu</SheetTitle>
-                    </SheetHeader>
-                    <ScrollArea className="flex-1">
+                    <ScrollArea className="flex-1 mt-8">
                         <div className="py-4 pl-6 pr-6">
                         <div className="flex flex-col space-y-1">
                             {navItems.map((item: NavItem) => {
@@ -87,7 +80,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
           </Link>
         </div>
 
-        <div className="ml-auto flex items-center">
+        <div className="flex items-center gap-x-2">
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center justify-center space-x-6 text-sm font-medium">
             {navItems.map((item) => (
