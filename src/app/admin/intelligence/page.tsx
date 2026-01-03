@@ -21,7 +21,6 @@ const examplePrompts = [
     "How many total users do we have?",
     "Show me the last 3 orders.",
     "Give me a status update for today.",
-    "Create a 15% discount coupon named 'NEWYEAR15' valid for 60 days.",
 ];
 
 function AdminAssistantChat() {

@@ -19,7 +19,5 @@ export async function getAppStatus() {
     return {};
 }
 
-export async function createCoupon({ code, discountType, discountValue, daysUntilExpiry = 30 }: { code: string, discountType: 'percentage' | 'fixed', discountValue: number, daysUntilExpiry?: number }) {
-    console.log(`createCoupon tool called but is disabled.`);
-    return { success: false, error: 'This feature is temporarily disabled.' };
-}
+// The createCoupon function has been removed to resolve the build error.
+
