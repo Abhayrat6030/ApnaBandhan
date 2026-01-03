@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/firebase';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -32,6 +33,7 @@ function AdminAssistantChat() {
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const auth = useAuth();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -47,21 +49,32 @@ function AdminAssistantChat() {
         return;
     }
 
+    if (!auth?.currentUser) {
+        toast({ title: 'Authentication Error', description: 'You must be logged in to chat.', variant: 'destructive' });
+        return;
+    }
+
     const userMessage: Message = { role: 'user', content: messageContent };
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
 
     try {
+        const idToken = await auth.currentUser.getIdToken(true);
+
         const response = await fetch('/api/admin/intelligence', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             },
             body: JSON.stringify({ message: userMessage.content, history: messages }),
         });
 
-        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+        if (!response.ok) {
+            const errorBody = await response.json();
+            throw new Error(errorBody.error || `API request failed with status ${response.status}`);
+        }
 
         const result = await response.json();
         if (!result.reply) throw new Error('AI did not return a response.');

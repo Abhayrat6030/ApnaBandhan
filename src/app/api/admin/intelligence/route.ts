@@ -41,17 +41,24 @@ async function getGroqChatCompletion(messages: any[], toolConfig?: any) {
 }
 
 export async function POST(req: NextRequest) {
+    let admin;
     try {
-        const admin = initializeAdminApp();
-        const sessionCookie = cookies().get("__session")?.value;
+        admin = initializeAdminApp();
+    } catch (error: any) {
+        console.error("Admin SDK Initialization Error in API Route:", error);
+        return NextResponse.json({ error: "Server configuration error. Could not initialize admin services." }, { status: 503 });
+    }
 
-        if (!sessionCookie) {
-            return NextResponse.json({ error: "Unauthorized: No session cookie." }, { status: 401 });
+    try {
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: "Unauthorized: No token provided." }, { status: 401 });
         }
 
-        const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
+        const idToken = authHeader.split('Bearer ')[1];
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
 
-        if (decodedClaims.email !== ADMIN_EMAIL) {
+        if (decodedToken.email !== ADMIN_EMAIL) {
             return NextResponse.json({ error: "Forbidden: You do not have permission for this action." }, { status: 403 });
         }
     } catch (error: any) {
