@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUser } from '@/firebase';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -32,6 +33,7 @@ function AdminAssistantChat() {
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user } = useUser();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -43,7 +45,12 @@ function AdminAssistantChat() {
   }, [messages]);
 
   const sendMessage = async (messageContent: string) => {
-    if (!messageContent.trim() || isLoading) return;
+    if (!messageContent.trim() || isLoading || !user) {
+        if (!user) {
+            toast({ title: 'Authentication Error', description: 'You must be logged in to chat.', variant: 'destructive'});
+        }
+        return;
+    }
 
     const userMessage: Message = { role: 'user', content: messageContent };
     setMessages(prev => [...prev, userMessage]);
@@ -51,9 +58,14 @@ function AdminAssistantChat() {
     setIsLoading(true);
 
     try {
+        const idToken = await user.getIdToken();
+
         const response = await fetch('/api/admin/intelligence', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+            },
             body: JSON.stringify({ message: userMessage.content, history: messages }),
         });
 

@@ -2,7 +2,6 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from "next/headers";
 import { initializeAdminApp } from '@/firebase/admin';
 import * as tools from './tools';
 
@@ -46,18 +45,21 @@ export async function POST(req: NextRequest) {
         if (!adminApp) {
             return NextResponse.json({ error: "Firebase Admin not initialized. Check server credentials." }, { status: 503 });
         }
-        
-        const sessionCookie = cookies().get("__session")?.value;
-        if (!sessionCookie) {
-            return NextResponse.json({ error: "Unauthorized: No session cookie." }, { status: 401 });
+
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: "Unauthorized: No token provided." }, { status: 401 });
         }
-        const decodedClaims = await adminApp.auth().verifySessionCookie(sessionCookie, true);
+        
+        const idToken = authHeader.split('Bearer ')[1];
+        const decodedClaims = await adminApp.auth().verifyIdToken(idToken);
+        
         if (decodedClaims.email !== ADMIN_EMAIL) {
             return NextResponse.json({ error: "Forbidden: You do not have permission for this action." }, { status: 403 });
         }
     } catch (error: any) {
         console.error("Admin auth verification error:", error);
-        return NextResponse.json({ error: "Unauthorized: Invalid session." }, { status: 401 });
+        return NextResponse.json({ error: "Unauthorized: Invalid or expired token." }, { status: 401 });
     }
     
     const { message, history } = await req.json();
