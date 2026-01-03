@@ -78,9 +78,16 @@ function AiAssistantChat() {
         throw new Error('AI did not return a response.');
       }
     } catch (error: any) {
+      let errorMessage = 'An unknown error occurred.';
+      if (error.message && error.message.includes('429')) {
+        errorMessage = "The AI is currently busy due to high demand. Please wait a moment and try again.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: 'Generation Failed',
-        description: error.message || 'An unknown error occurred.',
+        description: errorMessage,
         variant: 'destructive',
       });
       // OPTIONAL: Remove the user's message if the API call fails
@@ -166,13 +173,13 @@ export default function AiAssistantWidget() {
                              AI Invitation Assistant
                         </DrawerTitle>
                         <DrawerDescription>Let's craft the perfect words for your special occasion.</DrawerDescription>
-                         <DrawerClose asChild>
-                            <Button variant="ghost" size="icon" className="absolute top-3 right-3">
-                                <X className="h-4 w-4" />
-                                <span className="sr-only">Close</span>
-                            </Button>
-                        </DrawerClose>
                     </DrawerHeader>
+                     <DrawerClose asChild>
+                        <Button variant="ghost" size="icon" className="absolute top-3 right-3">
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Close</span>
+                        </Button>
+                    </DrawerClose>
                     <div className="overflow-auto flex-1">
                         <AiAssistantChat />
                     </div>
@@ -193,13 +200,13 @@ export default function AiAssistantWidget() {
                     <DialogDescription>
                         Let's craft the perfect words for your special occasion.
                     </DialogDescription>
-                    <DialogClose asChild>
-                        <Button variant="ghost" size="icon" className="absolute top-3 right-3">
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Close</span>
-                        </Button>
-                    </DialogClose>
                 </DialogHeader>
+                <DialogClose asChild>
+                    <Button variant="ghost" size="icon" className="absolute top-3 right-3">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Close</span>
+                    </Button>
+                </DialogClose>
                 <div className="flex-1 min-h-0">
                     <AiAssistantChat />
                 </div>
