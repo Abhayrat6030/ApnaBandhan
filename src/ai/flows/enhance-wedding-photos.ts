@@ -37,7 +37,7 @@ export async function enhanceWeddingPhotos(input: EnhanceWeddingPhotosInput): Pr
         text: 'Enhance this wedding photo to improve its quality and make it look more professional. Focus on improving clarity, color balance, and sharpness. Return the enhanced image as a data URI.',
         },
     ],
-    model: 'google/gemini-pro-vision',
+    model: ai.getModel('google/gemini-flash-1.5-latest'),
     config: {
         responseModalities: ['TEXT', 'IMAGE'],
     },
