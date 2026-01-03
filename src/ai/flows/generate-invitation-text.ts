@@ -51,12 +51,7 @@ const invitationPrompt = ai.definePrompt({
   
   prompt: `{{#if history}}
   {{#each history}}
-  {{#if (eq role 'user')}}
-  User: {{{content}}}
-  {{/if}}
-  {{#if (eq role 'assistant')}}
-  Assistant: {{{content}}}
-  {{/if}}
+  {{role}}: {{{content}}}
   {{/each}}
   {{/if}}
   User: {{{prompt}}}
