@@ -9,11 +9,8 @@ const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export async function GET(request: NextRequest) {
   try {
+    // This will now throw an error if env vars are missing, which is the correct behavior.
     const admin = initializeAdminApp();
-    if (!admin) {
-      // If admin isn't initialized (e.g., during build), assume not admin.
-      return NextResponse.json({ isAdmin: false }, { status: 503, statusText: 'Firebase Admin not initialized' });
-    }
 
     const sessionCookie = cookies().get('__session')?.value || '';
 
@@ -26,7 +23,11 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({ isAdmin });
 
-  } catch (error) {
+  } catch (error: any) {
+    // Log the actual error on the server for debugging
+    console.error("Auth verification error:", error.message);
+    
+    // Return a generic error to the client
     return NextResponse.json({ isAdmin: false, error: 'Authentication failed' }, { status: 401 });
   }
 }

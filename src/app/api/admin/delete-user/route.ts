@@ -6,9 +6,12 @@ import { cookies } from "next/headers";
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export async function DELETE(req: NextRequest) {
-    const admin = initializeAdminApp();
-    if (!admin) {
-        return NextResponse.json({ error: "Firebase Admin not initialized. Server configuration issue." }, { status: 503 });
+    let admin;
+    try {
+        admin = initializeAdminApp();
+    } catch (e: any) {
+        console.error("Firebase Admin initialization failed:", e.message);
+        return NextResponse.json({ error: "Server configuration error: Could not initialize Firebase Admin." }, { status: 503 });
     }
 
     try {
@@ -27,8 +30,8 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: "User ID is required." }, { status: 400 });
         }
 
+        // Perform deletions
         await admin.auth().deleteUser(uid);
-        
         const firestore = admin.firestore();
         await firestore.collection('users').doc(uid).delete();
 
@@ -38,7 +41,7 @@ export async function DELETE(req: NextRequest) {
         console.error("Error deleting user:", error);
         
         if (error.code === 'auth/session-cookie-expired' || error.code === 'auth/invalid-session-cookie') {
-             return NextResponse.json({ error: "Unauthorized: Invalid session." }, { status: 401 });
+             return NextResponse.json({ error: "Unauthorized: Invalid or expired session." }, { status: 401 });
         }
         
         return NextResponse.json({ error: error.message || "An internal server error occurred." }, { status: 500 });
