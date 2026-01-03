@@ -20,6 +20,7 @@ export const navItems: NavItem[] = [
 
 export const adminNavItems: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard' },
+  { label: 'Intelligence', href: '/admin/intelligence'},
   { label: 'Orders', href: '/admin/orders' },
   { label: 'Services', href: '/admin/services' },
   { label: 'Users', href: '/admin/users'},
