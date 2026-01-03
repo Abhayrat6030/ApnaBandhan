@@ -108,5 +108,6 @@ export type Coupon = {
     expiryDate: string;
     isActive: boolean;
     createdAt: string;
-    uses: number;
+    currentUses: number;
+    maxUses?: number; // Optional: Maximum number of times the coupon can be used
 }

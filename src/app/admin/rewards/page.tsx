@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Coupon } from '@/lib/types';
 import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { Loader2, PlusCircle, Ticket, Trash2, ToggleLeft, ToggleRight, BadgePercent, IndianRupee, MoreHorizontal, CalendarIcon } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, ToggleLeft, ToggleRight, MoreHorizontal, CalendarIcon } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +46,7 @@ const couponSchema = z.object({
     discountType: z.enum(['percentage', 'fixed']),
     discountValue: z.coerce.number().positive('Value must be positive'),
     expiryDate: z.date({ required_error: "Expiry date is required." }),
+    maxUses: z.coerce.number().int().positive().optional().or(z.literal('')),
 });
 
 type CouponFormValues = z.infer<typeof couponSchema>;
@@ -80,13 +80,14 @@ export default function AdminRewardsPage() {
         try {
             await addDoc(collection(db, 'coupons'), {
                 ...values,
+                maxUses: values.maxUses || null, // Store null if empty
                 expiryDate: values.expiryDate.toISOString(),
                 isActive: true,
-                uses: 0,
+                currentUses: 0,
                 createdAt: new Date().toISOString(),
             });
             toast({ title: "Coupon Created!", description: `Code "${values.code}" has been added.`});
-            form.reset({ code: '', discountType: 'percentage' });
+            form.reset({ code: '', discountType: 'percentage', discountValue: undefined, expiryDate: undefined, maxUses: undefined });
         } catch (error: any) {
             toast({ title: 'Error', description: error.message, variant: 'destructive'});
         }
@@ -156,29 +157,36 @@ export default function AdminRewardsPage() {
                                 {form.formState.errors.discountValue && <p className="text-sm text-destructive">{form.formState.errors.discountValue.message}</p>}
                                 </div>
                             </div>
-                            <div className="grid gap-2">
-                                <Label>Expiry Date</Label>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant={"outline"}
-                                            className={cn("justify-start text-left font-normal", !form.watch('expiryDate') && "text-muted-foreground")}
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {form.watch('expiryDate') ? format(form.watch('expiryDate')!, "PPP") : <span>Pick a date</span>}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
-                                        <Calendar
-                                            mode="single"
-                                            selected={form.watch('expiryDate')}
-                                            onSelect={(date) => form.setValue('expiryDate', date as Date)}
-                                            initialFocus
-                                            disabled={(date) => date < new Date()}
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                                {form.formState.errors.expiryDate && <p className="text-sm text-destructive">{form.formState.errors.expiryDate.message}</p>}
+                             <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label>Expiry Date</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn("justify-start text-left font-normal", !form.watch('expiryDate') && "text-muted-foreground")}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {form.watch('expiryDate') ? format(form.watch('expiryDate')!, "PPP") : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={form.watch('expiryDate')}
+                                                onSelect={(date) => form.setValue('expiryDate', date as Date)}
+                                                initialFocus
+                                                disabled={(date) => date < new Date()}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    {form.formState.errors.expiryDate && <p className="text-sm text-destructive">{form.formState.errors.expiryDate.message}</p>}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="maxUses">Maximum Uses</Label>
+                                    <Input id="maxUses" type="number" placeholder="Unlimited" {...form.register('maxUses')} />
+                                    {form.formState.errors.maxUses && <p className="text-sm text-destructive">{form.formState.errors.maxUses.message}</p>}
+                                </div>
                             </div>
                             <Button type="submit" disabled={isSaving}>
                                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
@@ -199,8 +207,8 @@ export default function AdminRewardsPage() {
                                 <TableHead>Code</TableHead>
                                 <TableHead>Discount</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Expires</TableHead>
                                 <TableHead>Uses</TableHead>
+                                <TableHead>Expires</TableHead>
                                 <TableHead><span className="sr-only">Actions</span></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -209,19 +217,24 @@ export default function AdminRewardsPage() {
                                     <TableRow><TableCell colSpan={6} className="text-center h-24">Loading coupons...</TableCell></TableRow>
                                 ) : sortedCoupons && sortedCoupons.length > 0 ? sortedCoupons.map((coupon) => {
                                     const isExpired = new Date(coupon.expiryDate) < new Date();
+                                    const isMaxedOut = coupon.maxUses && coupon.currentUses >= coupon.maxUses;
+                                    const isActive = coupon.isActive && !isExpired && !isMaxedOut;
+
                                     return (
-                                    <TableRow key={coupon.id}>
+                                    <TableRow key={coupon.id} className={!isActive ? 'text-muted-foreground' : ''}>
                                         <TableCell className="font-mono">{coupon.code}</TableCell>
                                         <TableCell>
                                             {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={coupon.isActive && !isExpired ? 'default' : 'secondary'} className={cn(isExpired && 'line-through')}>
-                                                {isExpired ? 'Expired' : coupon.isActive ? 'Active' : 'Inactive'}
+                                            <Badge variant={isActive ? 'default' : 'secondary'} className={cn((isExpired || isMaxedOut) && 'line-through')}>
+                                                {isExpired ? 'Expired' : isMaxedOut ? 'Used Up' : coupon.isActive ? 'Active' : 'Inactive'}
                                             </Badge>
                                         </TableCell>
+                                        <TableCell>
+                                            {coupon.currentUses} / {coupon.maxUses || '∞'}
+                                        </TableCell>
                                         <TableCell>{format(new Date(coupon.expiryDate), 'MMM dd, yyyy')}</TableCell>
-                                        <TableCell>{coupon.uses}</TableCell>
                                         <TableCell>
                                              <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>

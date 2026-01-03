@@ -1,4 +1,5 @@
 
+
 {
   "entities": {
     "Order": {
@@ -246,7 +247,7 @@
         "isActive": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "code", "discountType", "discountValue", "expiryDate", "isActive", "createdAt"]
+      "required": ["id", "code", "discountType", "discountValue", "expiryDate", "isActive", "createdAt", "currentUses"]
     },
     "AppSettings": {
         "title": "AppSettings",

@@ -78,10 +78,15 @@ service cloud.firestore {
     }
 
     match /coupons/{couponId} {
-      // Allow signed-in users and service accounts (for AI tools) to read coupons.
-      allow get, list: if isSignedIn() || request.auth.token.email_verified == true;
-      // Allow admins to manage coupons
+      // Allow signed-in users and admins to read coupons.
+      allow get, list: if isSignedIn() || isAdmin();
+      
+      // Allow admins to manage coupons (create, delete, toggle active)
       allow write: if isAdmin();
+      
+      // Allow any signed-in user to update ONLY the currentUses field (by incrementing it).
+      // This is for when a user successfully applies a coupon.
+      allow update: if isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentUses']);
     }
 
     /* ===============================

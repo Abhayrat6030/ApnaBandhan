@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -130,8 +131,10 @@ function OrderFormComponent() {
         const couponData = { id: couponDoc.id, ...couponDoc.data() } as Coupon;
         
         const isExpired = new Date(couponData.expiryDate) < new Date();
-        if (!couponData.isActive || isExpired) {
-             toast({ title: 'Invalid Coupon', description: 'This coupon is either inactive or has expired.', variant: 'destructive' });
+        const isMaxedOut = couponData.maxUses != null && couponData.currentUses >= couponData.maxUses;
+
+        if (!couponData.isActive || isExpired || isMaxedOut) {
+             toast({ title: 'Invalid Coupon', description: 'This coupon is inactive, expired, or has reached its usage limit.', variant: 'destructive' });
              setIsCouponLoading(false);
              return;
         }
@@ -185,13 +188,14 @@ function OrderFormComponent() {
     };
 
     try {
-      await addDoc(collection(db, 'orders'), newOrder);
+      const ordersCollection = collection(db, 'orders');
+      addDoc(ordersCollection, newOrder);
 
       // Increment coupon usage if one was applied
       if (appliedCoupon) {
           const couponRef = doc(db, 'coupons', appliedCoupon.id);
-          await updateDoc(couponRef, {
-              uses: increment(1)
+          updateDoc(couponRef, {
+              currentUses: increment(1)
           });
       }
 
