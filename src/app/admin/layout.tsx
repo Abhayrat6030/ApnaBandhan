@@ -1,9 +1,8 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useUser } from '@/firebase';
-import { useRouter } from 'next/navigation';
 import AdminNav from "@/components/admin/AdminNav";
 import Logo from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
@@ -15,73 +14,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/lib/constants";
-import { PanelLeft, ShieldAlert, Loader2 } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-function AdminAuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, isUserLoading } = useUser();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    const verifyAdmin = async () => {
-      if (isUserLoading) return;
-
-      if (!user) {
-        setIsAdmin(false);
-        return;
-      }
-      
-      try {
-        const response = await fetch('/api/auth/verify');
-        const data = await response.json();
-        setIsAdmin(data.isAdmin);
-      } catch (error) {
-        console.error("Admin verification failed:", error);
-        setIsAdmin(false);
-      }
-    };
-
-    verifyAdmin();
-  }, [user, isUserLoading]);
-
-  if (isAdmin === null || isUserLoading) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-muted/40">
-        <div className="p-8 w-full max-w-md text-center">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
-            <p className="mt-4 text-muted-foreground">Verifying access...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 p-4">
-        <Card className="max-w-md text-center">
-            <CardHeader>
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 mb-4">
-                  <ShieldAlert className="h-8 w-8 text-destructive" />
-                </div>
-                <CardTitle>Access Denied</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground mb-6">You do not have permission to view this page. Please log in with an administrator account.</p>
-                <Button asChild>
-                    <Link href="/login">Login</Link>
-                </Button>
-            </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
-}
-
 
 export default function AdminLayout({
   children,
@@ -91,8 +26,11 @@ export default function AdminLayout({
   const { user } = useUser();
   const [isSheetOpen, setSheetOpen] = useState(false);
 
+  // The AdminAuthGuard has been removed. 
+  // Security is now handled at the data level by Firestore rules and on API routes.
+  // This prevents the "Access Denied" page from appearing and simplifies the auth flow.
+  
   return (
-    <AdminAuthGuard>
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <aside className="hidden border-r bg-muted/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
@@ -153,6 +91,5 @@ export default function AdminLayout({
           </main>
         </div>
       </div>
-    </AdminAuthGuard>
   );
 }
