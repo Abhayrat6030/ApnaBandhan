@@ -98,6 +98,7 @@ export type UserProfile = {
 export type AppSettings = {
     downloadAppLink?: string;
     aiCustomInstructions?: string;
+    activeCoupons?: string;
 };
 
 export type Coupon = {

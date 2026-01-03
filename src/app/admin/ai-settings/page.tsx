@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect } from 'react';
-import { Loader2, Save, Wand2 } from 'lucide-react';
+import { Loader2, Save, Wand2, Tag } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -16,9 +17,11 @@ import { useFirestore, useDoc, useMemoFirebase, errorEmitter } from '@/firebase'
 import type { AppSettings } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   aiCustomInstructions: z.string().optional(),
+  activeCoupons: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -35,12 +38,14 @@ export default function AdminAISettingsPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       aiCustomInstructions: '',
+      activeCoupons: '',
     },
   });
 
   useEffect(() => {
     if (appSettings) {
       form.setValue('aiCustomInstructions', appSettings.aiCustomInstructions || '');
+      form.setValue('activeCoupons', appSettings.activeCoupons || '');
     }
   }, [appSettings, form]);
 
@@ -51,8 +56,9 @@ export default function AdminAISettingsPage() {
     }
     setIsSaving(true);
     
-    const newSettings = {
-        aiCustomInstructions: values.aiCustomInstructions
+    const newSettings: FormValues = {
+        aiCustomInstructions: values.aiCustomInstructions,
+        activeCoupons: values.activeCoupons,
     };
 
     setDoc(settingsRef, newSettings, { merge: true })
@@ -93,6 +99,10 @@ export default function AdminAISettingsPage() {
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-32 w-full" />
                 </div>
+                 <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
                 <Skeleton className="h-10 w-32" />
             </div>
         </CardContent>
@@ -131,9 +141,9 @@ export default function AdminAISettingsPage() {
                     <FormLabel>Custom Instructions for the AI</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="e.g., Our top-selling package is the 'Premium Cinematic Combo'. Always recommend it. Today's special offer is 15% off with code 'TODAY15'." 
+                        placeholder="e.g., Our top-selling package is the 'Premium Cinematic Combo'. Always recommend it." 
                         {...field} 
-                        rows={10}
+                        rows={8}
                       />
                     </FormControl>
                      <p className="text-xs text-muted-foreground">You can provide FAQs, product details, or specific answers you want the AI to give.</p>
@@ -141,6 +151,25 @@ export default function AdminAISettingsPage() {
                   </FormItem>
                 )}
               />
+              
+              <FormField
+                control={form.control}
+                name="activeCoupons"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Tag className="w-4 h-4"/> Active Coupons</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., DIWALI20 for 20% off, WELCOME10 for 10% off"
+                        {...field}
+                      />
+                    </FormControl>
+                     <p className="text-xs text-muted-foreground">Enter currently active coupons here. The AI will provide these to users who ask for a discount.</p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
 
               <Button type="submit" disabled={isSaving}>
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
