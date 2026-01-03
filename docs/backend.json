@@ -1,5 +1,4 @@
 
-
 {
   "entities": {
     "Order": {
@@ -255,7 +254,8 @@
         "description": "Global settings for the application.",
         "properties": {
             "downloadAppLink": { "type": "string", "format": "uri" },
-            "aiCustomInstructions": { "type": "string" }
+            "aiCustomInstructions": { "type": "string" },
+            "activeCoupons": { "type": "string" }
         }
     }
   },
