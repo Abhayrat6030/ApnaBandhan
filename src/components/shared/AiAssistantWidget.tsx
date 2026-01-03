@@ -37,7 +37,7 @@ type Message = {
 
 function AiAssistantChat() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hello! How can I help you with your wedding invitation today? You can ask me for ideas, or to write a draft for you." }
+    { role: 'assistant', content: "Hello! I'm Bandhan, your personal wedding content assistant. How can I help you craft the perfect words for your special day?" }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -60,8 +60,8 @@ function AiAssistantChat() {
     if (!inputValue.trim() || isLoading) return;
 
     const userMessage: Message = { role: 'user', content: inputValue };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    const conversationHistory = [...messages, userMessage];
+    setMessages(conversationHistory);
     setInputValue('');
     setIsLoading(true);
 
@@ -69,7 +69,10 @@ function AiAssistantChat() {
       const response = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage.content }),
+        body: JSON.stringify({ 
+            message: userMessage.content,
+            history: messages // Send the history *before* the new user message
+        }),
       });
 
       if (!response.ok) {
@@ -98,7 +101,7 @@ function AiAssistantChat() {
         description: errorMessage,
         variant: 'destructive',
       });
-      // OPTIONAL: Remove the user's message if the API call fails
+      // Revert to the state before the failed message
       setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
