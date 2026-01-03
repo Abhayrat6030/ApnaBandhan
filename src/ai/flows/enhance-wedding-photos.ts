@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -9,7 +10,8 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
+import {googleAI} from '@genkit-ai/google-genai';
 
 const EnhanceWeddingPhotosInputSchema = z.object({
   photoDataUri: z
@@ -29,6 +31,7 @@ export type EnhanceWeddingPhotosOutput = z.infer<typeof EnhanceWeddingPhotosOutp
 
 export async function enhanceWeddingPhotos(input: EnhanceWeddingPhotosInput): Promise<EnhanceWeddingPhotosOutput> {
   const {media} = await ai.generate({
+    model: googleAI.model('gemini-pro-vision'), // This model is suitable for vision tasks
     prompt: [
         {
         media: {url: input.photoDataUri},
@@ -37,7 +40,6 @@ export async function enhanceWeddingPhotos(input: EnhanceWeddingPhotosInput): Pr
         text: 'Enhance this wedding photo to improve its quality and make it look more professional. Focus on improving clarity, color balance, and sharpness. Return the enhanced image as a data URI.',
         },
     ],
-    model: ai.getModel('google/gemini-flash-1.5-latest'),
     config: {
         responseModalities: ['TEXT', 'IMAGE'],
     },

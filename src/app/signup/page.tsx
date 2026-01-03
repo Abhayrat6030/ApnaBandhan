@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -94,8 +95,7 @@ function SignupFormComponent() {
                 const referrerRef = doc(db, 'users', referrerDoc.id);
                 batch.update(referrerRef, { referrals: increment(1) });
             } else {
-                 console.warn("Referral code provided but no owner found. Continuing signup.");
-                 // Optionally, you could toast a message to the user here.
+                 toast({ title: 'Invalid Referral Code', description: 'The referral code was not found, but your account was created.', variant: 'destructive'});
             }
         }
         

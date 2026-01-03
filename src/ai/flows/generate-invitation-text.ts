@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,6 +11,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import {googleAI} from '@genkit-ai/google-genai';
 
 // Define the structure for a single message in the conversation history
 const HistoryMessageSchema = z.object({
@@ -30,18 +32,17 @@ export type GenerateInvitationTextOutput = z.infer<typeof GenerateInvitationText
 
 
 export async function generateInvitationText(input: GenerateInvitationTextInput): Promise<GenerateInvitationTextOutput> {
-    const { output } = await ai.generate({
+    const { text } = await ai.generate({
+        model: googleAI.model('gemini-pro'),
         system: "You are a friendly and helpful AI assistant. Your goal is to be helpful, polite, and answer the user's questions on any topic they ask about. Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.",
         history: input.history?.map(msg => ({ role: msg.role, content: [{ text: msg.content }]})),
         prompt: input.prompt,
-        output: {
-            schema: GenerateInvitationTextOutputSchema,
-        },
     });
     
-    if (!output) {
+    const responseText = text;
+    if (!responseText) {
       throw new Error("Failed to generate a response from the AI.");
     }
     
-    return { response: output.response };
+    return { response: responseText };
 }
