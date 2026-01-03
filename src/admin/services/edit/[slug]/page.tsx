@@ -6,7 +6,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect } from 'react';
-import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, Wand2 } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -53,6 +53,7 @@ export default function EditServicePage() {
   const { slug } = params;
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [itemType, setItemType] = useState<'service' | 'package' | null>(null);
   const { user } = useUser();
   const db = useFirestore();
@@ -108,6 +109,17 @@ export default function EditServicePage() {
     }
   }, [serviceData, packageData, form]);
 
+    const handleGenerateDescription = async () => {
+        setIsGenerating(true);
+        toast({
+            title: 'Feature Unavailable',
+            description: 'The AI description generator is temporarily disabled.',
+            variant: 'destructive',
+        });
+        setIsGenerating(false);
+  };
+
+
   async function onSubmit(values: FormValues) {
     if (!user || !db) {
         toast({ title: 'Authentication Error', description: 'You must be logged in.', variant: 'destructive' });
@@ -117,8 +129,8 @@ export default function EditServicePage() {
 
     try {
         if (values.itemType === 'service') {
-            const serviceRef = doc(db, 'services', slug as string);
-            await updateDoc(serviceRef, {
+            const serviceDocRef = doc(db, 'services', slug as string);
+            await updateDoc(serviceDocRef, {
                 name: values.name,
                 description: values.description,
                 category: values.category,
@@ -128,8 +140,8 @@ export default function EditServicePage() {
                 inclusions: values.inclusions?.map(i => i.value).filter(Boolean),
             });
         } else { // package
-            const packageRef = doc(db, 'comboPackages', slug as string);
-            await updateDoc(packageRef, {
+            const packageDocRef = doc(db, 'comboPackages', slug as string);
+            await updateDoc(packageDocRef, {
                 name: values.name,
                 description: values.description,
                 price: values.priceString,
@@ -142,6 +154,7 @@ export default function EditServicePage() {
             description: `${values.itemType === 'service' ? 'Service' : 'Package'} updated successfully.`,
         });
         router.push('/admin/services');
+        router.refresh();
     } catch (error: any) {
         toast({
             title: 'Error',
@@ -175,9 +188,22 @@ export default function EditServicePage() {
                 <FormItem><FormLabel>Name</FormLabel><FormControl><Input placeholder="e.g. Elegant Wedding E-Invite" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>
               
-              <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the item..." {...field} /></FormControl><FormMessage /></FormItem>
-              )}/>
+              <div className="relative">
+                <FormField control={form.control} name="description" render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl><Textarea placeholder="Describe the item..." {...field} rows={4} /></FormControl>
+                      <FormMessage />
+                  </FormItem>
+                )}/>
+                <div className="absolute -bottom-6 right-0">
+                    <Button type="button" variant="ghost" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
+                      {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                      Generate with AI
+                    </Button>
+                  </div>
+              </div>
+
 
               {itemType === 'service' ? (
                 <>

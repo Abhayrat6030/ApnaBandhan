@@ -6,8 +6,8 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
-import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
-import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
+import { Loader2, PlusCircle, Trash2, Wand2 } from 'lucide-react';
+import { doc, setDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser } from '@/firebase';
+
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
@@ -32,6 +33,12 @@ const formSchema = z.object({
   // Package fields
   priceString: z.string().optional(),
   features: z.array(z.object({ value: z.string() })).optional(),
+}).refine(data => data.itemType !== 'service' || !!data.slug, {
+    message: "Slug is required for services.",
+    path: ["slug"],
+}).refine(data => data.itemType !== 'service' || !!data.category, {
+    message: "Category is required for services.",
+    path: ["category"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -47,6 +54,7 @@ export default function NewServicePage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [itemType, setItemType] = useState('service');
   const { user } = useUser();
   const db = useFirestore();
@@ -81,6 +89,16 @@ export default function NewServicePage() {
     form.setValue('itemType', value as 'service' | 'package');
   }
 
+  const handleGenerateDescription = async () => {
+    setIsGenerating(true);
+    toast({
+        title: 'Feature Unavailable',
+        description: 'The AI description generator is temporarily disabled.',
+        variant: 'destructive',
+    });
+    setIsGenerating(false);
+  };
+
   async function onSubmit(values: FormValues) {
     if (!user || !db) {
         toast({ title: 'Error', description: 'You must be logged in to perform this action.', variant: 'destructive' });
@@ -92,6 +110,7 @@ export default function NewServicePage() {
         if (values.itemType === 'service' && values.slug) {
             const serviceRef = doc(db, 'services', values.slug);
             await setDoc(serviceRef, {
+                id: values.slug,
                 name: values.name,
                 slug: values.slug,
                 description: values.description,
@@ -99,16 +118,20 @@ export default function NewServicePage() {
                 price: values.price,
                 priceType: values.priceType,
                 deliveryTime: values.deliveryTime,
-                inclusions: values.inclusions?.map(i => i.value).filter(Boolean)
+                inclusions: values.inclusions?.map(i => i.value).filter(Boolean),
+                samples: [], // Add a default empty samples array
             });
         } else if (values.itemType === 'package') {
             const slug = values.name.toLowerCase().replace(/\s+/g, '-');
             const packageRef = doc(db, 'comboPackages', slug);
             await setDoc(packageRef, {
+                id: slug,
+                slug: slug,
                 name: values.name,
                 description: values.description,
                 price: values.priceString,
                 features: values.features?.map(f => f.value).filter(Boolean),
+                isBestValue: false, // Default value
             });
         }
         toast({
@@ -116,6 +139,7 @@ export default function NewServicePage() {
             description: `${values.itemType === 'service' ? 'Service' : 'Package'} added successfully.`,
         });
         router.push('/admin/services');
+        router.refresh();
 
     } catch (error: any) {
         console.error("Error adding service:", error);
@@ -170,10 +194,22 @@ export default function NewServicePage() {
                 <FormItem><FormLabel>Slug</FormLabel><FormControl><Input placeholder="e.g. elegant-wedding-e-invite" {...field} /></FormControl><FormMessage /></FormItem>
               )}/>}
               
-              <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Describe the item..." {...field} /></FormControl><FormMessage /></FormItem>
-              )}/>
-
+              <div className="relative">
+                <FormField control={form.control} name="description" render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl><Textarea placeholder="Describe the item or generate one with AI..." {...field} rows={4} /></FormControl>
+                      <FormMessage />
+                  </FormItem>
+                )}/>
+                <div className="absolute -bottom-6 right-0">
+                    <Button type="button" variant="ghost" size="sm" onClick={handleGenerateDescription} disabled={isGenerating}>
+                      {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                      Generate with AI
+                    </Button>
+                  </div>
+              </div>
+              
               {itemType === 'service' ? (
                 <>
                     <FormField control={form.control} name="category" render={({ field }) => (

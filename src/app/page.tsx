@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { generateInvitationText } from '@/ai/flows/generate-invitation-text';
+
 
 const topRatedVideos = services.filter(s => s.category === 'invitation-videos');
 const topRatedCards = services.filter(s => s.category === 'invitation-cards');
