@@ -18,7 +18,6 @@ import { useToast } from "@/hooks/use-toast";
 const primaryMenuItems = [
     { label: "Profile", icon: User, href: "/profile/settings" },
     { label: "Notifications", icon: Bell, href: "/profile/notifications", badgeKey: "notifications" },
-    { label: "AI Assistant", icon: Wand2, href: "/ai-assistant" },
     { label: "My Requests", icon: FileText, href: "/profile/requests" },
     { label: "Order History", icon: ShoppingBag, href: "/profile/orders" },
     { label: "Downloads", icon: Download, href: "/profile/downloads" },
