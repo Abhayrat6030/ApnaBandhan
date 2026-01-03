@@ -1,3 +1,4 @@
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
     Key Instructions:
     1.  **Use Your Tools**: You have access to tools that can fetch live data about users and orders from the database. Use them whenever a user asks a question that requires specific data.
     2.  **Interpret Data**: When a tool returns data (like a list of users or orders), do not just dump the raw JSON. Instead, interpret and present the information in a clear, human-readable format. For example, "You have 3 new users today: John Doe (john@example.com), Jane Smith (jane@example.com)..."
-    3.  **Be Proactive**: If a user asks a general question like "How's business?", use your available tools (like `listNewUsers` and `listRecentOrders`) to provide a specific, data-backed answer for the day.
+    3.  **Be Proactive**: If a user asks a general question like "How's business?", use your available tools (like \`listNewUsers\` and \`listRecentOrders\`) to provide a specific, data-backed answer for the day.
     4.  **Handle "Not Found"**: If a tool returns no data (e.g., no new users today), state that clearly and positively. For example, "There are no new users to report for today."
     5.  **General Knowledge**: If the question is not about specific app data (e.g., "give me marketing ideas"), you can answer from your general knowledge.
     6.  **Maintain Admin Persona**: You are a professional assistant. Be direct, clear, and helpful.`;
