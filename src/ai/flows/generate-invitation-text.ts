@@ -8,7 +8,7 @@
  * - GenerateInvitationTextOutput - The return type for the function.
  */
 
-import { ai, type Prompt } from '@/ai/genkit';
+import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 // Define the structure for a single message in the conversation history
@@ -24,15 +24,38 @@ const GenerateInvitationTextInputSchema = z.object({
 export type GenerateInvitationTextInput = z.infer<typeof GenerateInvitationTextInputSchema>;
 
 const GenerateInvitationTextOutputSchema = z.object({
-  response: z.string().describe('The AI assistant\'s response to the user\'s prompt.'),
+  response: z.string().describe("The AI assistant's response to the user's prompt."),
 });
 export type GenerateInvitationTextOutput = z.infer<typeof GenerateInvitationTextOutputSchema>;
 
-export async function generateInvitationText(input: GenerateInvitationTextInput): Promise<GenerateInvitationTextOutput> {
-  return generateInvitationTextFlow(input);
-}
 
-const systemInstruction = `You are a friendly and helpful AI assistant. Your goal is to be helpful, polite, and answer the user's questions on any topic they ask about. Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.`;
+// This is the structured prompt template. It tells Genkit exactly how to format the request.
+const invitationHelperPrompt = ai.definePrompt(
+  {
+    name: 'invitationHelperPrompt',
+    system: "You are a friendly and helpful AI assistant. Your goal is to be helpful, polite, and answer the user's questions on any topic they ask about. Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.",
+    input: { schema: GenerateInvitationTextInputSchema },
+    output: { schema: GenerateInvitationTextOutputSchema },
+  },
+  async (input) => {
+    // Start with the main user prompt
+    const promptParts = [{ text: input.prompt }];
+
+    // Prepend history if it exists, formatting it correctly
+    if (input.history) {
+      const historyMessages = input.history.map(msg => ({
+        role: msg.role,
+        content: [{ text: msg.content }],
+      }));
+      return {
+        history: historyMessages,
+        prompt: input.prompt,
+      };
+    }
+    
+    return { prompt: input.prompt };
+  }
+);
 
 
 const generateInvitationTextFlow = ai.defineFlow(
@@ -42,22 +65,12 @@ const generateInvitationTextFlow = ai.defineFlow(
     outputSchema: GenerateInvitationTextOutputSchema,
   },
   async (input) => {
-    // Convert the conversation history from the input into the format expected by the model.
-    const history: Prompt<'user' | 'assistant'>[] = input.history?.map(msg => ({
-      role: msg.role,
-      content: [{ text: msg.content }]
-    })) || [];
-    
-    // Generate the response using a structured prompt with history
-    const { output } = await ai.generate({
-        system: systemInstruction,
-        history: history,
-        prompt: input.prompt,
-        output: {
-            schema: GenerateInvitationTextOutputSchema
-        }
-    });
-
+    // Call the structured prompt, which handles the complex request generation.
+    const { output } = await invitationHelperPrompt(input);
     return { response: output!.response };
   }
 );
+
+export async function generateInvitationText(input: GenerateInvitationTextInput): Promise<GenerateInvitationTextOutput> {
+  return generateInvitationTextFlow(input);
+}
