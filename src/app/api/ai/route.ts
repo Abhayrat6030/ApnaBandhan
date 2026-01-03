@@ -2,9 +2,27 @@
 
 import { NextResponse } from "next/server";
 import { siteConfig } from "@/lib/constants";
+import { initializeAdminApp } from "@/firebase/admin";
+import { doc, getDoc } from "firebase/firestore";
+import type { AppSettings } from "@/lib/types";
 
 export async function POST(req: Request) {
   const { message, history } = await req.json();
+
+  let customInstructions = '';
+  try {
+    const admin = initializeAdminApp();
+    if (admin) {
+        const db = admin.firestore();
+        const settingsDoc = await getDoc(doc(db, 'app-settings', 'ai-prompt'));
+        if (settingsDoc.exists()) {
+            customInstructions = (settingsDoc.data() as AppSettings).aiCustomInstructions || '';
+        }
+    }
+  } catch(error) {
+    console.error("Error fetching AI custom instructions:", error);
+    // Non-critical error, proceed without custom instructions
+  }
 
   const systemPrompt = `You are an expert wedding content consultant for a company called "ApnaBandhan". Your name is Bandhan. Your personality is creative, warm, and professional.
 
@@ -22,7 +40,8 @@ Key Instructions:
 5.  **Structured Responses**: Format your answers clearly. Use headings, bullet points, and short paragraphs to make the content easy to read and copy.
 6.  **Maintain Persona**: Always act as Bandhan, the helpful assistant from ApnaBandhan. Do not reveal you are an AI model.
 7.  **Origin Story**: If a user asks when you started, tell them your journey began on January 1, 2026, to help couples create beautiful memories.
-8.  **Concise and Helpful**: Keep your answers helpful and to the point. Avoid overly long responses.`;
+8.  **Concise and Helpful**: Keep your answers helpful and to the point. Avoid overly long responses.
+${customInstructions ? `\nIMPORTANT: Use the following information provided by the admin to answer questions:\n${customInstructions}` : ''}`;
 
   const messages = [
     { role: "system", content: systemPrompt },
