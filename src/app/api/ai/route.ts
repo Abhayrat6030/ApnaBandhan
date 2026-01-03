@@ -1,7 +1,6 @@
 
-import { genkit } from 'genkit';
+import { genkit, ai } from 'genkit';
 import { NextRequest, NextResponse } from 'next/server';
-import { run } from '@genkit-ai/next';
 import { z } from 'zod';
 import {
   collection,
@@ -11,7 +10,14 @@ import {
 } from 'firebase/firestore';
 import {googleAI} from '@genkit-ai/google-genai';
 import { siteConfig } from '@/lib/constants';
-import { db } from '@/firebase';
+import { initializeAdminApp } from '@/firebase/admin';
+
+// Initialize Firebase Admin for server-side operations
+const admin = initializeAdminApp();
+let db;
+if (admin) {
+  db = admin.firestore();
+}
 
 genkit({
   plugins: [
@@ -22,6 +28,7 @@ genkit({
 });
 
 const listServices = async () => {
+    if (!db) throw new Error("Firestore is not initialized.");
     const servicesCollection = collection(db, 'services');
     const packagesCollection = collection(db, 'comboPackages');
     const servicesSnapshot = await getDocs(servicesCollection);
@@ -32,6 +39,7 @@ const listServices = async () => {
 };
 
 const listCoupons = async () => {
+    if (!db) throw new Error("Firestore is not initialized.");
     const couponsCollection = collection(db, 'coupons');
     const q = query(couponsCollection, where('isActive', '==', true));
     const querySnapshot = await getDocs(q);
@@ -39,42 +47,38 @@ const listCoupons = async () => {
     return { coupons };
 };
 
-export async function POST(req: NextRequest) {
-  const { message, history } = await req.json();
-
-  const assistant = ai.definePrompt(
+const assistant = ai.definePrompt(
     {
       name: 'assistant-prompt',
       input: {
         schema: z.object({
           message: z.string(),
-          history: z.array(z.any()),
         }),
       },
       tools: [
-        {
-          name: 'listServices',
-          description: 'Get a list of all available services and combo packages offered by the company.',
-          input: { schema: z.any() },
-          output: {
-            schema: z.object({
+        ai.defineTool(
+          {
+            name: 'listServices',
+            description: 'Get a list of all available services and combo packages offered by the company.',
+            inputSchema: z.any(),
+            outputSchema: z.object({
               services: z.array(z.any()),
               packages: z.array(z.any()),
             }),
           },
-          handler: listServices,
-        },
-        {
-          name: 'listCoupons',
-          description: 'Get a list of all currently active discount coupons.',
-          input: { schema: z.any() },
-          output: {
-            schema: z.object({
+          listServices
+        ),
+        ai.defineTool(
+          {
+            name: 'listCoupons',
+            description: 'Get a list of all currently active discount coupons.',
+            inputSchema: z.any(),
+            outputSchema: z.object({
               coupons: z.array(z.any()),
             }),
           },
-          handler: listCoupons,
-        },
+          listCoupons
+        ),
       ],
       system: `You are an expert wedding content consultant for a company called "ApnaBandhan". Your name is Bandhan. Your personality is creative, warm, and professional.
 
@@ -93,21 +97,26 @@ Key Instructions:
 6.  **Maintain Persona**: Always act as Bandhan, the helpful assistant from ApnaBandhan. Do not reveal you are an AI model.
 7.  **Concise and Helpful**: Keep your answers helpful and to the point. Avoid overly long responses. When listing items like services or coupons, summarize them nicely.
 `,
-    },
-    async (input) => {
-        for (const item of input.history) {
-            if (item.role === 'user') {
-                ai.user(item.content);
-            } else if (item.role === 'assistant') {
-                ai.assistant(item.content);
-            }
-        }
-        ai.user(input.message);
     }
   );
 
-  return run(req, async () => {
-    const response = await assistant({ message, history });
-    return NextResponse.json({ reply: response.text });
-  });
+
+export async function POST(req: NextRequest) {
+  try {
+    const { message, history } = await req.json();
+
+    const response = await ai.generate({
+        prompt: message,
+        model: googleAI.model('gemini-1.5-flash-latest'),
+        history: history,
+        tools: assistant.tools,
+        system: assistant.system,
+    });
+    
+    return NextResponse.json({ reply: response.text() });
+
+  } catch(e: any) {
+    console.error("AI API Error:", e);
+    return NextResponse.json({ error: e.message || "An unexpected error occurred." }, { status: 500});
+  }
 }
