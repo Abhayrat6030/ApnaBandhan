@@ -18,11 +18,12 @@ export const initializeAdminApp = () => {
   // Replace escaped newlines from environment variables
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-  // If environment variables are not available (e.g., during build time), do not throw an error.
-  // Instead, return null. The calling function will be responsible for handling this case.
+  // If environment variables are not available, throw a specific, descriptive error.
   if (!projectId || !clientEmail || !privateKey) {
-    console.warn("Firebase Admin environment variables are not set. Skipping Admin SDK initialization.");
-    return null;
+    const errorMessage = "Firebase Admin environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY) are not set. Admin SDK cannot be initialized.";
+    console.error(errorMessage);
+    // Throwing an error is better than returning null, as it provides a clear failure reason.
+    throw new Error(errorMessage);
   }
 
   try {
@@ -40,7 +41,7 @@ export const initializeAdminApp = () => {
       return admin; // Return the already initialized app
     }
     console.error('Firebase admin initialization error:', error);
-    // In case of other initialization errors, we also return null.
-    return null;
+    // Re-throw the error to ensure the calling function knows initialization failed.
+    throw error;
   }
 };
