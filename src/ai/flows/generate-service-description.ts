@@ -3,15 +3,11 @@
 
 /**
  * @fileOverview A flow to generate a marketing description for a wedding service.
- *
- * - generateServiceDescription - A function that accepts a service name and category and returns a description.
- * - GenerateServiceDescriptionInput - The input type for the function.
- * - GenerateServiceDescriptionOutput - The return type for the function.
+ * This now directly calls the Groq API via a helper function.
  */
-
-import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import {googleAI} from '@genkit-ai/google-genai';
+
+const groqApiKey = process.env.GROQ_API_KEY;
 
 const GenerateServiceDescriptionInputSchema = z.object({
   name: z.string().describe('The name of the service or product.'),
@@ -25,56 +21,51 @@ const GenerateServiceDescriptionOutputSchema = z.object({
 export type GenerateServiceDescriptionOutput = z.infer<typeof GenerateServiceDescriptionOutputSchema>;
 
 
-const descriptionPrompt = ai.definePrompt(
-    {
-        name: 'serviceDescriptionPrompt',
-        inputSchema: GenerateServiceDescriptionInputSchema,
-        output: {
-            schema: GenerateServiceDescriptionOutputSchema,
-        }
-    },
-    async (input) => {
-        return {
-            prompt: `You are a professional marketing copywriter for a wedding services company called "ApnaBandhan".
+export async function generateServiceDescription(input: GenerateServiceDescriptionInput): Promise<GenerateServiceDescriptionOutput> {
+  if (!groqApiKey) {
+    throw new Error('Groq API key is not configured.');
+  }
+
+  const prompt = `You are a professional marketing copywriter for a wedding services company called "ApnaBandhan".
 Your task is to write a compelling, elegant, and brief description for a service.
-The description should be around 20-30 words.
+The description should be around 20-30 words. Respond with ONLY the description text, no extra formatting or quotation marks.
 
 Service Name: "${input.name}"
 Service Category: "${input.category}"
 
 Write a description that is both informative and enticing to potential customers.
-Focus on the benefits and the emotional aspect of the service.
-Do not use quotes in your response.
-`,
-            config: {
-                temperature: 0.7,
-            },
-        }
+Focus on the benefits and the emotional aspect of the service.`;
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${groqApiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || `Groq API request failed with status ${response.status}`);
     }
-);
 
-
-const generateDescriptionFlow = ai.defineFlow(
-    {
-        name: 'generateDescriptionFlow',
-        inputSchema: GenerateServiceDescriptionInputSchema,
-        outputSchema: GenerateServiceDescriptionOutputSchema,
-    },
-    async (input) => {
-        const { output } = await descriptionPrompt.generate({
-            input: input,
-            model: googleAI.model('gemini-pro'),
-        });
-
-        if (!output) {
-            throw new Error("Failed to generate a description.");
-        }
+    const result = await response.json();
+    const description = result.choices[0]?.message?.content?.trim() || '';
+    
+    if (!description) {
+        throw new Error("Failed to generate a description from the AI.");
+    }
         
-        return output;
-    }
-);
+    return { description };
 
-
-export async function generateServiceDescription(input: GenerateServiceDescriptionInput): Promise<GenerateServiceDescriptionOutput> {
-  return generateDescriptionFlow(input);
+  } catch (error: any) {
+    console.error("Error in generateServiceDescription:", error);
+    throw new Error(error.message || "Failed to generate description.");
+  }
 }
