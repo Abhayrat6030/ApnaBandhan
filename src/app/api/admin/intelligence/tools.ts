@@ -1,91 +1,66 @@
-'use server';
-
-import { ai } from '@/ai/genkit';
-import { initializeAdminApp } from '@/firebase/admin';
-import { z } from 'zod';
-import {
-  collection,
-  query,
-  orderBy,
-  limit,
-  getDocs,
-  Timestamp,
-  startAt,
-  where,
-} from 'firebase/firestore';
-import type { Order, UserProfile } from '@/lib/types';
-import { sub, startOfDay, startOfWeek, startOfMonth } from 'date-fns';
-
-const admin = initializeAdminApp();
-const db = admin ? admin.firestore() : null;
-
-export const listNewUsers = ai.defineTool(
-  {
-    name: 'listNewUsers',
-    description: 'Get a list of the most recent users who have signed up. Can be filtered by a time frame.',
-    input: {
-      schema: z.object({
-        count: z.number().default(5).describe("The number of users to retrieve."),
-        timeframe: z.enum(['today', 'week', 'month', 'all']).default('all').describe("The time period to look for new users."),
-      }),
-    },
-    output: { schema: z.array(z.custom<UserProfile>()) },
+{
+  "name": "nextn",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
-  async (input) => {
-    if (!db) throw new Error('Firestore not initialized.');
-
-    let userQuery = query(
-      collection(db, 'users'),
-      orderBy('createdAt', 'desc'),
-      limit(input.count)
-    );
-
-    let startDate: Date | null = null;
-    if (input.timeframe === 'today') {
-        startDate = startOfDay(new Date());
-    } else if (input.timeframe === 'week') {
-        startDate = startOfWeek(new Date());
-    } else if (input.timeframe === 'month') {
-        startDate = startOfMonth(new Date());
-    }
-    
-    if (startDate) {
-        userQuery = query(userQuery, where('createdAt', '>=', startDate.toISOString()));
-    }
-
-    const snapshot = await getDocs(userQuery);
-    if (snapshot.empty) {
-      return [];
-    }
-    return snapshot.docs.map(doc => doc.data() as UserProfile);
-  }
-);
-
-
-export const listRecentOrders = ai.defineTool(
-  {
-    name: 'listRecentOrders',
-    description: 'Get a list of the most recent orders placed on the website. Can be filtered by count.',
-    input: {
-        schema: z.object({
-            count: z.number().default(5).describe("The number of orders to retrieve."),
-        })
-    },
-    output: { schema: z.array(z.custom<Order>()) },
+  "engines": {
+    "node": "18.x"
   },
-  async (input) => {
-    if (!db) throw new Error('Firestore not initialized.');
-
-    const ordersQuery = query(
-      collection(db, 'orders'),
-      orderBy('orderDate', 'desc'),
-      limit(input.count)
-    );
-
-    const snapshot = await getDocs(ordersQuery);
-    if (snapshot.empty) {
-      return [];
-    }
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+  "dependencies": {
+    "@hookform/resolvers": "^4.1.3",
+    "@radix-ui/react-accordion": "^1.2.3",
+    "@radix-ui/react-alert-dialog": "^1.1.6",
+    "@radix-ui/react-avatar": "^1.1.3",
+    "@radix-ui/react-checkbox": "^1.1.4",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-menubar": "^1.1.6",
+    "@radix-ui/react-popover": "^1.1.6",
+    "@radix-ui/react-progress": "^1.1.2",
+    "@radix-ui/react-radio-group": "^1.2.3",
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@radix-ui/react-select": "^2.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@radix-ui/react-slider": "^1.2.3",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.1.3",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@radix-ui/react-toast": "^1.2.6",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "embla-carousel-autoplay": "^8.1.5",
+    "embla-carousel-react": "^8.6.0",
+    "firebase": "^10.12.2",
+    "firebase-admin": "^12.1.1",
+    "lucide-react": "^0.475.0",
+    "next": "15.5.9",
+    "patch-package": "^8.0.0",
+    "react": "^19.2.1",
+    "react-day-picker": "^9.11.3",
+    "react-dom": "^19.2.1",
+    "react-hook-form": "^7.54.2",
+    "recharts": "^2.15.1",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "vaul": "^1.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19.2.1",
+    "@types/react-dom": "^19.2.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
-);
+}

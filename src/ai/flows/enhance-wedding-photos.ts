@@ -1,48 +1,66 @@
-
-'use server';
-
-/**
- * @fileOverview A flow to enhance wedding photos using AI.
- *
- * - enhanceWeddingPhotos - A function that accepts a wedding photo and enhances it.
- * - EnhanceWeddingPhotosInput - The input type for the enhanceWeddingPhotos function.
- * - EnhanceWeddingPhotosOutput - The return type for the enhanceWeddingPhotos function.
- */
-
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
-import {googleAI} from '@genkit-ai/google-genai';
-
-const EnhanceWeddingPhotosInputSchema = z.object({
-  photoDataUri: z
-    .string()
-    .describe(
-      "A wedding photo as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
-});
-export type EnhanceWeddingPhotosInput = z.infer<typeof EnhanceWeddingPhotosInputSchema>;
-
-const EnhanceWeddingPhotosOutputSchema = z.object({
-  enhancedPhotoDataUri: z
-    .string()
-    .describe('The enhanced wedding photo as a data URI.'),
-});
-export type EnhanceWeddingPhotosOutput = z.infer<typeof EnhanceWeddingPhotosOutputSchema>;
-
-export async function enhanceWeddingPhotos(input: EnhanceWeddingPhotosInput): Promise<EnhanceWeddingPhotosOutput> {
-  const {media} = await ai.generate({
-    model: googleAI.model('gemini-pro-vision'), // This model is suitable for vision tasks
-    prompt: [
-        {
-        media: {url: input.photoDataUri},
-        },
-        {
-        text: 'Enhance this wedding photo to improve its quality and make it look more professional. Focus on improving clarity, color balance, and sharpness. Return the enhanced image as a data URI.',
-        },
-    ],
-    config: {
-        responseModalities: ['TEXT', 'IMAGE'],
-    },
-  });
-  return {enhancedPhotoDataUri: media!.url!};
+{
+  "name": "nextn",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^4.1.3",
+    "@radix-ui/react-accordion": "^1.2.3",
+    "@radix-ui/react-alert-dialog": "^1.1.6",
+    "@radix-ui/react-avatar": "^1.1.3",
+    "@radix-ui/react-checkbox": "^1.1.4",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-dropdown-menu": "^2.1.6",
+    "@radix-ui/react-label": "^2.1.2",
+    "@radix-ui/react-menubar": "^1.1.6",
+    "@radix-ui/react-popover": "^1.1.6",
+    "@radix-ui/react-progress": "^1.1.2",
+    "@radix-ui/react-radio-group": "^1.2.3",
+    "@radix-ui/react-scroll-area": "^1.2.3",
+    "@radix-ui/react-select": "^2.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@radix-ui/react-slider": "^1.2.3",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.1.3",
+    "@radix-ui/react-tabs": "^1.1.3",
+    "@radix-ui/react-toast": "^1.2.6",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "embla-carousel-autoplay": "^8.1.5",
+    "embla-carousel-react": "^8.6.0",
+    "firebase": "^10.12.2",
+    "firebase-admin": "^12.1.1",
+    "lucide-react": "^0.475.0",
+    "next": "15.5.9",
+    "patch-package": "^8.0.0",
+    "react": "^19.2.1",
+    "react-day-picker": "^9.11.3",
+    "react-dom": "^19.2.1",
+    "react-hook-form": "^7.54.2",
+    "recharts": "^2.15.1",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "vaul": "^1.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19.2.1",
+    "@types/react-dom": "^19.2.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
 }
