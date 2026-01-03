@@ -9,7 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const GenerateServiceDescriptionInputSchema = z.object({
   name: z.string().describe('The name of the service or product.'),
@@ -41,5 +41,10 @@ Do not use quotes in your response.
     },
     temperature: 0.7,
   });
-  return { description: output!.description };
+  
+  if (!output) {
+    throw new Error("Failed to generate a description.");
+  }
+  
+  return output;
 }
