@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -16,7 +17,16 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
-        messages: [{ role: "user", content: message }],
+        messages: [
+            {
+                role: "system",
+                content: "You are a helpful wedding planning assistant for a company called ApnaBandhan. Your goal is to help users with ideas for wedding invitations, save the date messages, and other wedding-related content. Be friendly, creative, and polite. If the user asks in Hindi, you must respond in Hindi."
+            },
+            { 
+                role: "user",
+                content: message 
+            }
+        ],
       }),
     });
 
