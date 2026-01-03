@@ -33,15 +33,15 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between">
-        <div className="flex items-center">
+      <div className="container flex h-14 items-center">
+        <div className="flex items-center gap-x-4">
           <Link href="/" className="flex items-center gap-2">
             <Logo className="h-8 w-auto text-primary" />
             <span className="font-bold sm:inline-block text-lg">{siteConfig.name}</span>
           </Link>
         </div>
 
-        <div className="flex items-center gap-x-2">
+        <div className="ml-auto flex items-center gap-x-4">
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center justify-center space-x-6 text-sm font-medium">
             {navItems.map((item) => (
@@ -65,7 +65,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
                     {siteConfig.phone}
                 </a>
             </Button>
-            <Button asChild size="sm" className="ml-4">
+            <Button asChild size="sm">
                 <Link href="/order">Order Now</Link>
             </Button>
 
