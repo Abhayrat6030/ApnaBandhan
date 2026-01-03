@@ -36,7 +36,6 @@ const generateInvitationTextFlow = ai.defineFlow(
     outputSchema: GenerateInvitationTextOutputSchema,
   },
   async (input) => {
-    // Call the structured prompt, which handles the complex request generation.
     const { output } = await ai.generate({
         system: "You are a friendly and helpful AI assistant. Your goal is to be helpful, polite, and answer the user's questions on any topic they ask about. Keep your answers helpful but not overly long. Use formatting like line breaks to make text easy to read.",
         history: input.history?.map(msg => ({ role: msg.role, content: [{ text: msg.content }]})),
@@ -46,7 +45,11 @@ const generateInvitationTextFlow = ai.defineFlow(
         },
     });
     
-    return { response: output!.response };
+    if (!output) {
+      throw new Error("Failed to generate a response from the AI.");
+    }
+    
+    return { response: output.response };
   }
 );
 
