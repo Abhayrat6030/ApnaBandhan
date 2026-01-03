@@ -15,30 +15,50 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/lib/constants";
-import { PanelLeft, ShieldAlert } from "lucide-react";
+import { PanelLeft, ShieldAlert, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
-
 
 function AdminAuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const router = useRouter();
-  
-  if (isUserLoading) {
+
+  useEffect(() => {
+    const verifyAdmin = async () => {
+      if (isUserLoading) return;
+
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/auth/verify');
+        const data = await response.json();
+        setIsAdmin(data.isAdmin);
+      } catch (error) {
+        console.error("Admin verification failed:", error);
+        setIsAdmin(false);
+      }
+    };
+
+    verifyAdmin();
+  }, [user, isUserLoading]);
+
+  if (isAdmin === null || isUserLoading) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-muted/40">
-        <div className="p-8 w-full max-w-md">
-            <Skeleton className="h-48 w-full" />
+        <div className="p-8 w-full max-w-md text-center">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+            <p className="mt-4 text-muted-foreground">Verifying access...</p>
         </div>
       </div>
     );
   }
 
-  if (user?.email !== ADMIN_EMAIL) {
+  if (!isAdmin) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-muted/40 p-4">
         <Card className="max-w-md text-center">

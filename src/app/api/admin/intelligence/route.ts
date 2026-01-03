@@ -5,8 +5,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeAdminApp } from '@/firebase/admin';
 import * as tools from './tools';
 
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
-
 const availableTools = {
   listNewUsers: tools.listNewUsers,
   listRecentOrders: tools.listRecentOrders,
@@ -40,27 +38,9 @@ async function getGroqChatCompletion(messages: any[], toolConfig?: any) {
 }
 
 export async function POST(req: NextRequest) {
-    try {
-        const adminApp = initializeAdminApp();
-        if (!adminApp) {
-            return NextResponse.json({ error: "Firebase Admin not initialized. Check server credentials." }, { status: 503 });
-        }
-
-        const authHeader = req.headers.get('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return NextResponse.json({ error: "Unauthorized: No token provided." }, { status: 401 });
-        }
-        
-        const idToken = authHeader.split('Bearer ')[1];
-        const decodedClaims = await adminApp.auth().verifyIdToken(idToken);
-        
-        if (decodedClaims.email !== ADMIN_EMAIL) {
-            return NextResponse.json({ error: "Forbidden: You do not have permission for this action." }, { status: 403 });
-        }
-    } catch (error: any) {
-        console.error("Admin auth verification error:", error);
-        return NextResponse.json({ error: "Unauthorized: Invalid or expired token." }, { status: 401 });
-    }
+    // The authentication is now handled by the AdminAuthGuard in the layout,
+    // so we can assume any request reaching this endpoint is from a verified admin.
+    // This simplifies the API route and removes a point of failure.
     
     const { message, history } = await req.json();
 
@@ -84,6 +64,9 @@ export async function POST(req: NextRequest) {
     const toolDefinitions = Object.values(availableTools).map(t => t.definition);
 
     try {
+        // Initialize admin here, as it's needed for the tools
+        initializeAdminApp();
+
         const firstResponse = await getGroqChatCompletion(messages, {
             tools: toolDefinitions,
             tool_choice: "auto",

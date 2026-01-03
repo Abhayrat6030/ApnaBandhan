@@ -8,23 +8,25 @@ export const runtime = 'nodejs';
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export async function GET(request: NextRequest) {
-  const admin = initializeAdminApp();
-  if (!admin) {
-    // If admin isn't initialized (e.g., during build), assume not admin.
-    return NextResponse.json({ isAdmin: false }, { status: 401 });
-  }
-
   try {
+    const admin = initializeAdminApp();
+    if (!admin) {
+      // If admin isn't initialized (e.g., during build), assume not admin.
+      return NextResponse.json({ isAdmin: false }, { status: 503, statusText: 'Firebase Admin not initialized' });
+    }
+
     const sessionCookie = cookies().get('__session')?.value || '';
 
     if (!sessionCookie) {
-      return NextResponse.json({ isAdmin: false }, { status: 401 });
+      return NextResponse.json({ isAdmin: false }, { status: 401, statusText: 'No session cookie' });
     }
 
     const decodedClaims = await admin.auth().verifySessionCookie(sessionCookie, true);
     const isAdmin = decodedClaims.email === ADMIN_EMAIL;
+    
     return NextResponse.json({ isAdmin });
+
   } catch (error) {
-    return NextResponse.json({ isAdmin: false }, { status: 401 });
+    return NextResponse.json({ isAdmin: false, error: 'Authentication failed' }, { status: 401 });
   }
 }
