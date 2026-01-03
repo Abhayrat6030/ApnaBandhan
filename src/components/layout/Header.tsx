@@ -43,7 +43,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
         {/* Mobile Nav - This is now triggered by the BottomNav */}
          <div className="flex items-center md:hidden">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center gap-2">
                  <Logo className="h-8 w-auto text-primary" />
                  <span className="font-bold text-lg">{siteConfig.name}</span>
             </Link>
@@ -81,7 +81,7 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
           <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
             <SheetContent side="left" className="p-0 flex flex-col">
                <SheetHeader className="p-4 border-b">
-                 <Link href="/" className="flex items-center space-x-2" onClick={() => setMenuOpen(false)}>
+                 <Link href="/" className="flex items-center gap-2" onClick={() => setMenuOpen(false)}>
                    <Logo className="h-8 w-auto text-primary" />
                   <span className="font-bold">{siteConfig.name}</span>
                 </Link>
