@@ -78,7 +78,7 @@ service cloud.firestore {
     }
 
     match /coupons/{couponId} {
-      // Allow signed-in users and admins to read coupons.
+      // Allow signed-in users and admins to read/list coupons. This is needed for the AI tool.
       allow get, list: if isSignedIn() || isAdmin();
       
       // Allow admins to manage coupons (create, delete, toggle active)
