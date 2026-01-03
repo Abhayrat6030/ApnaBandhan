@@ -33,15 +33,15 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between">
-        <div className="flex items-center">
+      <div className="flex h-14 items-center justify-between">
+        <div className="flex items-center pl-4">
           <Link href="/" className="flex items-center gap-2">
             <Logo className="h-8 w-auto text-primary" />
             <span className="font-bold sm:inline-block text-lg">{siteConfig.name}</span>
           </Link>
         </div>
 
-        <div className="flex items-center gap-x-2">
+        <div className="flex items-center gap-x-2 px-4">
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center justify-center space-x-6 text-sm font-medium">
             {navItems.map((item) => (
@@ -69,6 +69,50 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
                     <Link href="/order">Order Now</Link>
                 </Button>
             </div>
+            
+            {/* Mobile Menu Trigger */}
+            <div className="md:hidden">
+                 <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Menu className="h-6 w-6" />
+                            <span className="sr-only">Open menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left">
+                        <SheetHeader>
+                            <SheetTitle>
+                                 <Link href="/" className="flex items-center gap-2" onClick={() => setMenuOpen(false)}>
+                                    <Logo className="h-8 w-auto text-primary" />
+                                    <span className="font-bold sm:inline-block text-lg">{siteConfig.name}</span>
+                                </Link>
+                            </SheetTitle>
+                        </SheetHeader>
+                        <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
+                            <div className="flex flex-col space-y-3">
+                                {navItems.map((item) => {
+                                    const Icon = iconMap[item.href] || Home;
+                                    return(
+                                        <Link
+                                            key={item.href}
+                                            href={item.href}
+                                            onClick={() => setMenuOpen(false)}
+                                            className={cn(
+                                            "flex items-center text-lg font-medium transition-colors hover:text-primary",
+                                            pathname === item.href ? "text-primary" : "text-muted-foreground"
+                                            )}
+                                        >
+                                            <Icon className="mr-3 h-5 w-5" />
+                                            {item.label}
+                                        </Link>
+                                    )
+                                })}
+                            </div>
+                        </ScrollArea>
+                    </SheetContent>
+                </Sheet>
+            </div>
+
         </div>
       </div>
     </header>
