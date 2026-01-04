@@ -83,6 +83,18 @@ export default function Home() {
         </div>
       </section>
 
+      {/* New Image Section */}
+      <section>
+          <Image
+            src="https://picsum.photos/seed/wedding-decor/1200/300"
+            alt="Wedding decor"
+            width={1200}
+            height={300}
+            className="w-full object-cover"
+            data-ai-hint="wedding decoration"
+          />
+      </section>
+
       {/* Categories Section */}
       <section className="py-2 bg-background border-b">
         <div className="container mx-auto px-4">
