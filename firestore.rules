@@ -30,7 +30,7 @@ service cloud.firestore {
 
       // 🔔 Notifications
       match /notifications/{notificationId} {
-        allow read, list: if isOwner(userId) || isAdmin();
+        allow get, list: if isOwner(userId) || isAdmin();
         allow write: if isAdmin();
       }
 
