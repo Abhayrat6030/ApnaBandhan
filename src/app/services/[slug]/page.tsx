@@ -54,6 +54,7 @@ export default function ServicePage({ params }: ServicePageProps) {
                   src={sample.url}
                   alt={`${service.name} sample ${index + 1}`}
                   fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover"
                   data-ai-hint={sample.imageHint || 'wedding'}
                 />

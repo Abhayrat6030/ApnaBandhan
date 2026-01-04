@@ -2,7 +2,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useUser } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
@@ -19,6 +18,8 @@ export default function AdminDashboardPage() {
 
   const allOrdersQuery = useMemoFirebase(() => {
     if (!db) return null;
+    // This query is intentionally simple. The `useCollection` hook will now handle the case where `isAdmin` is false and return no data.
+    // Security is enforced by Firestore rules. A non-admin calling this will get an empty result due to rules.
     return query(collection(db, 'orders'));
   }, [db]);
   

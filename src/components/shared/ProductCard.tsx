@@ -27,6 +27,7 @@ export function ProductCard({ service }: ProductCardProps) {
                         src={primaryImage.url}
                         alt={service.name}
                         fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         className="object-cover rounded-t-2xl"
                         data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
                     />
