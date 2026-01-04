@@ -2,6 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useUser } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
@@ -15,18 +16,19 @@ export const dynamic = 'force-dynamic';
 
 export default function AdminDashboardPage() {
   const db = useFirestore();
+  const { user } = useUser();
+  const isAdmin = user?.email === 'abhayrat603@gmail.com';
 
   const allOrdersQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    // This query is intentionally simple. The `useCollection` hook will now handle the case where `isAdmin` is false and return no data.
-    // Security is enforced by Firestore rules. A non-admin calling this will get an empty result due to rules.
+    // Only fetch all orders if the user is an admin
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'orders'));
-  }, [db]);
+  }, [db, isAdmin]);
   
   const recentOrdersQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [db]);
+  }, [db, isAdmin]);
 
   const { data: allOrders, isLoading: areAllOrdersLoading } = useCollection<Order>(allOrdersQuery);
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
@@ -96,7 +98,7 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
-      <div className="overflow-x-auto">
+      <div>
         <h2 className="font-headline text-xl md:text-2xl font-bold mb-4">
           Recent Orders
         </h2>
