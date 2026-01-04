@@ -3,10 +3,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Phone } from 'lucide-react';
+import { Phone, Menu } from 'lucide-react';
 import { useState, type FC } from 'react';
 
 import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { siteConfig, navItems } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import Logo from '../shared/Logo';
@@ -26,6 +33,36 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
           <Logo className="h-8 w-auto text-primary" />
           <span className="font-bold sm:inline-block text-lg">{siteConfig.name}</span>
         </Link>
+        
+        {/* Mobile Menu */}
+        <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
+            <SheetContent side="left" className="flex flex-col w-full max-w-[300px]">
+                <SheetHeader>
+                  <SheetTitle>
+                    <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setMenuOpen(false)}>
+                      <Logo className="h-6 w-6 text-primary" />
+                      <span className="">{siteConfig.name}</span>
+                    </Link>
+                  </SheetTitle>
+                </SheetHeader>
+                <nav className="grid gap-2 text-lg font-medium mt-4">
+                  {navItems.map((item) => (
+                    <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={cn(
+                            'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
+                            pathname === item.href && 'bg-muted text-primary'
+                        )}
+                        >
+                        {item.label}
+                    </Link>
+                  ))}
+                </nav>
+              </SheetContent>
+        </Sheet>
+
 
         <div className="flex items-center justify-end gap-x-2">
             {/* Desktop Nav */}
