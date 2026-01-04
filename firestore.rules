@@ -1,67 +1,62 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    function isAdmin() {
-      return request.auth.token.email == 'abhayrat603@gmail.com';
-    }
 
     /* ===============================
        HELPER FUNCTIONS
     =============================== */
     function isSignedIn() {
-      return request.auth.uid != null;
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // --- USER DATA ACCESS RULES ---
+    /* ===============================
+       USERS
+    =============================== */
     match /users/{userId} {
-      // Admins can read any profile. Users can only read their own.
-      allow get: if isOwner(userId) || isAdmin();
-      
-      // A new user can create their own profile document.
-      allow create: if isOwner(userId);
 
-      // A user can update their own profile. Admin can update any.
-      allow update: if isOwner(userId) || isAdmin();
-      
-      // Only an admin can delete user profiles.
+      // Profile
+      allow get, create, update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
-      
-      // --- USER SUB-COLLECTIONS ---
+
+      // 🔔 Notifications
       match /notifications/{notificationId} {
-        allow get, list: if isOwner(userId) || isAdmin();
-        allow write: if isAdmin(); // Only admin can create/update/delete notifications
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin();
       }
 
+      // 📦 Downloadable Products (per user)
       match /downloadableProducts/{productId} {
         allow read: if isOwner(userId) || isAdmin();
-        allow write: if isAdmin(); // Only admin can add/edit downloadable products
+        allow write: if isAdmin();
       }
     }
-    
-    // This block is separate and crucial for allowing specific queries across the users collection.
-    match /users/{document=**} {
-        // Admins can list all users. Other signed-in users can query for referral code checks.
-        allow list: if isAdmin() || (isSignedIn() && request.query.keys().hasAny(['where']));
-    }
 
+    // Allow admin to list users (for admin panel / referral check)
+    // Allow signed-in users to query for referral code checks.
+    match /users/{document=**} {
+      allow list: if isAdmin() || (isSignedIn() && request.query.keys().hasAny(['where']));
+    }
+    
 
     /* ===============================
-       SETTINGS (PUBLIC READ, ADMIN WRITE)
+       APP SETTINGS
     =============================== */
     match /app-settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
     /* ===============================
-       PUBLIC & ADMIN COLLECTIONS
+       PUBLIC COLLECTIONS
     =============================== */
     match /services/{serviceId} {
       allow read: if true;
@@ -72,39 +67,44 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
-     match /media/{mediaId} {
+
+    match /media/{mediaId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    /* ===============================
+       COUPONS
+    =============================== */
     match /coupons/{couponId} {
-      // Allow signed-in users and admins to read/list coupons. This is needed for the AI tool.
       allow get, list: if isSignedIn() || isAdmin();
-      
-      // Allow admins to manage coupons (create, delete, toggle active)
       allow write: if isAdmin();
-      
-      // Allow any signed-in user to update ONLY the currentUses field (by incrementing it).
-      // This is for when a user successfully applies a coupon.
-      allow update: if isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentUses']);
+
+      // User can update ONLY currentUses
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data)
+          .affectedKeys()
+          .hasOnly(['currentUses']);
     }
 
     /* ===============================
-       ORDERS (SECURE)
+       ORDERS (FIXED – NO LIST ERROR)
     =============================== */
-     match /orders/{orderId} {
-      // Admins can read/write any order.
-      allow get, write, list: if isAdmin();
-      
-      // Users can create orders for themselves with specific initial data.
+    match /orders/{orderId} {
+
+      // Admin full access
+      allow read, write, list: if isAdmin();
+
+      // User can CREATE own order
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
-        && request.resource.data.paymentStatus == "Pending"
-        && (!request.resource.data.keys().hasAny(['id']));
-      
-      // Allow users to read their own orders.
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+        && request.resource.data.paymentStatus == "Pending";
+
+      // User can READ only own orders via a query
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // Users can list their OWN orders, but not all orders
+      allow list: if isSignedIn() && request.query.get("where")[0][2] == request.auth.uid;
     }
   }
 }
