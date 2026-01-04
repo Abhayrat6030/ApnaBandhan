@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -51,9 +50,9 @@ interface SentNotification extends Notification {
 export default function AdminNotificationsPage() {
   const { toast } = useToast();
   const db = useFirestore();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const usersQuery = useMemoFirebase(() => db ? collection(db, 'users') : null, [db]);
+  const usersQuery = useMemoFirebase(() => db ? query(collection(db, 'users')) : null, [db]);
   const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersQuery);
 
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -114,7 +113,7 @@ export default function AdminNotificationsPage() {
 
   async function onSubmit(values: FormValues) {
     if (!db || !users) return;
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     const newNotification: Omit<Notification, 'id'> = {
         title: values.title, description: values.description, type: values.type,
@@ -141,7 +140,7 @@ export default function AdminNotificationsPage() {
     } catch (error: any) {
         toast({ title: 'Error', description: error.message || 'Something went wrong.', variant: 'destructive' });
     }
-    setIsLoading(false);
+    setIsSubmitting(false);
   }
 
   async function onEditSubmit(values: EditFormValues) {
@@ -212,8 +211,8 @@ export default function AdminNotificationsPage() {
                   <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Message Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger></FormControl><SelectContent>
                         <SelectItem value="general">General Notification</SelectItem><SelectItem value="offer">Offer / Reward</SelectItem><SelectItem value="order">Order Update</SelectItem>
                   </SelectContent></Select><FormMessage /></FormItem>)} />
-                  <Button type="submit" disabled={isLoading} className="w-full">
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />} Send Message
+                  <Button type="submit" disabled={isSubmitting} className="w-full">
+                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />} Send Message
                   </Button>
                 </form>
               </Form>

@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,10 +16,10 @@ export default function AdminUsersPage() {
 
   const usersQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return collection(db, 'users');
+    return query(collection(db, 'users'));
   }, [db, isAdmin]);
 
-  const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersQuery);
+  const { data: users, isLoading } = useCollection<UserProfile>(usersQuery);
   const usersMap = useMemo(() => new Map(users?.map(u => [u.uid, u])), [users]);
 
   return (
@@ -27,7 +27,7 @@ export default function AdminUsersPage() {
       <div className="flex items-center">
         <h1 className="font-headline text-lg font-semibold md:text-2xl">Manage Users</h1>
       </div>
-      {areUsersLoading ? <UsersSkeleton/> : <UsersClientPage initialUsers={users || []} initialUsersMap={usersMap} />}
+      {isLoading ? <UsersSkeleton/> : <UsersClientPage initialUsers={users || []} initialUsersMap={usersMap} />}
     </main>
   );
 }

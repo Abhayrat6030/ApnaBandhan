@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Download, Film, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
 import type { DownloadableProduct } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
@@ -21,7 +21,7 @@ export default function DownloadsPage() {
 
     const downloadsQuery = useMemoFirebase(() => {
         if (!user || !db) return null;
-        return collection(db, 'users', user.uid, 'downloadableProducts');
+        return query(collection(db, 'users', user.uid, 'downloadableProducts'));
     }, [user, db]);
 
     const { data: downloadableItems, isLoading: areDownloadsLoading } = useCollection<DownloadableProduct>(downloadsQuery);

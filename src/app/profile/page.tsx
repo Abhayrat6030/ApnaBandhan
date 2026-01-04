@@ -72,7 +72,7 @@ export default function ProfilePage() {
         }
     };
     
-    const isLoading = isUserLoading || areNotificationsLoading || isProfileLoading || areSettingsLoading;
+    const isLoading = isUserLoading || isProfileLoading || areNotificationsLoading || areSettingsLoading;
 
     if (isLoading && !userProfile) { // Show skeleton only on initial load
         return (

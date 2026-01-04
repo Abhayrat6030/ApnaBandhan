@@ -22,7 +22,7 @@ export default function AdminOrdersPage() {
       return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
   }, [db]);
 
-  const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+  const { data: allOrders, isLoading } = useCollection<Order>(ordersQuery);
 
   const allServicesMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -39,8 +39,6 @@ export default function AdminOrdersPage() {
     }));
   }, [allOrders, allServicesMap]);
   
-  const isLoading = areOrdersLoading;
-
   const renderSkeleton = () => (
     <div className="p-4 space-y-4">
         {[...Array(3)].map((_, i) => (

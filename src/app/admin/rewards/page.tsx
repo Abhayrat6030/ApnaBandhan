@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -32,7 +31,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Coupon } from '@/lib/types';
-import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, query } from 'firebase/firestore';
 import { Loader2, PlusCircle, Trash2, ToggleLeft, ToggleRight, MoreHorizontal, CalendarIcon } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -58,7 +57,7 @@ export default function AdminRewardsPage() {
     const [itemToDelete, setItemToDelete] = useState<Coupon | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const couponsQuery = useMemoFirebase(() => db ? collection(db, 'coupons') : null, [db]);
+    const couponsQuery = useMemoFirebase(() => db ? query(collection(db, 'coupons')) : null, [db]);
     const { data: coupons, isLoading } = useCollection<Coupon>(couponsQuery);
 
     const form = useForm<CouponFormValues>({
@@ -217,7 +216,7 @@ export default function AdminRewardsPage() {
                                     <TableRow><TableCell colSpan={6} className="text-center h-24">Loading coupons...</TableCell></TableRow>
                                 ) : sortedCoupons && sortedCoupons.length > 0 ? sortedCoupons.map((coupon) => {
                                     const isExpired = new Date(coupon.expiryDate) < new Date();
-                                    const isMaxedOut = coupon.maxUses && coupon.currentUses >= coupon.maxUses;
+                                    const isMaxedOut = coupon.maxUses != null && coupon.currentUses >= coupon.maxUses;
                                     const isActive = coupon.isActive && !isExpired && !isMaxedOut;
 
                                     return (

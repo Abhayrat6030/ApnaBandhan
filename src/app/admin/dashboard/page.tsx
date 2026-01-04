@@ -19,7 +19,7 @@ export default function AdminDashboardPage() {
 
   const allOrdersQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return collection(db, 'orders');
+    return query(collection(db, 'orders'));
   }, [db]);
   
   const recentOrdersQuery = useMemoFirebase(() => {
