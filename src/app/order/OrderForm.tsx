@@ -189,12 +189,12 @@ function OrderFormComponent() {
 
     try {
       const ordersCollection = collection(db, 'orders');
-      addDoc(ordersCollection, newOrder);
+      await addDoc(ordersCollection, newOrder);
 
       // Increment coupon usage if one was applied
       if (appliedCoupon) {
           const couponRef = doc(db, 'coupons', appliedCoupon.id);
-          updateDoc(couponRef, {
+          await updateDoc(couponRef, {
               currentUses: increment(1)
           });
       }
@@ -452,3 +452,5 @@ export default function OrderForm() {
     </Suspense>
   )
 }
+
+    
