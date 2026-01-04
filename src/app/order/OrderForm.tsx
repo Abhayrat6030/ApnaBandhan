@@ -191,7 +191,6 @@ function OrderFormComponent() {
       const ordersCollection = collection(db, 'orders');
       await addDoc(ordersCollection, newOrder);
 
-      // Increment coupon usage if one was applied
       if (appliedCoupon) {
           const couponRef = doc(db, 'coupons', appliedCoupon.id);
           await updateDoc(couponRef, {
