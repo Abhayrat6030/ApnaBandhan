@@ -4,19 +4,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
   Drawer,
-  DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -24,11 +13,12 @@ import {
 
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Send, Wand2, User, Bot, X, RotateCcw } from 'lucide-react';
+import { Loader2, Send, Wand2, User, Bot, RotateCcw } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 
 type Message = {
@@ -137,56 +127,65 @@ function AiAssistantChat({ onNewChat }: { onNewChat: () => void }) {
   };
   
   return (
-    <div className="flex flex-col h-full">
-        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-            <div className="space-y-4">
-            {messages.map((message, index) => (
-                <div key={index} className={cn("flex items-end gap-2", message.role === 'user' ? 'justify-end' : 'justify-start')}>
-                {message.role === 'assistant' && (
-                    <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></AvatarFallback>
-                    </Avatar>
-                )}
-                <div className={cn("max-w-[80%] rounded-lg p-3 text-sm", message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
-                    <p className="whitespace-pre-wrap">{message.content}</p>
-                </div>
-                 {message.role === 'user' && (
-                    <Avatar className="h-8 w-8">
-                        <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
-                    </Avatar>
-                )}
-                </div>
-            ))}
-             {isLoading && (
-                <div className="flex items-end gap-2 justify-start">
-                     <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></AvatarFallback>
-                    </Avatar>
-                    <div className="max-w-[80%] rounded-lg p-3 text-sm bg-muted flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Thinking...</span>
+    <div className="flex flex-col h-full relative">
+        <Image
+            src="https://picsum.photos/seed/ai-bg/800/1200"
+            alt="Abstract background"
+            fill
+            className="object-cover opacity-10"
+            data-ai-hint="abstract pattern"
+        />
+        <div className="relative flex flex-col h-full bg-background/80 backdrop-blur-sm">
+            <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+                <div className="space-y-4">
+                {messages.map((message, index) => (
+                    <div key={index} className={cn("flex items-end gap-2", message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                    {message.role === 'assistant' && (
+                        <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></AvatarFallback>
+                        </Avatar>
+                    )}
+                    <div className={cn("max-w-[80%] rounded-lg p-3 text-sm shadow", message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-card')}>
+                        <p className="whitespace-pre-wrap">{message.content}</p>
                     </div>
+                    {message.role === 'user' && (
+                        <Avatar className="h-8 w-8">
+                            <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
+                        </Avatar>
+                    )}
+                    </div>
+                ))}
+                {isLoading && (
+                    <div className="flex items-end gap-2 justify-start">
+                        <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></AvatarFallback>
+                        </Avatar>
+                        <div className="max-w-[80%] rounded-lg p-3 text-sm bg-muted flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Thinking...</span>
+                        </div>
+                    </div>
+                )}
                 </div>
-             )}
+            </ScrollArea>
+            <div className="p-4 border-t bg-background/90">
+                <form onSubmit={handleSubmit} className="flex items-center gap-2">
+                <Button type="button" variant="ghost" size="icon" onClick={handleNewChat} title="Start new chat" disabled={isLoading}>
+                    <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Input
+                    ref={inputRef}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Ask for ideas or a draft..."
+                    autoComplete="off"
+                    disabled={isLoading}
+                />
+                <Button type="submit" size="icon" disabled={isLoading || !inputValue.trim()} className="flex-shrink-0">
+                    <Send className="h-4 w-4" />
+                </Button>
+                </form>
             </div>
-        </ScrollArea>
-        <div className="p-4 border-t">
-            <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            <Button type="button" variant="ghost" size="icon" onClick={handleNewChat} title="Start new chat" disabled={isLoading}>
-                <RotateCcw className="h-4 w-4" />
-            </Button>
-            <Input
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask for ideas or a draft..."
-                autoComplete="off"
-                disabled={isLoading}
-            />
-            <Button type="submit" size="icon" disabled={isLoading || !inputValue.trim()}>
-                <Send className="h-4 w-4" />
-            </Button>
-            </form>
         </div>
     </div>
   )
@@ -205,57 +204,25 @@ export default function AiAssistantWidget() {
         </Button>
     )
 
-    if (isMobile) {
-        return (
-            <Drawer open={open} onOpenChange={setOpen}>
-                <DrawerTrigger asChild>{sharedTrigger}</DrawerTrigger>
-                <DrawerContent className="h-[90vh] bg-background flex flex-col">
-                    <DrawerHeader className="text-left p-4 border-b">
-                        <DrawerTitle className="flex items-center justify-between">
-                            <span className="flex items-center gap-2 font-bold">
-                                 <Wand2 className="h-6 w-6 text-primary" />
-                                 AI Assistant
-                            </span>
-                            <DrawerClose asChild>
-                                <Button variant="ghost" size="icon">
-                                    <X className="h-4 w-4" />
-                                    <span className="sr-only">Close</span>
-                                </Button>
-                            </DrawerClose>
-                        </DrawerTitle>
-                        <DrawerDescription>Let's craft the perfect words for your special occasion.</DrawerDescription>
-                    </DrawerHeader>
-                    <div className="flex-1 min-h-0">
-                        <AiAssistantChat onNewChat={() => {}} />
-                    </div>
-                </DrawerContent>
-            </Drawer>
-        )
+    if (!isMobile) {
+        // Desktop uses Dialog, which is not implemented in this version
+        return null;
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{sharedTrigger}</DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-[500px] p-0 gap-0 h-[80vh] flex flex-col">
-                <DialogHeader className="p-4 border-b">
-                    <DialogTitle className="flex items-center gap-2">
+        <Drawer open={open} onOpenChange={setOpen}>
+            <DrawerTrigger asChild>{sharedTrigger}</DrawerTrigger>
+            <DrawerContent className="h-[90dvh] bg-background flex flex-col p-0 border-none">
+                <DrawerHeader className="text-left p-4 border-b">
+                    <DrawerTitle className="flex items-center gap-2 font-bold">
                         <Wand2 className="h-6 w-6 text-primary" />
-                        AI Invitation Assistant
-                    </DialogTitle>
-                    <DialogDescription>
-                        Let's craft the perfect words for your special occasion.
-                    </DialogDescription>
-                </DialogHeader>
-                <DialogClose asChild>
-                    <Button variant="ghost" size="icon" className="absolute top-3 right-3 z-10">
-                        <X className="h-4 w-4" />
-                        <span className="sr-only">Close</span>
-                    </Button>
-                </DialogClose>
+                        AI Assistant
+                    </DrawerTitle>
+                </DrawerHeader>
                 <div className="flex-1 min-h-0">
                     <AiAssistantChat onNewChat={() => {}} />
                 </div>
-            </DialogContent>
-        </Dialog>
+            </DrawerContent>
+        </Drawer>
     )
 }
