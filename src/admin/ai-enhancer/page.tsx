@@ -10,26 +10,16 @@ import { useToast } from '@/hooks/use-toast';
 import { enhanceImage } from './actions';
 import { Loader2, Sparkles, UploadCloud } from 'lucide-react';
 
-function parseSuggestionsFromDataUri(dataUri: string): string {
-  try {
-    const base64Part = dataUri.split(',')[1];
-    if (!base64Part) return "Could not parse suggestions.";
-    return Buffer.from(base64Part, 'base64').toString('utf-8');
-  } catch (e) {
-    return "An error occurred while parsing suggestions.";
-  }
-}
-
 export default function AiEnhancerPage() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [enhancedSuggestions, setEnhancedSuggestions] = useState<string | null>(null);
+  const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 4 * 1024 * 1024) { // 4MB limit
+      if (file.size > 4 * 1024 * 1024) { // 4MB limit for Gemini
         toast({
             title: "File too large",
             description: "Please upload an image smaller than 4MB.",
@@ -40,7 +30,7 @@ export default function AiEnhancerPage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setOriginalImage(reader.result as string);
-        setEnhancedSuggestions(null);
+        setEnhancedImage(null);
       };
       reader.readAsDataURL(file);
     }
@@ -56,19 +46,17 @@ export default function AiEnhancerPage() {
       return;
     }
     setIsLoading(true);
-    setEnhancedSuggestions(null);
+    setEnhancedImage(null);
     try {
       const result = await enhanceImage(originalImage);
       if (result.success && result.enhancedPhotoDataUri) {
-        // The result is a text-based data URI with suggestions.
-        const suggestions = parseSuggestionsFromDataUri(result.enhancedPhotoDataUri);
-        setEnhancedSuggestions(suggestions);
+        setEnhancedImage(result.enhancedPhotoDataUri);
         toast({
-          title: "Suggestions Generated!",
-          description: "The AI has provided enhancement advice.",
+          title: "Image Enhanced Successfully!",
+          description: "The AI has worked its magic.",
         });
       } else {
-        throw new Error(result.error || 'Failed to get enhancement suggestions.');
+        throw new Error(result.error || 'Failed to enhance image.');
       }
     } catch (error: any) {
       toast({
@@ -86,9 +74,9 @@ export default function AiEnhancerPage() {
       <h1 className="font-headline text-2xl md:text-3xl font-bold">AI Photo Enhancer</h1>
       <Card>
         <CardHeader>
-          <CardTitle>Get AI Enhancement Suggestions</CardTitle>
+          <CardTitle>Enhance Wedding Photos</CardTitle>
           <CardDescription>
-            Upload a photo to get AI-powered suggestions on how to improve its quality, clarity, and color balance.
+            Upload a photo to automatically improve its quality, clarity, and color balance using AI.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -104,12 +92,12 @@ export default function AiEnhancerPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Suggestions...
+                    Enhancing...
                   </>
                 ) : (
                   <>
                     <Sparkles className="mr-2 h-4 w-4" />
-                    Get AI Suggestions
+                    Enhance with AI
                   </>
                 )}
               </Button>
@@ -131,19 +119,19 @@ export default function AiEnhancerPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <h3 className="font-headline text-lg font-semibold text-center">AI Suggestions</h3>
-              <div className="aspect-video w-full rounded-lg border-2 border-dashed flex items-center justify-center bg-muted/50 p-4">
+              <h3 className="font-headline text-lg font-semibold text-center">Enhanced</h3>
+              <div className="aspect-video w-full rounded-lg border-2 border-dashed flex items-center justify-center bg-muted/50">
                 {isLoading ? (
                   <div className="text-center text-muted-foreground p-4">
-                     <Loader2 className="mx-auto h-12 w-12 animate-spin mb-2" />
-                     <p>AI is processing the request...</p>
+                     <Loader2 className="mx-auto h-12 w-12 animate-spin" />
+                     <p>AI is processing the image...</p>
                   </div>
-                ) : enhancedSuggestions ? (
-                  <div className="text-sm text-left whitespace-pre-wrap">{enhancedSuggestions}</div>
+                ) : enhancedImage ? (
+                  <Image src={enhancedImage} alt="Enhanced" width={600} height={400} className="rounded-md object-contain h-full w-full" />
                 ) : (
                   <div className="text-center text-muted-foreground p-4">
                     <Sparkles className="mx-auto h-12 w-12 mb-2" />
-                    <p>Enhancement suggestions will appear here</p>
+                    <p>Your enhanced image will appear here</p>
                   </div>
                 )}
               </div>
