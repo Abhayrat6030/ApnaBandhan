@@ -24,7 +24,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { user } = useUser();
-  const [isSheetOpen, setSheetOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // The AdminAuthGuard has been removed. 
   // Security is now handled at the data level by Firestore rules and on API routes.
@@ -42,7 +42,7 @@ export default function AdminLayout({
             </div>
             <div className="flex-1 overflow-y-auto">
               <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-                <AdminNav onLinkClick={() => isSheetOpen && setSheetOpen(false)} />
+                <AdminNav onLinkClick={() => isSheetOpen && setIsSheetOpen(false)} />
               </nav>
             </div>
           </div>
@@ -50,7 +50,7 @@ export default function AdminLayout({
 
         <div className="flex flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-            <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="outline"
@@ -64,14 +64,14 @@ export default function AdminLayout({
               <SheetContent side="left" className="flex flex-col w-full max-w-[300px]">
                 <SheetHeader>
                   <SheetTitle>
-                    <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setSheetOpen(false)}>
+                    <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setIsSheetOpen(false)}>
                       <Logo className="h-6 w-6 text-primary" />
                       <span className="">{siteConfig.name}</span>
                     </Link>
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="grid gap-2 text-lg font-medium mt-4">
-                  <AdminNav onLinkClick={() => setSheetOpen(false)} />
+                  <AdminNav onLinkClick={() => setIsSheetOpen(false)} />
                 </nav>
               </SheetContent>
             </Sheet>
