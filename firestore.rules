@@ -105,7 +105,7 @@ service cloud.firestore {
       // User can READ only own orders via a query
       allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
       // Users can list their OWN orders, but not all orders
-      allow list: if isSignedIn() && request.query.get("where")[0][2] == request.auth.uid;
+      allow list: if isSignedIn() && request.query.where[0] == "userId" && request.query.where[2] == request.auth.uid;
     }
   }
 }
