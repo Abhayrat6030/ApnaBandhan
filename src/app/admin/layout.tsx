@@ -14,7 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { siteConfig } from "@/lib/constants";
-import { PanelLeft } from "lucide-react";
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -57,7 +57,7 @@ export default function AdminLayout({
                   size="icon"
                   className="shrink-0 md:hidden"
                 >
-                  <PanelLeft className="h-5 w-5" />
+                  <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle navigation menu</span>
                 </Button>
               </SheetTrigger>
