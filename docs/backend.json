@@ -255,7 +255,8 @@
         "properties": {
             "downloadAppLink": { "type": "string", "format": "uri" },
             "aiCustomInstructions": { "type": "string" },
-            "activeCoupons": { "type": "string" }
+            "activeCoupons": { "type": "string" },
+            "heroImageUrl": { "type": "string", "format": "uri", "description": "URL for the homepage hero background image." }
         }
     }
   },

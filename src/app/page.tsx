@@ -23,6 +23,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { AppSettings } from '@/lib/types';
 
 
 const topRatedVideos = services.filter(s => s.category === 'invitation-videos');
@@ -44,16 +47,22 @@ const categoryIcons = {
 };
 
 export default function Home() {
-    const plugin = React.useRef(
+  const plugin = React.useRef(
     Autoplay({ delay: 4000, stopOnInteraction: true })
   );
+
+  const db = useFirestore();
+  const themeSettingsRef = useMemoFirebase(() => db ? doc(db, 'app-settings', 'theme') : null, [db]);
+  const { data: themeSettings } = useDoc<AppSettings>(themeSettingsRef);
+
+  const heroImage = themeSettings?.heroImageUrl || placeholderImages.hero.imageUrl;
 
   return (
     <div className="flex flex-col overflow-hidden animate-fade-in-up">
       {/* Hero Section */}
       <section className="relative h-[40vh] w-full flex items-center justify-center text-center text-white overflow-hidden bg-primary/10">
         <Image
-          src={placeholderImages.hero.imageUrl}
+          src={heroImage}
           alt={placeholderImages.hero.description}
           fill
           priority

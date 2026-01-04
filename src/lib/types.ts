@@ -99,6 +99,7 @@ export type AppSettings = {
     downloadAppLink?: string;
     aiCustomInstructions?: string;
     activeCoupons?: string;
+    heroImageUrl?: string;
 };
 
 export type Coupon = {

@@ -31,6 +31,7 @@ export const adminNavItems: NavItem[] = [
   { label: 'Referrals', href: '/admin/referrals' },
   { label: 'App Settings', href: '/admin/settings' },
   { label: 'AI Settings', href: '/admin/ai-settings' },
+  { label: 'Theme Settings', href: '/admin/theme'},
 ];
 
 export const mainAppNavItems: NavItem[] = [
