@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Bell, CheckCircle, Gift, Loader2 } from 'lucide-react';
 import { useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
-import { collection, query, orderBy, where } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { Notification } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -20,10 +20,9 @@ export default function NotificationsPage() {
 
     const notificationsQuery = useMemoFirebase(() => {
         if (!user || !db) return null;
-        // Fetch notifications of type 'general' or 'order'
+        // Using a simple query with orderBy which is allowed by security rules
         return query(
             collection(db, 'users', user.uid, 'notifications'), 
-            where('type', 'in', ['general', 'order']),
             orderBy('date', 'desc')
         );
     }, [user, db]);
