@@ -35,7 +35,7 @@ service cloud.firestore {
       
       // --- USER SUB-COLLECTIONS ---
       match /notifications/{notificationId} {
-        allow read: if isOwner(userId) || isAdmin();
+        allow get, list: if isOwner(userId) || isAdmin();
         allow write: if isAdmin(); // Only admin can create/update/delete notifications
       }
 
@@ -104,7 +104,7 @@ service cloud.firestore {
         && (!request.resource.data.keys().hasAny(['id']));
       
       // Allow users to read their own orders.
-      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
   }
 }
