@@ -151,7 +151,7 @@ export default function AdminNotificationsPage() {
       try {
           await updateDoc(notifRef, { title: values.title, description: values.description });
           toast({ title: "Message updated" });
-          setSentNotifications(prev => prev.map(n => n.path === itemToEdit.path ? {...n, ...values} : n));
+          setSentNotifications(prev => prev.map(n => n.path === itemToEdit.path ? {...n, ...values} as SentNotification : n));
           setItemToEdit(null);
       } catch (error: any) {
           toast({ title: "Error updating message", description: error.message, variant: 'destructive' });

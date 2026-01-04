@@ -42,7 +42,6 @@ export default function OrderHistoryPage() {
         if (!user || !db) {
           return null;
         }
-        // FIX: Securely query for orders where 'userId' matches the current user's UID.
         return query(collection(db, 'orders'), where('userId', '==', user.uid), orderBy('orderDate', 'desc'));
     }, [user, db]);
 

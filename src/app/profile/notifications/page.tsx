@@ -20,7 +20,6 @@ export default function NotificationsPage() {
 
     const notificationsQuery = useMemoFirebase(() => {
         if (!user || !db) return null;
-        // Using a simple query with orderBy which is allowed by security rules
         return query(
             collection(db, 'users', user.uid, 'notifications'), 
             orderBy('date', 'desc')

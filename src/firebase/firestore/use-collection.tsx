@@ -5,10 +5,11 @@ import {
   Query,
   onSnapshot,
   FirestoreError,
+  DocumentData,
 } from 'firebase/firestore';
 import { useEffect, useState } from "react";
-import type { DocumentData } from 'firebase/firestore';
-
+import { errorEmitter } from '../error-emitter';
+import { FirestorePermissionError } from '../errors';
 
 /** Utility type to add an 'id' field to a given type T. */
 export type WithId<T> = T & { id: string };
@@ -24,10 +25,10 @@ export interface UseCollectionResult<T> {
 }
 
 
-export function useCollection<T extends DocumentData>(queryRef?: Query<T> | null) {
+export function useCollection<T extends DocumentData>(queryRef?: Query<T> | null): UseCollectionResult<T> {
   const [data, setData] = useState<WithId<T>[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
     if (!queryRef) {
@@ -38,7 +39,7 @@ export function useCollection<T extends DocumentData>(queryRef?: Query<T> | null
     
     setIsLoading(true);
 
-    const unsub = onSnapshot(
+    const unsubscribe = onSnapshot(
       queryRef,
       (snapshot) => {
         const docs = snapshot.docs.map(doc => ({
@@ -50,14 +51,24 @@ export function useCollection<T extends DocumentData>(queryRef?: Query<T> | null
         setIsLoading(false);
         setError(null);
       },
-      (err) => {
+      (err: FirestoreError) => {
+        const path = (queryRef as any)._query.path.segments.join('/');
+        
+        const contextualError = new FirestorePermissionError({
+          operation: 'list',
+          path,
+        })
+        
         console.error("useCollection error:", err);
-        setError(err);
+        setError(contextualError);
         setIsLoading(false);
+        
+        // Globally emit the rich, contextual error
+        errorEmitter.emit('permission-error', contextualError);
       }
     );
 
-    return () => unsub();
+    return () => unsubscribe();
   }, [queryRef]);
 
   return { data, isLoading, error };

@@ -42,14 +42,14 @@ export default function AdminServicesPage() {
   const db = useFirestore();
 
   const servicesQuery = useMemoFirebase(() => {
-    if (!isAdmin || !db) return null;
+    if (!db) return null;
     return query(collection(db, 'services'));
-  }, [isAdmin, db]);
+  }, [db]);
 
   const packagesQuery = useMemoFirebase(() => {
-    if (!isAdmin || !db) return null;
+    if (!db) return null;
     return query(collection(db, 'comboPackages'));
-  }, [isAdmin, db]);
+  }, [db]);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
@@ -76,7 +76,7 @@ export default function AdminServicesPage() {
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<CombinedService | null>(null);
 
-  const isLoading = areServicesLoading || arePackagesLoading;
+  const isLoading = areServicesLoading || arePackagesLoading || !isAdmin;
 
   const handleDeleteClick = (item: CombinedService) => {
     setItemToDelete(item);
