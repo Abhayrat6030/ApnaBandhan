@@ -38,7 +38,7 @@ type Message = {
 
 const initialMessage: Message = { role: 'assistant', content: "Hello! I'm Bandhan, your personal wedding content assistant. How can I help you craft the perfect words for your special day?" };
 
-function AiAssistantChat() {
+function AiAssistantChat({ onNewChat }: { onNewChat: () => void }) {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -97,15 +97,10 @@ function AiAssistantChat() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/ai', {
+        const response = await fetch('/api/ai', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: userMessage.content,
-                history: messages,
-            }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userMessage.content, history: messages }),
         });
 
       if (!response.ok) {
@@ -214,22 +209,24 @@ export default function AiAssistantWidget() {
         return (
             <Drawer open={open} onOpenChange={setOpen}>
                 <DrawerTrigger asChild>{sharedTrigger}</DrawerTrigger>
-                <DrawerContent className="h-[85vh] bg-background">
-                    <DrawerHeader className="text-left">
-                        <DrawerTitle className="flex items-center gap-2">
-                             <Wand2 className="h-6 w-6 text-primary" />
-                             AI Invitation Assistant
+                <DrawerContent className="h-[90vh] bg-background flex flex-col">
+                    <DrawerHeader className="text-left p-4 border-b">
+                        <DrawerTitle className="flex items-center justify-between">
+                            <span className="flex items-center gap-2 font-bold">
+                                 <Wand2 className="h-6 w-6 text-primary" />
+                                 AI Assistant
+                            </span>
+                            <DrawerClose asChild>
+                                <Button variant="ghost" size="icon">
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">Close</span>
+                                </Button>
+                            </DrawerClose>
                         </DrawerTitle>
                         <DrawerDescription>Let's craft the perfect words for your special occasion.</DrawerDescription>
                     </DrawerHeader>
-                     <DrawerClose asChild>
-                        <Button variant="ghost" size="icon" className="absolute top-3 right-3 z-10">
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Close</span>
-                        </Button>
-                    </DrawerClose>
-                    <div className="overflow-auto flex-1">
-                        <AiAssistantChat />
+                    <div className="flex-1 min-h-0">
+                        <AiAssistantChat onNewChat={() => {}} />
                     </div>
                 </DrawerContent>
             </Drawer>
@@ -256,7 +253,7 @@ export default function AiAssistantWidget() {
                     </Button>
                 </DialogClose>
                 <div className="flex-1 min-h-0">
-                    <AiAssistantChat />
+                    <AiAssistantChat onNewChat={() => {}} />
                 </div>
             </DialogContent>
         </Dialog>
