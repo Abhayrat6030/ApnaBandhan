@@ -3,8 +3,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Phone, Menu } from 'lucide-react';
-import { useState, type FC } from 'react';
+import { Phone, ArrowRight } from 'lucide-react';
+import { type FC } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +12,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { siteConfig, navItems } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -36,8 +35,8 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
         
         {/* Mobile Menu */}
         <Sheet open={isMenuOpen} onOpenChange={setMenuOpen}>
-            <SheetContent side="left" className="flex flex-col w-full max-w-[300px]">
-                <SheetHeader>
+            <SheetContent side="left" className="flex flex-col w-full max-w-[300px] p-0">
+                <SheetHeader className="p-4 border-b">
                   <SheetTitle>
                     <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setMenuOpen(false)}>
                       <Logo className="h-6 w-6 text-primary" />
@@ -45,21 +44,35 @@ export default function Header({ isMenuOpen, setMenuOpen }: HeaderProps) {
                     </Link>
                   </SheetTitle>
                 </SheetHeader>
-                <nav className="grid gap-2 text-lg font-medium mt-4">
-                  {navItems.map((item) => (
-                    <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={() => setMenuOpen(false)}
-                        className={cn(
-                            'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
-                            pathname === item.href && 'bg-muted text-primary'
-                        )}
-                        >
-                        {item.label}
-                    </Link>
-                  ))}
-                </nav>
+                <div className="flex-1 flex flex-col justify-between">
+                    <nav className="grid gap-2 text-base font-medium p-4">
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                        <Link
+                            key={item.label}
+                            href={item.href}
+                            onClick={() => setMenuOpen(false)}
+                            className={cn(
+                                'flex items-center gap-3 rounded-lg px-3 py-3 text-muted-foreground transition-all hover:text-primary hover:bg-muted',
+                                pathname === item.href && 'bg-muted text-primary'
+                            )}
+                            >
+                            {Icon && <Icon className="h-5 w-5" />}
+                            {item.label}
+                        </Link>
+                        )
+                    })}
+                    </nav>
+                    <div className="p-4 border-t">
+                        <Button asChild className="w-full" size="lg">
+                            <Link href="/order" onClick={() => setMenuOpen(false)}>
+                                Order Now
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
               </SheetContent>
         </Sheet>
 

@@ -1,5 +1,7 @@
 
 import type { NavItem } from './types';
+import { Home, LayoutGrid, Package, Info, Mail } from 'lucide-react';
+
 
 export const siteConfig = {
   name: 'ApnaBandhan',
@@ -11,11 +13,11 @@ export const siteConfig = {
 };
 
 export const navItems: NavItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Services', href: '/services' },
-  { label: 'Packages', href: '/packages' },
-  { label: 'About Us', href: '/about' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Home', href: '/', icon: Home },
+  { label: 'Services', href: '/services', icon: LayoutGrid },
+  { label: 'Packages', href: '/packages', icon: Package },
+  { label: 'About Us', href: '/about', icon: Info },
+  { label: 'Contact', href: '/contact', icon: Mail },
 ];
 
 export const adminNavItems: NavItem[] = [

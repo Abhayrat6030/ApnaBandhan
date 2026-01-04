@@ -3,6 +3,7 @@
 export type NavItem = {
   label: string;
   href: string;
+  icon?: React.ElementType;
 };
 
 export type ServiceCategory = 'invitation-videos' | 'invitation-cards' | 'combo-packages' | 'video-editing' | 'album-design';
