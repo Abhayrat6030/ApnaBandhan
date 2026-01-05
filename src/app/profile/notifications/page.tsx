@@ -1,10 +1,11 @@
 
 'use client';
 
+import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Bell, CheckCircle, Gift, Loader2 } from 'lucide-react';
 import { useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, where, writeBatch, doc } from 'firebase/firestore';
 import type { Notification } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -18,6 +19,7 @@ export default function NotificationsPage() {
     const { user, isUserLoading } = useUser();
     const db = useFirestore();
 
+    // Query to fetch ALL notifications, ordered by date
     const notificationsQuery = useMemoFirebase(() => {
         if (!user || !db) return null;
         return query(
@@ -27,6 +29,32 @@ export default function NotificationsPage() {
     }, [user, db]);
 
     const { data: notifications, isLoading: areNotificationsLoading } = useCollection<Notification>(notificationsQuery);
+    
+    // This useEffect hook will run once when the component mounts.
+    // It finds all unread notifications and marks them as read.
+    useEffect(() => {
+        const markNotificationsAsRead = async () => {
+            if (!user || !db) return;
+
+            const unreadQuery = query(
+                collection(db, 'users', user.uid, 'notifications'),
+                where('read', '==', false)
+            );
+            
+            const unreadSnapshot = await getDocs(unreadQuery);
+
+            if (!unreadSnapshot.empty) {
+                const batch = writeBatch(db);
+                unreadSnapshot.forEach(docSnapshot => {
+                    const docRef = doc(db, 'users', user.uid, 'notifications', docSnapshot.id);
+                    batch.update(docRef, { read: true });
+                });
+                await batch.commit();
+            }
+        };
+
+        markNotificationsAsRead();
+    }, [user, db]);
     
     const isLoading = isUserLoading || areNotificationsLoading;
 
@@ -68,7 +96,8 @@ export default function NotificationsPage() {
                                                 <p className="text-sm text-muted-foreground">{notification.description}</p>
                                                 <p className="text-xs text-muted-foreground mt-1">{new Date(notification.date).toLocaleDateString()}</p>
                                             </div>
-                                            {!notification.read && <div className="w-2 h-2 rounded-full bg-primary mt-2"></div>}
+                                            {/* We keep the visual indicator to show which ones WERE new on this visit */}
+                                            {!notification.read && <div className="w-2 h-2 rounded-full bg-primary mt-2 opacity-0"></div>}
                                         </div>
                                     );
                                 })}
