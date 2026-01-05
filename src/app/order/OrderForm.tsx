@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -482,7 +480,7 @@ function OrderFormComponent() {
   );
 }
 
-export default function OrderForm() {
+export default function OrderPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <OrderFormComponent />
