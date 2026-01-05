@@ -7,9 +7,8 @@ export async function enhanceImage(photoDataUri: string) {
         return { success: false, error: 'Invalid image format. Please upload a valid image file.' };
     }
 
-    // Since genkit flow is removed, we return a placeholder or disable the feature.
-    // Here, we'll return an error indicating the feature is temporarily disabled.
-    return { success: false, error: 'The AI enhancement feature is temporarily unavailable.' };
+    // Since genkit flow is removed, we return an error indicating the feature is temporarily disabled.
+    return { success: false, error: 'The AI enhancement feature is temporarily unavailable as Genkit has been removed.' };
     
   } catch (error: any) {
     console.error('AI enhancement failed:', error);
