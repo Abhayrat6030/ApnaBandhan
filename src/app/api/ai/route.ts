@@ -66,7 +66,7 @@ ${customInstructions ? `\n*   **Admin Instructions:** Use the following informat
   try {
     const chatCompletion = await groq.chat.completions.create({
         messages: messages as any,
-        model: "llama3-8b-8192",
+        model: "llama3-70b-8192",
     });
 
     const reply = chatCompletion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response at the moment.";
