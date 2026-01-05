@@ -6,7 +6,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
-import { Loader2, PlusCircle, Trash2, Wand2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, Wand2, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -17,19 +17,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser } from '@/firebase';
+import { Separator } from '@/components/ui/separator';
 
+const sampleSchema = z.object({
+  type: z.enum(['image', 'video']),
+  url: z.string().url({ message: 'Please enter a valid URL.' }),
+  imageHint: z.string().optional(),
+});
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
-  // Service fields
   name: z.string().min(3, 'Name is required.'),
   slug: z.string().min(3, 'Slug is required. Use format: "your-service-name"').optional(),
-  category: z.string().optional(),
   description: z.string().min(10, 'Description is required.'),
+  // Service fields
+  category: z.string().optional(),
   price: z.coerce.number().positive('Price must be a positive number.').optional(),
   priceType: z.enum(['starting', 'fixed']).optional(),
   deliveryTime: z.string().optional(),
   inclusions: z.array(z.object({ value: z.string() })).optional(),
+  samples: z.array(sampleSchema).optional(),
   // Package fields
   priceString: z.string().optional(),
   features: z.array(z.object({ value: z.string() })).optional(),
@@ -70,19 +77,15 @@ export default function NewServicePage() {
       priceType: 'fixed',
       deliveryTime: '',
       inclusions: [{ value: '' }],
+      samples: [{ type: 'image', url: '', imageHint: '' }],
       priceString: '₹',
       features: [{ value: '' }],
     },
   });
 
-  const { fields: inclusionFields, append: appendInclusion, remove: removeInclusion } = useFieldArray({
-    control: form.control,
-    name: "inclusions",
-  });
-   const { fields: featureFields, append: appendFeature, remove: removeFeature } = useFieldArray({
-    control: form.control,
-    name: "features",
-  });
+  const { fields: inclusionFields, append: appendInclusion, remove: removeInclusion } = useFieldArray({ control: form.control, name: "inclusions" });
+  const { fields: featureFields, append: appendFeature, remove: removeFeature } = useFieldArray({ control: form.control, name: "features" });
+  const { fields: sampleFields, append: appendSample, remove: removeSample } = useFieldArray({ control: form.control, name: "samples" });
 
   const handleItemTypeChange = (value: string) => {
     setItemType(value);
@@ -119,7 +122,7 @@ export default function NewServicePage() {
                 priceType: values.priceType,
                 deliveryTime: values.deliveryTime,
                 inclusions: values.inclusions?.map(i => i.value).filter(Boolean),
-                samples: [],
+                samples: values.samples?.filter(s => s.url),
                 isFeatured: false,
                 rating: 5,
                 topRated: false,
@@ -239,12 +242,54 @@ export default function NewServicePage() {
                         <FormLabel>Inclusions</FormLabel>
                         {inclusionFields.map((field, index) => (
                            <div key={field.id} className="flex items-center gap-2 mt-2">
-                                <Input {...form.register(`inclusions.${index}.value` as const)} />
+                                <Input {...form.register(`inclusions.${index}.value` as const)} placeholder={`Inclusion ${index + 1}`} />
                                 <Button type="button" variant="destructive" size="icon" onClick={() => removeInclusion(index)}><Trash2 className="h-4 w-4" /></Button>
                            </div>
                         ))}
                         <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendInclusion({ value: "" })}>
                             <PlusCircle className="mr-2 h-4 w-4" /> Add Inclusion
+                        </Button>
+                    </div>
+
+                    <Separator />
+                    
+                    <div>
+                        <FormLabel>Samples</FormLabel>
+                        {sampleFields.map((field, index) => (
+                           <div key={field.id} className="p-4 border rounded-lg mt-2 space-y-4 relative">
+                                <Button type="button" variant="destructive" size="icon" className="absolute -top-3 -right-3 h-7 w-7" onClick={() => removeSample(index)}><Trash2 className="h-4 w-4" /></Button>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                     <FormField
+                                        control={form.control}
+                                        name={`samples.${index}.type`}
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Type</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="image"><div className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /> Image</div></SelectItem>
+                                                    <SelectItem value="video"><div className="flex items-center gap-2"><VideoIcon className="h-4 w-4" /> Video</div></SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                    <div className="md:col-span-2">
+                                      <FormField control={form.control} name={`samples.${index}.url`} render={({ field }) => (
+                                          <FormItem><FormLabel>URL</FormLabel><FormControl><Input placeholder="https://example.com/image.jpg" {...field} /></FormControl><FormMessage /></FormItem>
+                                      )}/>
+                                    </div>
+                                </div>
+                                {form.watch(`samples.${index}.type`) === 'image' && (
+                                  <FormField control={form.control} name={`samples.${index}.imageHint`} render={({ field }) => (
+                                      <FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. wedding couple" {...field} /></FormControl><FormMessage /></FormItem>
+                                  )}/>
+                                )}
+                           </div>
+                        ))}
+                        <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendSample({ type: "image", url: "", imageHint: "" })}>
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add Sample
                         </Button>
                     </div>
                 </>

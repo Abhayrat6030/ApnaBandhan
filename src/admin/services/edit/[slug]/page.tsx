@@ -6,7 +6,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useEffect } from 'react';
-import { Loader2, PlusCircle, Trash2, Wand2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, Wand2, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useDoc, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+
+const sampleSchema = z.object({
+  type: z.enum(['image', 'video']),
+  url: z.string().url({ message: 'Please enter a valid URL.' }),
+  imageHint: z.string().optional(),
+});
 
 const formSchema = z.object({
   itemType: z.enum(['service', 'package']),
@@ -31,6 +38,7 @@ const formSchema = z.object({
   priceType: z.enum(['starting', 'fixed']).optional(),
   deliveryTime: z.string().optional(),
   inclusions: z.array(z.object({ value: z.string() })).optional(),
+  samples: z.array(sampleSchema).optional(),
   // Package fields
   priceString: z.string().optional(),
   features: z.array(z.object({ value: z.string() })).optional(),
@@ -58,11 +66,9 @@ export default function EditServicePage() {
   const { user } = useUser();
   const db = useFirestore();
 
-  // Try fetching as a service first
   const serviceRef = useMemoFirebase(() => slug && db ? doc(db, 'services', slug as string) : null, [slug, db]);
   const { data: serviceData, isLoading: isServiceLoading } = useDoc<Service>(serviceRef);
   
-  // Then try fetching as a package
   const packageRef = useMemoFirebase(() => slug && db ? doc(db, 'comboPackages', slug as string) : null, [slug, db]);
   const { data: packageData, isLoading: isPackageLoading } = useDoc<Package>(packageRef);
 
@@ -70,14 +76,9 @@ export default function EditServicePage() {
     resolver: zodResolver(formSchema),
   });
 
-  const { fields: inclusionFields, append: appendInclusion, remove: removeInclusion } = useFieldArray({
-    control: form.control,
-    name: "inclusions",
-  });
-   const { fields: featureFields, append: appendFeature, remove: removeFeature } = useFieldArray({
-    control: form.control,
-    name: "features",
-  });
+  const { fields: inclusionFields, append: appendInclusion, remove: removeInclusion } = useFieldArray({ control: form.control, name: "inclusions" });
+  const { fields: featureFields, append: appendFeature, remove: removeFeature } = useFieldArray({ control: form.control, name: "features" });
+  const { fields: sampleFields, append: appendSample, remove: removeSample } = useFieldArray({ control: form.control, name: "samples" });
   
   useEffect(() => {
     let itemData: CombinedDoc | null = null;
@@ -103,6 +104,7 @@ export default function EditServicePage() {
             priceType: (itemData as Service).priceType || 'fixed',
             deliveryTime: (itemData as Service).deliveryTime || undefined,
             inclusions: (itemData as Service).inclusions?.map(value => ({ value })) || [{ value: '' }],
+            samples: (itemData as Service).samples || [{ type: 'image', url: '', imageHint: '' }],
             priceString: (itemData as Package).price || undefined,
             features: (itemData as Package).features?.map(value => ({ value })) || [{ value: '' }],
         });
@@ -138,6 +140,7 @@ export default function EditServicePage() {
                 priceType: values.priceType,
                 deliveryTime: values.deliveryTime,
                 inclusions: values.inclusions?.map(i => i.value).filter(Boolean),
+                samples: values.samples?.filter(s => s.url),
             });
         } else { // package
             const packageDocRef = doc(db, 'comboPackages', slug as string);
@@ -235,6 +238,48 @@ export default function EditServicePage() {
                         ))}
                         <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendInclusion({ value: "" })}>
                             <PlusCircle className="mr-2 h-4 w-4" /> Add Inclusion
+                        </Button>
+                    </div>
+
+                    <Separator />
+                    
+                    <div>
+                        <FormLabel>Samples</FormLabel>
+                        {sampleFields.map((field, index) => (
+                           <div key={field.id} className="p-4 border rounded-lg mt-2 space-y-4 relative">
+                                <Button type="button" variant="destructive" size="icon" className="absolute -top-3 -right-3 h-7 w-7" onClick={() => removeSample(index)}><Trash2 className="h-4 w-4" /></Button>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                     <FormField
+                                        control={form.control}
+                                        name={`samples.${index}.type`}
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Type</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="image"><div className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /> Image</div></SelectItem>
+                                                    <SelectItem value="video"><div className="flex items-center gap-2"><VideoIcon className="h-4 w-4" /> Video</div></SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                    <div className="md:col-span-2">
+                                      <FormField control={form.control} name={`samples.${index}.url`} render={({ field }) => (
+                                          <FormItem><FormLabel>URL</FormLabel><FormControl><Input placeholder="https://example.com/image.jpg" {...field} /></FormControl><FormMessage /></FormItem>
+                                      )}/>
+                                    </div>
+                                </div>
+                                {form.watch(`samples.${index}.type`) === 'image' && (
+                                  <FormField control={form.control} name={`samples.${index}.imageHint`} render={({ field }) => (
+                                      <FormItem><FormLabel>Image Hint (for AI)</FormLabel><FormControl><Input placeholder="e.g. wedding couple" {...field} /></FormControl><FormMessage /></FormItem>
+                                  )}/>
+                                )}
+                           </div>
+                        ))}
+                        <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendSample({ type: "image", url: "", imageHint: "" })}>
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add Sample
                         </Button>
                     </div>
                 </>

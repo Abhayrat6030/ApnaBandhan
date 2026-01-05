@@ -18,7 +18,6 @@ const icons: { [key: string]: React.ElementType } = {
   '/admin/users': Users,
   '/admin/notifications': Bell,
   '/admin/downloads': Download,
-  '/admin/ai-enhancer': Sparkles,
   '/admin/requests': FileText,
   '/admin/rewards': Award,
   '/admin/referrals': Gift,
