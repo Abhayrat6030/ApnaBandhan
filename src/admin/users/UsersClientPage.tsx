@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
@@ -371,5 +370,3 @@ function UsersSkeleton() {
         </Card>
     )
 }
-
-    
