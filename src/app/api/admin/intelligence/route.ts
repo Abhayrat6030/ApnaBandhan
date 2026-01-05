@@ -11,7 +11,51 @@ const groq = new Groq({
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
-const tools = [listNewUsers, listRecentOrders, getAppStatus];
+const tools = [
+  {
+    type: 'function',
+    function: {
+      name: 'listNewUsers',
+      description: 'Get a list of the most recent users who have signed up.',
+      parameters: {
+        type: 'object',
+        properties: {
+          count: {
+            type: 'number',
+            description: 'The number of users to fetch.',
+          },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'listRecentOrders',
+      description: 'Get a list of the most recent orders placed.',
+      parameters: {
+        type: 'object',
+        properties: {
+          count: {
+            type: 'number',
+            description: 'The number of orders to fetch.',
+          },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'getAppStatus',
+      description: 'Get the general status of the app, like total user and order counts.',
+      parameters: {
+        type: 'object',
+        properties: {},
+      },
+    },
+  },
+];
 
 export async function POST(req: NextRequest) {
     try {
@@ -71,7 +115,7 @@ export async function POST(req: NextRequest) {
                     role: "tool",
                     name: functionName,
                     content: JSON.stringify(functionResponse),
-                });
+                } as any);
             }
             
             const secondResponse = await groq.chat.completions.create({

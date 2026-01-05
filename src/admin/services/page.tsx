@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { collection, doc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, deleteDoc, query } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -37,19 +37,19 @@ type CombinedService = (Partial<Service> & Partial<Package>) & { id: string; nam
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export default function AdminServicesPage() {
-  const { user } = useUser();
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const { user, isUserLoading } = useUser();
+  const isAdmin = useMemo(() => user?.email === ADMIN_EMAIL, [user]);
   const db = useFirestore();
 
   const servicesQuery = useMemoFirebase(() => {
-    if (!isAdmin || !db) return null;
-    return collection(db, 'services');
-  }, [isAdmin, db]);
+    if (isUserLoading || !isAdmin || !db) return null;
+    return query(collection(db, 'services'));
+  }, [db, isAdmin, isUserLoading]);
 
   const packagesQuery = useMemoFirebase(() => {
-    if (!isAdmin || !db) return null;
-    return collection(db, 'comboPackages');
-  }, [isAdmin, db]);
+    if (isUserLoading || !isAdmin || !db) return null;
+    return query(collection(db, 'comboPackages'));
+  }, [db, isAdmin, isUserLoading]);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
@@ -57,7 +57,17 @@ export default function AdminServicesPage() {
   const allItems: CombinedService[] = useMemo(() => {
       const items: CombinedService[] = [];
       if(services) items.push(...services.map(s => ({...s, type: 'Service' } as CombinedService)));
-      if(packages) items.push(...packages.map(p => ({...p, name: p.name, id: p.slug || p.name.toLowerCase().replace(/\s+/g, '-'), type: 'Package', price: parseFloat(p.price.replace(/[^0-9.-]+/g,"")) } as CombinedService)));
+      if(packages) items.push(...packages.map(p => {
+        const priceString = p.price || '0';
+        const priceNumber = parseFloat(priceString.replace(/[^0-9.-]+/g,""));
+        return {
+          ...p,
+          name: p.name,
+          id: p.slug || p.id,
+          type: 'Package',
+          price: isNaN(priceNumber) ? 0 : priceNumber
+        } as CombinedService
+      }));
       return items.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
   }, [services, packages]);
   
@@ -66,7 +76,7 @@ export default function AdminServicesPage() {
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<CombinedService | null>(null);
 
-  const isLoading = areServicesLoading || arePackagesLoading;
+  const isLoading = isUserLoading || (isAdmin && (areServicesLoading || arePackagesLoading));
 
   const handleDeleteClick = (item: CombinedService) => {
     setItemToDelete(item);
@@ -142,13 +152,17 @@ export default function AdminServicesPage() {
         </div>
       </div>
 
-      <Card>
+      <Card className="overflow-x-auto">
         <CardHeader>
           <CardTitle>All Services & Packages</CardTitle>
           <CardDescription>Add, edit, or remove services offered on the website.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-            {isLoading ? renderSkeleton() : (
+            {isLoading ? renderSkeleton() : !isAdmin && !isUserLoading ? (
+               <div className="p-6 text-center text-destructive-foreground bg-destructive">
+                 <p>You do not have permission to view this page.</p>
+               </div>
+            ) : (
             <>
               {/* Desktop Table */}
               <div className="hidden md:block">
@@ -214,15 +228,15 @@ export default function AdminServicesPage() {
                   {allItems.map(item => (
                       <Card key={item.id} className="w-full">
                           <CardHeader className="flex flex-row items-start justify-between p-4">
-                              <div>
-                                <CardTitle className="text-base">{item.name}</CardTitle>
+                              <div className="overflow-hidden">
+                                <CardTitle className="text-base truncate">{item.name}</CardTitle>
                                  <Badge variant={item.type === 'Package' ? 'secondary' : 'outline'} className="mt-1 capitalize">
                                     {item.category?.replace('-', ' ') || 'Package'}
                                 </Badge>
                               </div>
                                <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isDeleting} className="-mt-2 -mr-2">
+                                    <Button aria-haspopup="true" size="icon" variant="ghost" disabled={!!isDeleting} className="-mt-2 -mr-2 flex-shrink-0">
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>

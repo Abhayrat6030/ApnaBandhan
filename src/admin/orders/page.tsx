@@ -8,38 +8,49 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order } from '@/lib/types';
+import type { Order, Service, Package } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { packages, services as staticServices } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
+const ADMIN_EMAIL = 'abhayrat603@gmail.com';
+
 export default function AdminOrdersPage() {
   const db = useFirestore();
+  const { user, isUserLoading } = useUser();
+  const isAdmin = useMemo(() => user?.email === ADMIN_EMAIL, [user]);
 
   const ordersQuery = useMemoFirebase(() => {
-      if (!db) return null;
+      if (isUserLoading || !isAdmin || !db) return null;
       return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
-  }, [db]);
+  }, [db, isAdmin, isUserLoading]);
+
+  const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') : null, [db]);
+  const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') : null, [db]);
 
   const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+  const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
+  const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
 
   const allServicesMap = useMemo(() => {
     const map = new Map<string, string>();
-    staticServices.forEach(s => map.set(s.id, s.name));
-    packages.forEach(p => map.set(p.id, p.name));
+    if(services) services.forEach(s => map.set(s.id, s.name));
+    if(packages) packages.forEach(p => map.set(p.id, p.name));
     return map;
-  }, []);
+  }, [services, packages]);
 
   const ordersWithServiceNames = useMemo(() => {
     if (!allOrders) return [];
-    return allOrders.map(order => ({
-      ...order,
-      serviceName: allServicesMap.get(order.selectedServiceId) || 'Unknown Service',
-    }));
+    return allOrders.map(order => {
+        const serviceName = allServicesMap.get(order.selectedServiceId);
+        return {
+            ...order,
+            serviceName: serviceName || order.selectedServiceId,
+        };
+    });
   }, [allOrders, allServicesMap]);
   
-  const isLoading = areOrdersLoading;
+  const isLoading = isUserLoading || (isAdmin && (areOrdersLoading || areServicesLoading || arePackagesLoading));
 
   const renderSkeleton = () => (
     <div className="p-4 space-y-4">
@@ -71,6 +82,10 @@ export default function AdminOrdersPage() {
         <CardContent className="p-0">
           {isLoading ? (
             renderSkeleton()
+          ) : !isAdmin && !isUserLoading ? (
+            <div className="p-6 text-center text-destructive-foreground bg-destructive">
+               <p>You do not have permission to view this page.</p>
+            </div>
           ) : allOrders && allOrders.length > 0 ? (
             <OrderTable orders={ordersWithServiceNames} />
           ) : (
