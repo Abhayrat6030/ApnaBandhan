@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useMemo, useEffect } from 'react';
 import { Loader2, DownloadCloud, Trash2, Edit, FileVideo, FileImage } from 'lucide-react';
-import { collection, addDoc, doc, getDocs, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, doc, getDocs, updateDoc, deleteDoc, query, orderBy, CollectionReference } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -42,7 +42,7 @@ export default function AdminDownloadsPage() {
   const db = useFirestore();
   const [isLoading, setIsLoading] = useState(false);
 
-  const usersQuery = useMemoFirebase(() => db ? query(collection(db, 'users')) : null, [db]);
+  const usersQuery = useMemoFirebase(() => db ? query(collection(db, 'users') as CollectionReference<UserProfile>) : null, [db]);
   const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersQuery);
 
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -92,7 +92,7 @@ export default function AdminDownloadsPage() {
     if (!db) return;
     setIsLoading(true);
 
-    const newDownloadableProduct = {
+    const newDownloadableProduct: Omit<DownloadableProduct, 'id'> = {
       name: values.name,
       type: values.type,
       deliveryDate: new Date().toISOString(),
@@ -102,11 +102,11 @@ export default function AdminDownloadsPage() {
     
     try {
       const downloadsCollection = collection(db, `users/${values.userId}/downloadableProducts`);
-      await addDoc(downloadsCollection, newDownloadableProduct);
+      const docRef = await addDoc(downloadsCollection, newDownloadableProduct);
       toast({ title: 'Success!', description: `Product has been added.` });
       addForm.reset();
       if (values.userId === selectedUserId) {
-          setUserDownloads(prev => [{ id: 'new', ...newDownloadableProduct } as DownloadableProduct, ...prev]);
+          setUserDownloads(prev => [{ id: docRef.id, ...newDownloadableProduct }, ...prev]);
       }
     } catch (error: any) {
       toast({ title: 'Error', description: error.message || 'Something went wrong.', variant: 'destructive' });
@@ -122,7 +122,7 @@ export default function AdminDownloadsPage() {
     try {
         await updateDoc(downloadRef, values as any);
         toast({ title: "Success", description: "Download item updated." });
-        setUserDownloads(prev => prev.map(d => d.id === itemToEdit.id ? { ...d, ...values } : d));
+        setUserDownloads(prev => prev.map(d => d.id === itemToEdit.id ? { ...d, ...values } as DownloadableProduct : d));
         setItemToEdit(null);
     } catch (error: any) {
         toast({ title: "Error", description: error.message, variant: 'destructive' });
