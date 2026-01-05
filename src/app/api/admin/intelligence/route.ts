@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
         // --- 4. Call Groq AI ---
         const chatCompletion = await groq.chat.completions.create({
             messages: messages as any,
-            model: "llama3-70b-8192",
+            model: "llama-3.1-8b-instant",
         });
 
         const reply = chatCompletion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
