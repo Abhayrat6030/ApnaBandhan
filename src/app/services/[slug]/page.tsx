@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -10,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Clock } from 'lucide-react';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import type { Service } from '@/lib/types';
+import type { Service, Package } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ServicePage() {
@@ -20,19 +19,16 @@ export default function ServicePage() {
 
   const serviceRef = useMemoFirebase(() => {
     if (!db || !slug) return null;
-    // We try both collections. A bit of a hack, but works for this structure.
-    // A better structure might be a single 'products' collection.
-    const servicePath = `services/${slug}`;
-    return doc(db, servicePath);
+    return doc(db, 'services', slug as string);
   }, [db, slug]);
-
+  
   const packageRef = useMemoFirebase(() => {
     if (!db || !slug) return null;
-    return doc(db, `comboPackages/${slug}`);
+    return doc(db, 'comboPackages', slug as string);
   }, [db, slug]);
 
   const { data: serviceData, isLoading: isServiceLoading } = useDoc<Service>(serviceRef);
-  const { data: packageData, isLoading: isPackageLoading } = useDoc<any>(packageRef);
+  const { data: packageData, isLoading: isPackageLoading } = useDoc<Package>(packageRef);
 
   const isLoading = isServiceLoading || isPackageLoading;
   
@@ -41,14 +37,16 @@ export default function ServicePage() {
         return serviceData;
     }
     if (packageData) {
+        const priceString = packageData.price || '0';
+        const priceNumber = parseFloat(priceString.replace(/[^0-9.-]+/g,""));
         return {
             id: packageData.id,
-            slug: packageData.slug,
+            slug: packageData.slug || packageData.id,
             name: packageData.name,
             description: packageData.description,
-            price: parseFloat(packageData.price.replace(/[^0-9.]/g, '')) || 0,
+            price: isNaN(priceNumber) ? 0 : priceNumber,
             category: 'combo-packages',
-            samples: [],
+            samples: [], // combo packages might not have samples in this structure
             inclusions: packageData.features,
             priceType: 'fixed',
             deliveryTime: 'N/A',
