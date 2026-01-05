@@ -22,12 +22,23 @@ export default function AdminUsersPage() {
   const { data: users, isLoading } = useCollection<UserProfile>(usersQuery);
   const usersMap = useMemo(() => new Map(users?.map(u => [u.uid, u])), [users]);
 
+  if (isLoading || !isAdmin) {
+      return (
+          <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
+            <div className="flex items-center">
+                <h1 className="font-headline text-lg font-semibold md:text-2xl">Manage Users</h1>
+            </div>
+            <UsersSkeleton/>
+          </main>
+      )
+  }
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
       <div className="flex items-center">
         <h1 className="font-headline text-lg font-semibold md:text-2xl">Manage Users</h1>
       </div>
-      {isLoading ? <UsersSkeleton/> : <UsersClientPage initialUsers={users || []} initialUsersMap={usersMap} />}
+      <UsersClientPage initialUsers={users || []} initialUsersMap={usersMap} />
     </main>
   );
 }
