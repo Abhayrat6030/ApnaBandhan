@@ -19,20 +19,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { services as staticServices, packages as staticPackages } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, errorEmitter, useFirestore } from '@/firebase';
+import { useUser, errorEmitter, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
-import type { Coupon } from '@/lib/types';
-
-
-const allServicesAndPackages = [...staticServices, ...staticPackages].map(s => ({ 
-    id: s.id, 
-    name: s.name, 
-    price: typeof s.price === 'string' ? parseFloat(s.price.replace(/[^0-9.-]+/g,"")) : s.price 
-}));
-const uniqueServices = Array.from(new Map(allServicesAndPackages.map(item => [item.id, item])).values());
+import type { Coupon, Service, Package } from '@/lib/types';
 
 
 const orderFormSchema = z.object({
@@ -60,6 +51,21 @@ function OrderFormComponent() {
   const [isCouponLoading, setIsCouponLoading] = useState(false);
   const [discount, setDiscount] = useState(0);
 
+  const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') : null, [db]);
+  const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') : null, [db]);
+
+  const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
+  const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
+  
+  const uniqueServices = useMemo(() => {
+    if (!services || !packages) return [];
+    const allItems = [
+        ...services.map(s => ({ id: s.id, name: s.name, price: s.price })),
+        ...packages.map(p => ({ id: p.id, name: p.name, price: parseFloat(p.price.replace(/[^0-9.]/g, '')) || 0 }))
+    ];
+    return Array.from(new Map(allItems.map(item => [item.id, item])).values());
+  }, [services, packages]);
+
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
     defaultValues: {
@@ -76,7 +82,7 @@ function OrderFormComponent() {
     if (!selectedServiceId) return 0;
     const service = uniqueServices.find(s => s.id === selectedServiceId);
     return service?.price || 0;
-  }, [selectedServiceId]);
+  }, [selectedServiceId, uniqueServices]);
 
   const finalPrice = useMemo(() => {
     return Math.max(0, servicePrice - discount);
@@ -451,5 +457,3 @@ export default function OrderForm() {
     </Suspense>
   )
 }
-
-    

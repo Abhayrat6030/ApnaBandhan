@@ -6,34 +6,18 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Film, Mails, Album, Package as PackageIcon, Video, FileText, Sparkles, Loader2, Copy } from 'lucide-react';
 import Autoplay from "embla-carousel-autoplay";
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
-import { services, packages, serviceCategories } from '@/lib/data';
+import { serviceCategories } from '@/lib/data';
 import { siteConfig } from '@/lib/constants';
 import placeholderImages from '@/lib/placeholder-images.json';
 import { ProductCard } from '@/components/shared/ProductCard';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import type { AppSettings } from '@/lib/types';
-
-
-const topRatedVideos = services.filter(s => s.category === 'invitation-videos');
-const topRatedCards = services.filter(s => s.category === 'invitation-cards');
-const topRatedAlbums = services.filter(s => s.category === 'album-design');
-const topRatedVideoEditing = services.filter(s => s.category === 'video-editing');
-const cdrFileServices = services.filter(s => s.tags?.includes('cdr-file'));
-const comboPackages = packages;
+import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { collection, doc, query, limit, where } from 'firebase/firestore';
+import type { AppSettings, Service, Package } from '@/lib/types';
 
 
 const categoryIcons = {
@@ -46,6 +30,60 @@ const categoryIcons = {
   'website-development': FileText,
 };
 
+function FeaturedSection({ category, title, description, href }: { category: string, title: string, description: string, href: string }) {
+    const db = useFirestore();
+    const servicesQuery = useMemoFirebase(() => 
+        db ? query(collection(db, 'services'), where('category', '==', category), limit(4))
+        : null
+    , [db, category]);
+
+    const { data: services, isLoading } = useCollection<Service>(servicesQuery);
+
+    if (isLoading && !services) {
+        return (
+             <section className="py-8 bg-background">
+                <div className="container mx-auto px-4">
+                    <div className="text-center mb-6">
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">{title}</h2>
+                        <p className="text-lg text-muted-foreground mt-1">{description}</p>
+                    </div>
+                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                        {[...Array(4)].map((_, i) => <Card key={i}><CardContent className="p-0"><div className="relative aspect-[3/4] w-full bg-muted rounded-2xl"></div></CardContent></Card>)}
+                    </div>
+                </div>
+            </section>
+        )
+    }
+
+    if (!services || services.length === 0) {
+        return null; // Don't render the section if there are no services
+    }
+
+    return (
+        <section className="py-8 bg-background">
+            <div className="container mx-auto px-4">
+                <div className="text-center mb-6">
+                    <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">{title}</h2>
+                    <p className="text-lg text-muted-foreground mt-1">{description}</p>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    {services.map((service) => (
+                        <ProductCard key={service.id} service={service} />
+                    ))}
+                </div>
+                <div className="text-center mt-8">
+                    <Button asChild variant="outline">
+                        <Link href={href}>
+                            View All <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+        </section>
+    )
+}
+
+
 export default function Home() {
   const plugin = React.useRef(
     Autoplay({ delay: 4000, stopOnInteraction: true })
@@ -54,6 +92,9 @@ export default function Home() {
   const db = useFirestore();
   const themeSettingsRef = useMemoFirebase(() => db ? doc(db, 'app-settings', 'theme') : null, [db]);
   const { data: themeSettings } = useDoc<AppSettings>(themeSettingsRef);
+
+  const packagesQuery = useMemoFirebase(() => db ? query(collection(db, 'comboPackages'), limit(3)) : null, [db]);
+  const { data: comboPackages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
 
   const heroImage = themeSettings?.heroImageUrl || placeholderImages.hero.imageUrl;
 
@@ -123,154 +164,73 @@ export default function Home() {
         </div>
       </section>
       
-      {/* Top Rated Videos Section */}
-      {topRatedVideos.length > 0 && <section id="top-videos" className="py-8 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
-              Invitation Videos
-            </h2>
-            <p className="text-lg text-muted-foreground mt-1">Stunning videos to announce your special day.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {topRatedVideos.slice(0, 4).map((service) => (
-              <ProductCard key={service.id} service={service} />
-            ))}
-          </div>
-           <div className="text-center mt-8">
-            <Button asChild variant="outline">
-              <Link href="/invitation-videos">
-                View All Videos <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>}
+      <FeaturedSection 
+        category="invitation-videos"
+        title="Invitation Videos"
+        description="Stunning videos to announce your special day."
+        href="/invitation-videos"
+      />
       
-      {/* Top Rated Cards Section */}
-      {topRatedCards.length > 0 && <section id="top-cards" className="py-8 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
-              Invitation Cards
-            </h2>
-            <p className="text-lg text-muted-foreground mt-1">Elegant digital and printable invitations.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {topRatedCards.slice(0, 4).map((service) => (
-              <ProductCard key={service.id} service={service} />
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <Button asChild variant="outline">
-              <Link href="/invitation-cards">
-                View All Cards <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>}
+      <FeaturedSection 
+        category="invitation-cards"
+        title="Invitation Cards"
+        description="Elegant digital and printable invitations."
+        href="/invitation-cards"
+      />
 
-       {/* Top Rated Album Designs Section */}
-      {topRatedAlbums.length > 0 && <section id="top-albums" className="py-8 bg-secondary/30">
-        <div className="container mx-auto px-4">
-           <div className="text-center mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
-              Album Designs
-            </h2>
-            <p className="text-lg text-muted-foreground mt-1">Timeless designs to preserve your memories.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {topRatedAlbums.slice(0, 4).map((service) => (
-              <ProductCard key={service.id} service={service} />
-            ))}
-          </div>
-           <div className="text-center mt-8">
-            <Button asChild variant="outline">
-              <Link href="/album-design">
-                View All Designs <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>}
+       <FeaturedSection 
+        category="album-design"
+        title="Album Designs"
+        description="Timeless designs to preserve your memories."
+        href="/album-design"
+      />
 
-       {/* Top Rated Video Editing Section */}
-      {topRatedVideoEditing.length > 0 && <section id="top-video-editing" className="py-8 bg-background">
-        <div className="container mx-auto px-4">
-           <div className="text-center mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
-              Wedding Video Editing
-            </h2>
-            <p className="text-lg text-muted-foreground mt-1">Cinematic edits of your precious moments.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {topRatedVideoEditing.slice(0, 4).map((service) => (
-              <ProductCard key={service.id} service={service} />
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <Button asChild variant="outline">
-              <Link href="/video-editing">
-                View All Editing Services <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>}
+       <FeaturedSection 
+        category="video-editing"
+        title="Wedding Video Editing"
+        description="Cinematic edits of your precious moments."
+        href="/video-editing"
+      />
 
       {/* Combo Packages Section */}
-      {comboPackages.length > 0 && <section id="combo-packages" className="py-8 bg-secondary/30">
-        <div className="container mx-auto px-4">
-           <div className="text-center mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
-              Combo Packages
-            </h2>
-            <p className="text-lg text-muted-foreground mt-1">Get the best value with our curated packages.</p>
+      {!arePackagesLoading && comboPackages && comboPackages.length > 0 && (
+        <section id="combo-packages" className="py-8 bg-secondary/30">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
+                Combo Packages
+              </h2>
+              <p className="text-lg text-muted-foreground mt-1">Get the best value with our curated packages.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {comboPackages.slice(0, 3).map((pkg) => {
+                  const serviceWithPackagePrice: Service = {
+                      id: pkg.id,
+                      slug: pkg.slug || pkg.id,
+                      name: pkg.name,
+                      description: pkg.description,
+                      price: parseFloat(pkg.price.replace(/[^0-9.]/g, '')) || 0,
+                      category: 'combo-packages',
+                      samples: [],
+                      inclusions: pkg.features,
+                      priceType: 'fixed',
+                      deliveryTime: '',
+                      isFeatured: pkg.isBestValue
+                  };
+                  return <ProductCard key={pkg.id} service={serviceWithPackagePrice} />;
+              })}
+            </div>
+            <div className="text-center mt-8">
+              <Button asChild variant="outline">
+                <Link href="/packages">
+                  View All Packages <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {comboPackages.slice(0, 3).map((pkg) => {
-                const service = services.find(s => s.id === pkg.id);
-                if (!service) return null;
-                // A bit of a hack to show package price
-                const serviceWithPackagePrice = {...service, price: parseFloat(pkg.price.replace(/[^0-9.]/g, '')), originalPrice: undefined};
-                return <ProductCard key={service.id} service={serviceWithPackagePrice} />;
-            })}
-          </div>
-           <div className="text-center mt-8">
-            <Button asChild variant="outline">
-              <Link href="/packages">
-                View All Packages <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>}
+        </section>
+      )}
       
-      {/* CDR Files Section */}
-      {cdrFileServices.length > 0 && <section id="cdr-files" className="py-8 bg-background">
-        <div className="container mx-auto px-4">
-           <div className="text-center mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-0">
-              CDR Files
-            </h2>
-            <p className="text-lg text-muted-foreground mt-1">Get print-ready source files for your cards.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {cdrFileServices.slice(0, 4).map((service) => (
-              <ProductCard key={service.id} service={service} />
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <Button asChild variant="outline">
-              <Link href="/invitation-cards?filter=cdr-file">
-                View All CDR Files <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>}
-
       {/* Website Development Section */}
       <section id="website-development" className="py-12 bg-secondary/30">
         <div className="container mx-auto px-4">
@@ -291,7 +251,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
     </div>
   );
 }

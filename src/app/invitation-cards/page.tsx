@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { services } from '@/lib/data';
 import { Service } from '@/lib/types';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Autoplay from "embla-carousel-autoplay"
 import useEmblaCarousel, { type EmblaCarouselType, type EmblaOptionsType } from 'embla-carousel-react'
-
 import {
   Carousel,
   CarouselContent,
@@ -21,8 +19,9 @@ import {
 } from "@/components/ui/carousel"
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-
-const cardServices = services.filter(s => s.category === 'invitation-cards');
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, limit } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const cardFilters = [
   { value: 'all', label: 'All' },
@@ -35,10 +34,6 @@ const cardFilters = [
   { value: 'housewarming', label: 'Housewarming' },
 ];
 
-const premiumSellers = cardServices.filter(s => s.isFeatured).slice(0, 5);
-const hotSellers = cardServices.filter(s => s.topRated).slice(0, 5);
-
-// This is the newer card design
 function NewInvitationProductCard({ service }: { service: Service }) {
   const discount = service.originalPrice && service.originalPrice > service.price
     ? Math.round(((service.originalPrice - service.price) / service.originalPrice) * 100)
@@ -58,6 +53,7 @@ function NewInvitationProductCard({ service }: { service: Service }) {
                 src={primaryImage.url}
                 alt={service.name}
                 fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                 className="object-contain"
                 data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
               />
@@ -113,6 +109,10 @@ function NewInvitationProductCard({ service }: { service: Service }) {
 const OPTIONS: EmblaOptionsType = { loop: true }
 
 const HotSellersSection = () => {
+    const db = useFirestore();
+    const servicesQuery = useMemoFirebase(() => db ? query(collection(db, 'services'), where('category', '==', 'invitation-cards'), where('isFeatured', '==', true), limit(5)) : null, [db]);
+    const { data: hotSellers, isLoading } = useCollection<Service>(servicesQuery);
+
   const [emblaRef, emblaApi] = useEmblaCarousel(OPTIONS, [Autoplay({delay: 3000, stopOnInteraction: false})])
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -131,7 +131,8 @@ const HotSellersSection = () => {
   const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi])
   const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi])
 
-  if (hotSellers.length === 0) return null;
+  if (isLoading) return <Skeleton className="h-96 w-full" />;
+  if (!hotSellers || hotSellers.length === 0) return null;
 
   return (
     <div className="py-12 bg-gradient-to-br from-rose-50 to-orange-50 rounded-3xl shadow-inner-soft overflow-hidden">
@@ -204,13 +205,22 @@ const HotSellersSection = () => {
 }
 
 export default function InvitationCardsPage() {
+  const db = useFirestore();
   const [filter, setFilter] = useState('all');
 
-  const filteredServices = filter === 'all'
-    ? cardServices
-    : cardServices.filter(service => 
-        service.tags?.includes(filter)
-    );
+  const servicesQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    let q = query(collection(db, 'services'), where('category', '==', 'invitation-cards'));
+    if (filter !== 'all') {
+        q = query(q, where('tags', 'array-contains', filter));
+    }
+    return q;
+  }, [db, filter]);
+
+  const premiumSellersQuery = useMemoFirebase(() => db ? query(collection(db, 'services'), where('category', '==', 'invitation-cards'), where('isFeatured', '==', true), limit(5)) : null, [db]);
+  
+  const { data: filteredServices, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
+  const { data: premiumSellers, isLoading: arePremiumSellersLoading } = useCollection<Service>(premiumSellersQuery);
 
   return (
     <div className="bg-slate-50 overflow-hidden animate-fade-in-up">
@@ -246,7 +256,8 @@ export default function InvitationCardsPage() {
             </Tabs>
         </div>
         
-        {premiumSellers.length > 0 && (
+        {arePremiumSellersLoading && <Skeleton className="h-80 w-full" />}
+        {!arePremiumSellersLoading && premiumSellers && premiumSellers.length > 0 && (
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Premium Sellers</h2>
@@ -274,6 +285,7 @@ export default function InvitationCardsPage() {
                                    src={service.samples[0].url}
                                    alt={service.name}
                                    fill
+                                   sizes="(max-width: 640px) 50vw, 25vw"
                                    className="object-contain"
                                    data-ai-hint={service.samples[0].imageHint || 'wedding invitation'}
                                  />
@@ -292,20 +304,28 @@ export default function InvitationCardsPage() {
           </div>
         )}
 
-        {hotSellers.length > 0 && <HotSellersSection />}
+        <HotSellersSection />
         
         <div>
            <h2 className="text-lg font-semibold mb-3">Top Rated</h2>
-           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
-              {filteredServices.map(service => (
-                <NewInvitationProductCard key={service.id} service={service} />
-              ))}
+           {areServicesLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
+                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-80 w-full" />)}
             </div>
-             {filteredServices.length === 0 && (
-              <div className="text-center col-span-full py-16">
-                  <p className="text-muted-foreground text-lg">No designs found for this category.</p>
-              </div>
-            )}
+           ) : (
+             <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6">
+                    {filteredServices && filteredServices.map(service => (
+                        <NewInvitationProductCard key={service.id} service={service} />
+                    ))}
+                </div>
+                {(!filteredServices || filteredServices.length === 0) && (
+                <div className="text-center col-span-full py-16">
+                    <p className="text-muted-foreground text-lg">No designs found for this category.</p>
+                </div>
+                )}
+             </>
+           )}
         </div>
       </div>
     </div>

@@ -1,13 +1,21 @@
 
 'use client';
 
-import { useState } from 'react';
-import { services } from '@/lib/data';
 import { ServiceCard } from '@/components/shared/ServiceCard';
-
-const videoEditingServices = services.filter(s => s.category === 'video-editing');
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import type { Service } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function VideoEditingPage() {
+  const db = useFirestore();
+
+  const servicesQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'services'), where('category', '==', 'video-editing'));
+  }, [db]);
+
+  const { data: videoEditingServices, isLoading } = useCollection<Service>(servicesQuery);
 
   return (
     <div className="container mx-auto px-4 py-16 md:py-24 overflow-hidden animate-fade-in-up">
@@ -20,12 +28,19 @@ export default function VideoEditingPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
-        {videoEditingServices.map(service => (
-          <ServiceCard key={service.id} service={service} />
-        ))}
-      </div>
-       {videoEditingServices.length === 0 && (
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+            {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-96 w-full" />)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+            {videoEditingServices && videoEditingServices.map(service => (
+                <ServiceCard key={service.id} service={service} />
+            ))}
+        </div>
+      )}
+
+       {(!isLoading && (!videoEditingServices || videoEditingServices.length === 0)) && (
         <div className="text-center col-span-full py-16">
             <p className="text-muted-foreground text-lg">No video editing services found.</p>
         </div>

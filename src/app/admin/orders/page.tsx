@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Order } from '@/lib/types';
+import type { Order, Service, Package } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { packages, services as staticServices } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,19 +19,23 @@ export default function AdminOrdersPage() {
   const isAdmin = user?.email === 'abhayrat603@gmail.com';
 
   const ordersQuery = useMemoFirebase(() => {
-      // Only fetch if the user is an admin
       if (!db || !isAdmin) return null;
       return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
   }, [db, isAdmin]);
 
+  const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') : null, [db]);
+  const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') : null, [db]);
+
   const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
+  const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
+  const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
 
   const allServicesMap = useMemo(() => {
     const map = new Map<string, string>();
-    staticServices.forEach(s => map.set(s.id, s.name));
-    packages.forEach(p => map.set(p.id, p.name));
+    if(services) services.forEach(s => map.set(s.id, s.name));
+    if(packages) packages.forEach(p => map.set(p.id, p.name));
     return map;
-  }, []);
+  }, [services, packages]);
 
   const ordersWithServiceNames = useMemo(() => {
     if (!allOrders) return [];
@@ -42,8 +45,7 @@ export default function AdminOrdersPage() {
     }));
   }, [allOrders, allServicesMap]);
   
-  // isLoading is true if we're waiting for orders OR if we haven't confirmed the user is an admin yet.
-  const isLoading = areOrdersLoading || !user;
+  const isLoading = areOrdersLoading || areServicesLoading || arePackagesLoading || !user;
 
   const renderSkeleton = () => (
     <div className="p-4 space-y-4">
@@ -67,7 +69,7 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      <Card className="overflow-x-auto">
+      <Card>
         <CardHeader>
           <CardTitle>Orders</CardTitle>
           <CardDescription>A list of all the orders from your customers.</CardDescription>
