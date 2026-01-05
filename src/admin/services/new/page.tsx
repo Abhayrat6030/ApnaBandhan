@@ -21,8 +21,11 @@ import { Separator } from '@/components/ui/separator';
 
 const sampleSchema = z.object({
   type: z.enum(['image', 'video']),
-  url: z.string().url({ message: 'Please enter a valid URL.' }),
+  url: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')),
   imageHint: z.string().optional(),
+}).refine(data => data.url, {
+    message: "URL cannot be empty if a sample is added.",
+    path: ['url']
 });
 
 const formSchema = z.object({
