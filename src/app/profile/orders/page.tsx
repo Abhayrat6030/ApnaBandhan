@@ -42,10 +42,13 @@ export default function OrderHistoryPage() {
 
     const ordersWithServiceNames = useMemo(() => {
         if (!userOrders) return [];
-        return userOrders.map(order => ({
-        ...order,
-        serviceName: allServicesMap.get(order.selectedServiceId) || 'Unknown Service',
-        }));
+        return userOrders.map(order => {
+            const serviceName = allServicesMap.get(order.selectedServiceId);
+            return {
+                ...order,
+                serviceName: serviceName || order.selectedServiceId, // Fallback to the ID itself if name not found
+            };
+        });
     }, [userOrders, allServicesMap]);
 
     const isLoading = isUserLoading || areOrdersLoading || areServicesLoading || arePackagesLoading;

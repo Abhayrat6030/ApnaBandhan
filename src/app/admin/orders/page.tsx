@@ -39,10 +39,13 @@ export default function AdminOrdersPage() {
 
   const ordersWithServiceNames = useMemo(() => {
     if (!allOrders) return [];
-    return allOrders.map(order => ({
-      ...order,
-      serviceName: allServicesMap.get(order.selectedServiceId) || 'Unknown Service',
-    }));
+    return allOrders.map(order => {
+        const serviceName = allServicesMap.get(order.selectedServiceId);
+        return {
+            ...order,
+            serviceName: serviceName || order.selectedServiceId,
+        };
+    });
   }, [allOrders, allServicesMap]);
   
   const isLoading = isUserLoading || (isAdmin && (areOrdersLoading || areServicesLoading || arePackagesLoading));
