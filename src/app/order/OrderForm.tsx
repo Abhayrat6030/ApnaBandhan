@@ -6,22 +6,23 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { CalendarIcon, Loader2, Tag, X, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { useState, useEffect, Suspense, useMemo } from 'react';
-import { collection, addDoc, query, where, getDocs, updateDoc, doc, increment, getDoc } from 'firebase/firestore';
+import { useState, useEffect, useMemo } from 'react';
+import { collection, addDoc, query, where, getDocs, updateDoc, doc, increment } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, errorEmitter, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, errorEmitter, useFirestore } from '@/firebase';
 import { FirestorePermissionError } from '@/firebase/errors';
 import type { Coupon, Service, Package } from '@/lib/types';
+import { Separator } from '@/components/ui/separator';
 
 
 const orderFormSchema = z.object({
@@ -29,8 +30,12 @@ const orderFormSchema = z.object({
   phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: 'Please enter a valid phone number.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   weddingDate: z.date({ required_error: 'Wedding date is required.' }),
-  selectedService: z.string().min(1, { message: 'Please select a service.' }),
+  selectedService: z.string().optional(),
+  customRequirement: z.string().optional(),
   message: z.string().max(500, { message: 'Message must be less than 500 characters.' }).optional(),
+}).refine(data => !!data.selectedService || !!data.customRequirement, {
+  message: 'Please either select a service or describe your requirement.',
+  path: ['selectedService'], // Show error under the select field
 });
 
 type OrderFormValues = z.infer<typeof orderFormSchema>;
@@ -42,7 +47,7 @@ interface ServiceListItem {
 }
 
 
-function OrderFormComponent() {
+export default function OrderFormComponent() {
   const searchParams = useSearchParams();
   const serviceId = searchParams.get('service');
   const { toast } = useToast();
@@ -56,7 +61,6 @@ function OrderFormComponent() {
   const [isCouponLoading, setIsCouponLoading] = useState(false);
   const [discount, setDiscount] = useState(0);
 
-  // Optimized data fetching for the dropdown
   const [serviceList, setServiceList] = useState<ServiceListItem[]>([]);
   const [isServiceListLoading, setIsServiceListLoading] = useState(true);
 
@@ -71,9 +75,15 @@ function OrderFormComponent() {
             const services = servicesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Service));
             const packages = packagesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Package));
 
-            const allItems: ServiceListItem[] = [
+             const allItems: ServiceListItem[] = [
                 ...services.map(s => ({ id: s.id, name: s.name, price: s.price })),
-                ...packages.map(p => ({ id: p.id, name: p.name, price: parseFloat(p.price.replace(/[^0-9.]/g, '')) || 0 }))
+                ...packages.map(p => {
+                    const priceString = p.price;
+                    const priceNumber = typeof priceString === 'string' 
+                        ? parseFloat(priceString.replace(/[^0-9.]/g, '')) 
+                        : 0;
+                    return { id: p.id, name: p.name, price: isNaN(priceNumber) ? 0 : priceNumber };
+                })
             ];
             
             const uniqueItems = Array.from(new Map(allItems.map(item => [item.id, item])).values());
@@ -96,6 +106,7 @@ function OrderFormComponent() {
       phone: '',
       email: '',
       selectedService: serviceId || '',
+      customRequirement: '',
       message: '',
     },
   });
@@ -131,7 +142,6 @@ function OrderFormComponent() {
   }, [serviceId, serviceList, form]);
 
   useEffect(() => {
-      // Recalculate discount if service price changes
       if (appliedCoupon) {
           calculateDiscount(appliedCoupon, servicePrice);
       }
@@ -213,7 +223,7 @@ function OrderFormComponent() {
         phoneNumber: data.phone,
         email: data.email,
         weddingDate: data.weddingDate.toISOString().split('T')[0],
-        selectedServiceId: data.selectedService,
+        selectedServiceId: data.selectedService || `Custom: ${data.customRequirement}`,
         messageNotes: data.message || '',
         orderDate: new Date().toISOString(),
         status: 'Pending' as const,
@@ -329,31 +339,8 @@ function OrderFormComponent() {
                   </FormItem>
                 )}
               />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="selectedService"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Selected Service</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger disabled={isServiceListLoading}>
-                            <SelectValue placeholder={isServiceListLoading ? "Loading..." : "Select a service or package"} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {serviceList.map(service => (
-                            <SelectItem key={service.id} value={service.id}>{service.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
+                
+              <FormField
                   control={form.control}
                   name="weddingDate"
                   render={({ field }) => (
@@ -394,17 +381,61 @@ function OrderFormComponent() {
                     </FormItem>
                   )}
                 />
-              </div>
+
+                <FormField
+                  control={form.control}
+                  name="selectedService"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select a Service</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger disabled={isServiceListLoading}>
+                            <SelectValue placeholder={isServiceListLoading ? "Loading..." : "Select a service or package"} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {serviceList.map(service => (
+                            <SelectItem key={service.id} value={service.id}>{service.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="relative flex items-center justify-center text-center">
+                    <Separator className="w-full" />
+                    <span className="absolute bg-card px-2 text-sm text-muted-foreground">OR</span>
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="customRequirement"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Or describe your requirement</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="e.g., 'I need a 2-minute engagement party invitation video with a modern theme.'"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
               <FormField
                 control={form.control}
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Message / Notes</FormLabel>
+                    <FormLabel>Additional Message / Notes</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Any special requests or details? (e.g., theme, color preference)"
+                        placeholder="Any other details? (e.g., specific song, color preference)"
                         className="resize-none"
                         {...field}
                       />
@@ -432,8 +463,9 @@ function OrderFormComponent() {
                           value={couponInput}
                           onChange={(e) => setCouponInput(e.target.value)}
                           className="max-w-xs"
+                          disabled={!selectedServiceId}
                         />
-                        <Button type="button" variant="outline" onClick={handleApplyCoupon} disabled={isCouponLoading || !couponInput.trim()}>
+                        <Button type="button" variant="outline" onClick={handleApplyCoupon} disabled={isCouponLoading || !couponInput.trim() || !selectedServiceId}>
                             {isCouponLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Apply
                         </Button>
@@ -478,12 +510,4 @@ function OrderFormComponent() {
       </Card>
     </div>
   );
-}
-
-export default function OrderPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <OrderFormComponent />
-    </Suspense>
-  )
 }
