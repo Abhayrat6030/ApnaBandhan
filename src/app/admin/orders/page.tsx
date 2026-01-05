@@ -19,9 +19,9 @@ export default function AdminOrdersPage() {
   const isAdmin = useMemo(() => user?.email === 'abhayrat603@gmail.com', [user]);
 
   const ordersQuery = useMemoFirebase(() => {
-      if (!db || !isAdmin) return null;
+      if (isUserLoading || !isAdmin || !db) return null;
       return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
-  }, [db, isAdmin]);
+  }, [db, isAdmin, isUserLoading]);
 
   const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') : null, [db]);
   const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') : null, [db]);

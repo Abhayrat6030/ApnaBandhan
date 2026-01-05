@@ -42,14 +42,14 @@ export default function AdminServicesPage() {
   const db = useFirestore();
 
   const servicesQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
+    if (isUserLoading || !isAdmin || !db) return null;
     return query(collection(db, 'services'));
-  }, [db, isAdmin]);
+  }, [db, isAdmin, isUserLoading]);
 
   const packagesQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
+    if (isUserLoading || !isAdmin || !db) return null;
     return query(collection(db, 'comboPackages'));
-  }, [db, isAdmin]);
+  }, [db, isAdmin, isUserLoading]);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);

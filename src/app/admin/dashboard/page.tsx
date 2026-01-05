@@ -17,16 +17,16 @@ export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const isAdmin = useMemo(() => user?.email === 'abhayrat603@gmail.com', [user]);
 
-  // These queries will only be created if the user is an admin.
+  // Queries are now dependent on isUserLoading being false and isAdmin being true.
   const allOrdersQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
+    if (isUserLoading || !isAdmin || !db) return null;
     return collection(db, 'orders');
-  }, [db, isAdmin]);
+  }, [db, isAdmin, isUserLoading]);
   
   const recentOrdersQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
+    if (isUserLoading || !isAdmin || !db) return null;
     return query(collection(db, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [db, isAdmin]);
+  }, [db, isAdmin, isUserLoading]);
   
   const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') : null, [db]);
   const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') : null, [db]);
@@ -47,7 +47,7 @@ export default function AdminDashboardPage() {
   }, [services, packages]);
 
   const stats = useMemo(() => {
-    if (!allOrders) {
+    if (isUserLoading || !isAdmin || !allOrders) {
       return [
         { title: 'Total Revenue', value: 'N/A', icon: DollarSign },
         { title: 'Total Orders', value: 'N/A', icon: ShoppingBag },
@@ -71,7 +71,7 @@ export default function AdminDashboardPage() {
         { title: 'Total Orders', value: totalOrders, icon: ShoppingBag },
         { title: 'Completed Orders', value: completedOrders, icon: CheckCircle },
       ];
-  }, [allOrders, allServicesAndPackages]);
+  }, [allOrders, allServicesAndPackages, isUserLoading, isAdmin]);
   
   const recentOrdersWithServiceNames = useMemo(() => {
     if (!recentOrders) return [];
@@ -81,7 +81,6 @@ export default function AdminDashboardPage() {
     }));
   }, [recentOrders, allServicesAndPackages]);
 
-  // Wait for user auth state and admin check to complete before deciding loading state
   const isLoading = isUserLoading || (isAdmin && (areAllOrdersLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading));
 
   return (
