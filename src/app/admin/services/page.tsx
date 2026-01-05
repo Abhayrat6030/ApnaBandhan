@@ -158,7 +158,7 @@ export default function AdminServicesPage() {
           <CardDescription>Add, edit, or remove services offered on the website.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-            {isLoading ? renderSkeleton() : !isAdmin ? (
+            {isLoading ? renderSkeleton() : !isAdmin && !isUserLoading ? (
                <div className="p-6 text-center text-destructive-foreground bg-destructive">
                  <p>You do not have permission to view this page.</p>
                </div>

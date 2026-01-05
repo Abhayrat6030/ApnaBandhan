@@ -77,7 +77,7 @@ export default function AdminOrdersPage() {
         <CardContent className="p-0">
           {isLoading ? (
             renderSkeleton()
-          ) : !isAdmin ? (
+          ) : !isAdmin && !isUserLoading ? (
             <div className="p-6 text-center text-destructive-foreground bg-destructive">
                <p>You do not have permission to view this page.</p>
             </div>
