@@ -74,7 +74,13 @@ function OrderFormComponent() {
 
             const allItems: ServiceListItem[] = [
                 ...services.map(s => ({ id: s.id, name: s.name, price: s.price })),
-                ...packages.map(p => ({ id: p.id, name: p.name, price: parseFloat(p.price.replace(/[^0-9.]/g, '')) || 0 }))
+                ...packages.map(p => {
+                    const priceString = p.price;
+                    const priceNumber = typeof priceString === 'string' 
+                        ? parseFloat(priceString.replace(/[^0-9.]/g, '')) 
+                        : 0;
+                    return { id: p.id, name: p.name, price: isNaN(priceNumber) ? 0 : priceNumber };
+                })
             ];
             
             const uniqueItems = Array.from(new Map(allItems.map(item => [item.id, item])).values());
