@@ -38,7 +38,7 @@ export default function ServicePage() {
     }
     if (packageData) {
         const priceString = packageData.price || '0';
-        const priceNumber = parseFloat(priceString.replace(/[^0-9.-]+/g,""));
+        const priceNumber = parseFloat(priceString.replace(/[^0-9.]/g,""));
         return {
             id: packageData.id,
             slug: packageData.slug || packageData.id,
