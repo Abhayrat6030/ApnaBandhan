@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -79,7 +80,7 @@ export default function OrderFormComponent() {
                 ...services.map(s => ({ id: s.id, name: s.name, price: s.price })),
                 ...packages.map(p => {
                     const priceString = p.price;
-                    const priceNumber = typeof priceString === 'string' 
+                    const priceNumber = (priceString && typeof priceString === 'string')
                         ? parseFloat(priceString.replace(/[^0-9.]/g, '')) 
                         : 0;
                     return { id: p.id, name: p.name, price: isNaN(priceNumber) ? 0 : priceNumber };
@@ -217,13 +218,15 @@ export default function OrderFormComponent() {
         return;
     }
 
+    const orderedItem = data.selectedService ? data.selectedService : `Custom: ${data.customRequirement}`;
+
     const newOrder = {
         userId: user.uid,
         fullName: data.fullName,
         phoneNumber: data.phone,
         email: data.email,
         weddingDate: data.weddingDate.toISOString().split('T')[0],
-        selectedServiceId: data.selectedService || `Custom: ${data.customRequirement}`,
+        selectedServiceId: orderedItem,
         messageNotes: data.message || '',
         orderDate: new Date().toISOString(),
         status: 'Pending' as const,
