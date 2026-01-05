@@ -11,7 +11,6 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // FIX: Removed email_verified check as the admin user's email is not verified.
       return request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
@@ -24,29 +23,24 @@ service cloud.firestore {
     =============================== */
     match /users/{userId} {
 
-      // Profile
       allow get, create, update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
 
-      // 🔔 Notifications
       match /notifications/{notificationId} {
         allow get, list: if isOwner(userId) || isAdmin();
         allow write: if isAdmin();
       }
 
-      // 📦 Downloadable Products (per user)
       match /downloadableProducts/{productId} {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if isAdmin();
       }
     }
 
-    // Allow admin to list users (for admin panel / referral check)
-    // Allow signed-in users to query for referral code checks.
     match /users/{document=**} {
-      allow list: if isAdmin() || (isSignedIn() && request.query.keys().hasAny(['where']));
+      allow list: if isAdmin()
+        || (isSignedIn() && request.query != null);
     }
-    
 
     /* ===============================
        APP SETTINGS
@@ -81,7 +75,6 @@ service cloud.firestore {
       allow get, list: if isSignedIn() || isAdmin();
       allow write: if isAdmin();
 
-      // User can update ONLY currentUses
       allow update: if isSignedIn()
         && request.resource.data.diff(resource.data)
           .affectedKeys()
@@ -89,25 +82,22 @@ service cloud.firestore {
     }
 
     /* ===============================
-       ORDERS (FIXED – NO LIST ERROR)
+       ORDERS (FINAL FIX)
     =============================== */
     match /orders/{orderId} {
 
-      // Admin full access
-      allow read, write: if isAdmin();
-      allow list: if isAdmin();
+      // ✅ Admin: full access
+      allow read, write, list: if isAdmin();
 
-
-      // User can CREATE own order
+      // ✅ User: create only own order
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
         && request.resource.data.paymentStatus == "Pending";
 
-      // User can READ only own orders via a query
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      // Users can list their OWN orders, but not all orders
-      allow list: if isSignedIn() && request.query.where[0] == "userId" && request.query.where[2] == request.auth.uid;
+      // ✅ User: read ONLY own orders
+      allow read, list: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
     }
   }
 }
