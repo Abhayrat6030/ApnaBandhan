@@ -1,10 +1,9 @@
+
+
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, query, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, useUser, useFirestore, useAuth } from '@/firebase';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -25,11 +24,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Skeleton } from '@/components/ui/skeleton';
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { useFirestore, useAuth } from '@/firebase';
 
-const ADMIN_EMAIL = 'abhayrat603@gmail.com';
-
-function UsersClientPage({ initialUsers }: { initialUsers: UserProfile[]}) {
+export default function UsersClientPage({ initialUsers }: { initialUsers: UserProfile[] }) {
   const router = useRouter();
   const { toast } = useToast();
   const db = useFirestore();
@@ -73,6 +71,7 @@ function UsersClientPage({ initialUsers }: { initialUsers: UserProfile[]}) {
     
     startTransition(async () => {
         try {
+            // This API route will handle both Auth and Firestore user deletion.
             const response = await fetch('/api/admin/delete-user', {
               method: 'DELETE',
               headers: {
@@ -310,63 +309,7 @@ function UsersClientPage({ initialUsers }: { initialUsers: UserProfile[]}) {
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
+    </AlertDialog>
     </>
   );
-}
-
-export default function AdminUsersPage() {
-  const db = useFirestore();
-  const { user } = useUser();
-  const isAdmin = user?.email === ADMIN_EMAIL;
-
-  const usersQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
-    return query(collection(db, 'users'));
-  }, [db, isAdmin]);
-
-  const { data: users, isLoading } = useCollection<UserProfile>(usersQuery);
-  
-  if (isLoading || !isAdmin) {
-      return (
-          <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
-            <div className="flex items-center">
-                <h1 className="font-headline text-lg font-semibold md:text-2xl">Manage Users</h1>
-            </div>
-            <UsersSkeleton/>
-          </main>
-      )
-  }
-
-  return (
-    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
-      <div className="flex items-center">
-        <h1 className="font-headline text-lg font-semibold md:text-2xl">Manage Users</h1>
-      </div>
-      <UsersClientPage initialUsers={users || []} />
-    </main>
-  );
-}
-
-function UsersSkeleton() {
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>All Users</CardTitle>
-                <CardDescription>View and manage all registered users.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <div className="pb-4">
-                    <Skeleton className="h-10 w-[300px]" />
-                 </div>
-                 <div className="border rounded-lg p-4 space-y-2">
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                 </div>
-            </CardContent>
-             <CardFooter>
-                <Skeleton className="h-4 w-32" />
-            </CardFooter>
-        </Card>
-    )
 }
