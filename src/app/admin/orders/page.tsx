@@ -20,6 +20,7 @@ export default function AdminOrdersPage() {
   const isAdmin = user?.email === 'abhayrat603@gmail.com';
 
   const ordersQuery = useMemoFirebase(() => {
+      // Only fetch if the user is an admin
       if (!db || !isAdmin) return null;
       return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
   }, [db, isAdmin]);
@@ -41,7 +42,8 @@ export default function AdminOrdersPage() {
     }));
   }, [allOrders, allServicesMap]);
   
-  const isLoading = areOrdersLoading || !isAdmin;
+  // isLoading is true if we're waiting for orders OR if we haven't confirmed the user is an admin yet.
+  const isLoading = areOrdersLoading || !user;
 
   const renderSkeleton = () => (
     <div className="p-4 space-y-4">
@@ -73,6 +75,10 @@ export default function AdminOrdersPage() {
         <CardContent className="p-0">
           {isLoading ? (
             renderSkeleton()
+          ) : !isAdmin ? (
+            <div className="p-6 text-center text-destructive-foreground bg-destructive">
+               <p>You do not have permission to view this page.</p>
+            </div>
           ) : allOrders && allOrders.length > 0 ? (
             <OrderTable orders={ordersWithServiceNames} />
           ) : (

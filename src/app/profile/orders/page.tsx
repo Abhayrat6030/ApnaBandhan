@@ -39,7 +39,7 @@ export default function OrderHistoryPage() {
     const db = useFirestore();
 
     const ordersQuery = useMemoFirebase(() => {
-        if (!user || !db) {
+        if (!user || !db || user.isAnonymous) {
           return null;
         }
         // This is the secure query that works with the updated Firestore rules

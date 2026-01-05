@@ -2,14 +2,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useUser } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingBag, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service as ServiceType, Package as PackageType } from '@/lib/types';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
+import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { services as staticServices, packages as staticPackages } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +19,7 @@ export default function AdminDashboardPage() {
   const isAdmin = user?.email === 'abhayrat603@gmail.com';
 
   const allOrdersQuery = useMemoFirebase(() => {
-    // Only fetch all orders if the user is an admin
+    // Only fetch if the user is an admin
     if (!db || !isAdmin) return null;
     return query(collection(db, 'orders'));
   }, [db, isAdmin]);
@@ -78,7 +77,8 @@ export default function AdminDashboardPage() {
     }));
   }, [recentOrders, allServicesAndPackages]);
 
-  const isLoading = areAllOrdersLoading || areRecentOrdersLoading;
+  // isLoading is true if we're waiting for data OR if we haven't confirmed the user is an admin yet.
+  const isLoading = areAllOrdersLoading || areRecentOrdersLoading || !user;
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
@@ -92,7 +92,7 @@ export default function AdminDashboardPage() {
               <stat.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stat.value}</div>}
+              {isLoading && !allOrders ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stat.value}</div>}
             </CardContent>
           </Card>
         ))}
@@ -104,7 +104,8 @@ export default function AdminDashboardPage() {
         </h2>
         <Card>
           <CardContent className="p-0">
-            {isLoading ? <div className="p-4"><Skeleton className="h-40 w-full" /></div> :
+            {isLoading && !recentOrders ? <div className="p-4"><Skeleton className="h-40 w-full" /></div> :
+             !isAdmin ? <div className="p-6 text-center text-destructive-foreground bg-destructive"><p>You do not have permission to view orders.</p></div> :
              recentOrdersWithServiceNames && recentOrdersWithServiceNames.length > 0 ? <OrderTable orders={recentOrdersWithServiceNames} /> : 
              <div className="p-6 text-center text-muted-foreground"><p>No recent orders found.</p></div>}
           </CardContent>

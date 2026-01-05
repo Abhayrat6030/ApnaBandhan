@@ -1,66 +1,63 @@
 
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    function isAdmin() {
-      return request.auth.token.email == 'abhayrat603@gmail.com';
-    }
 
     /* ===============================
        HELPER FUNCTIONS
     =============================== */
     function isSignedIn() {
-      return request.auth.uid != null;
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      // This is now the single source of truth for admin checks.
+      return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // --- USER DATA ACCESS RULES ---
-
+    /* ===============================
+       USERS
+    =============================== */
     match /users/{userId} {
-      // Admins can read any profile. Users can only read their own.
-      allow get: if isOwner(userId) || isAdmin();
-      
-      // A new user can create their own profile document.
-      allow create: if isOwner(userId);
-
-      // A user can update their own profile. Admin can update any.
-      allow update: if isOwner(userId) || isAdmin();
-      
+      // A user can get, create, or update their own profile. Admin can do the same.
+      allow get, create, update: if isOwner(userId) || isAdmin();
       // Only an admin can delete user profiles.
       allow delete: if isAdmin();
 
       // --- USER SUB-COLLECTIONS ---
+
       match /notifications/{notificationId} {
-        allow read: if isOwner(userId) || isAdmin();
-        allow write: if isAdmin(); // Only admin can create/update/delete notifications
+        // A user can list their own notifications.
+        allow list, get: if isOwner(userId) || isAdmin();
+        // Only an admin can create/update/delete notifications for any user.
+        allow write: if isAdmin();
       }
 
       match /downloadableProducts/{productId} {
         allow read: if isOwner(userId) || isAdmin();
-        allow write: if isAdmin(); // Only admin can add/edit downloadable products
+        allow write: if isAdmin();
       }
     }
-    
-    // This block is separate and crucial for referral code validation.
-    // It allows any authenticated user to query the users collection.
+
+    // This rule allows ONLY an admin to query the entire users collection.
+    // This is much more secure.
     match /users/{document=**} {
-        allow list: if request.auth.uid != null;
+      allow list: if isAdmin();
     }
 
 
     /* ===============================
-       SETTINGS (PUBLIC READ, ADMIN WRITE)
+       APP SETTINGS (PUBLIC READ, ADMIN WRITE)
     =============================== */
     match /app-settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
     /* ===============================
        PUBLIC & ADMIN COLLECTIONS
     =============================== */
@@ -73,37 +70,48 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+
      match /media/{mediaId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    /* ===============================
+       COUPONS
+    =============================== */
     match /coupons/{couponId} {
-      // Allow signed-in users to read coupons to apply them
-      allow read: if isSignedIn() || isAdmin();
-      // Allow admins to manage coupons
+      // Allow signed-in users (including admins) to read coupons to apply them.
+      allow get, list: if isSignedIn();
+      // Allow admins to create/delete/update coupons.
       allow write: if isAdmin();
-      // Allow a user to increment the 'uses' field, or admin to do anything.
-      allow update: if isAdmin() || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uses']));
+
+      // Allow any signed-in user to perform an update ONLY if the only field being changed is 'currentUses'.
+      // This allows users to "consume" a coupon without giving them broader update permissions.
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data)
+          .affectedKeys()
+          .hasOnly(['currentUses']);
     }
 
     /* ===============================
-       ORDERS (FINAL FIX)
+       ORDERS (Corrected & Secure)
     =============================== */
-     match /orders/{orderId} {
-      // Admins can read/write any order.
-      allow get, write, list: if isAdmin();
-      
-      // Users can create orders for themselves with specific initial data.
+    match /orders/{orderId} {
+
+      // ✅ Admin: has full access to read and write any order.
+      allow read, write: if isAdmin();
+      allow list: if isAdmin();
+
+      // ✅ User: can create an order for themselves, with specific initial data.
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "Pending"
-        && request.resource.data.paymentStatus == "Pending"
-        && (!request.resource.data.keys().hasAny(['id']));
-      
-      // Allow users to read their own orders via a constrained query.
-      // The frontend MUST apply `where("userId", "==", request.auth.uid)`.
-      allow read, list: if isSignedIn();
+        && request.resource.data.paymentStatus == "Pending";
+
+      // ✅ User: can read their OWN orders.
+      // This rule works for LIST when the client query includes `where("userId", "==", request.auth.uid)`.
+      // Firestore checks this rule against each document returned by the query.
+      allow read: if isOwner(resource.data.userId);
     }
   }
 }
