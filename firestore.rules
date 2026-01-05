@@ -94,7 +94,9 @@ service cloud.firestore {
     match /orders/{orderId} {
 
       // Admin full access
-      allow read, write, list: if isAdmin();
+      allow read, write: if isAdmin();
+      allow list: if isAdmin();
+
 
       // User can CREATE own order
       allow create: if isSignedIn()
