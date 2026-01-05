@@ -6,6 +6,11 @@ import { siteConfig } from "@/lib/constants";
 import { initializeAdminApp } from "@/firebase/admin";
 import { doc, getDoc } from "firebase/firestore";
 import type { AppSettings } from "@/lib/types";
+import Groq from "groq-sdk";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 export async function POST(req: Request) {
   const { message, history } = await req.json();
@@ -26,7 +31,6 @@ export async function POST(req: Request) {
     }
   } catch(error) {
     console.error("Error fetching AI custom instructions:", error);
-    // Non-critical error, proceed without custom instructions
   }
 
   const couponInstructions = activeCoupons
@@ -60,28 +64,14 @@ ${customInstructions ? `\n*   **Admin Instructions:** Use the following informat
   ];
 
   try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const chatCompletion = await groq.chat.completions.create({
+        messages: messages as any,
         model: "llama3-8b-8192",
-        messages: messages,
-      }),
     });
 
-    if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error?.message || `Groq API request failed with status ${res.status}`);
-    }
+    const reply = chatCompletion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response at the moment.";
 
-    const data = await res.json();
-
-    return NextResponse.json({
-      reply: data.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response at the moment.",
-    });
+    return NextResponse.json({ reply });
 
   } catch (error: any) {
     console.error("AI API Error:", error);

@@ -2,6 +2,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { initializeAdminApp } from "@/firebase/admin";
+import Groq from "groq-sdk";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
@@ -60,25 +65,12 @@ export async function POST(req: NextRequest) {
         ];
         
         // --- 4. Call Groq AI ---
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: "llama3-8b-8192",
-                messages: messages,
-            }),
+        const chatCompletion = await groq.chat.completions.create({
+            messages: messages as any,
+            model: "llama3-8b-8192",
         });
 
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error?.message || `Groq API request failed with status ${res.status}`);
-        }
-
-        const data = await res.json();
-        const reply = data.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+        const reply = chatCompletion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
 
         return NextResponse.json({ reply });
 
