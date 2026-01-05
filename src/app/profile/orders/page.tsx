@@ -4,11 +4,11 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
-import type { Order, Service, Package } from '@/lib/types';
+import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import type { Order } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
@@ -17,41 +17,18 @@ export default function OrderHistoryPage() {
     const db = useFirestore();
 
     const ordersQuery = useMemoFirebase(() => {
-        if (!user || !db) return null;
+        if (!user || isUserLoading || !db) return null;
         // Secure query: Only fetch orders where userId matches the current user's UID.
         return query(
-            collection(db, 'orders'), 
+            collection(db, 'orders'),
             where('userId', '==', user.uid),
             orderBy('orderDate', 'desc')
         );
-    }, [user, db]);
-
-    const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') : null, [db]);
-    const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') : null, [db]);
+    }, [user, isUserLoading, db]);
 
     const { data: userOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
-    const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
-    const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
 
-    const allServicesMap = useMemo(() => {
-        const map = new Map<string, string>();
-        if(services) services.forEach(s => map.set(s.id, s.name));
-        if(packages) packages.forEach(p => map.set(p.id, p.name));
-        return map;
-    }, [services, packages]);
-
-    const ordersWithServiceNames = useMemo(() => {
-        if (!userOrders) return [];
-        return userOrders.map(order => {
-            const serviceName = allServicesMap.get(order.selectedServiceId);
-            return {
-                ...order,
-                serviceName: serviceName || order.selectedServiceId, // Fallback to the ID itself if name not found
-            };
-        });
-    }, [userOrders, allServicesMap]);
-
-    const isLoading = isUserLoading || areOrdersLoading || areServicesLoading || arePackagesLoading;
+    const isLoading = isUserLoading || areOrdersLoading;
 
     const getStatusVariant = (status: Order['status']) => {
         switch (status) {
@@ -70,6 +47,15 @@ export default function OrderHistoryPage() {
             default: return 'secondary';
         }
     }
+    
+    const renderOrderDate = (orderDate: any) => {
+        if (!orderDate) return 'N/A';
+        if (orderDate instanceof Timestamp) {
+            return orderDate.toDate().toLocaleDateString();
+        }
+        return new Date(orderDate).toLocaleDateString();
+    };
+
 
     const renderSkeleton = () => (
         <div className="space-y-4">
@@ -88,11 +74,17 @@ export default function OrderHistoryPage() {
                     {isLoading ? renderSkeleton() : 
                      userOrders && userOrders.length > 0 ? (
                         <div className="space-y-4">
-                            {ordersWithServiceNames.map(order => (
+                            {userOrders.map(order => (
                                 <Card key={order.id}>
                                     <CardHeader>
-                                        <CardTitle className="text-lg truncate">{order.serviceName}</CardTitle>
-                                        <CardDescription>Order placed on: {new Date(order.orderDate).toLocaleDateString()}</CardDescription>
+                                        <CardTitle className="text-lg truncate">{order.selectedServiceId.startsWith('Custom:') ? 'Custom Requirement' : order.selectedServiceId}</CardTitle>
+                                        {order.selectedServiceId.startsWith('Custom:') && (
+                                            <CardDescription className="flex items-start gap-2 pt-1">
+                                                <FileText className="h-4 w-4 mt-1 shrink-0" /> 
+                                                <span>{order.selectedServiceId.replace('Custom: ', '')}</span>
+                                            </CardDescription>
+                                        )}
+                                        <CardDescription>Order placed on: {renderOrderDate(order.orderDate)}</CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-wrap gap-2">
                                         <Badge variant={getStatusVariant(order.status)}>Status: {order.status}</Badge>

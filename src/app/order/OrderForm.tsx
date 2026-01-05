@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { CalendarIcon, Loader2, Tag, X, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState, useEffect, useMemo } from 'react';
-import { collection, addDoc, query, where, getDocs, updateDoc, doc, increment } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, updateDoc, doc, increment, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -228,7 +228,7 @@ export default function OrderFormComponent() {
         weddingDate: data.weddingDate.toISOString().split('T')[0],
         selectedServiceId: orderedItem,
         messageNotes: data.message || '',
-        orderDate: new Date().toISOString(),
+        orderDate: serverTimestamp(),
         status: 'Pending' as const,
         paymentStatus: 'Pending' as const,
         couponCode: appliedCoupon?.code || '',

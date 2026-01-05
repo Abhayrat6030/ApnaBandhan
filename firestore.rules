@@ -96,20 +96,20 @@ service cloud.firestore {
        ORDERS (Corrected & Secure)
     =============================== */
     match /orders/{orderId} {
-
-      // ✅ Admin: has full access to read, write, and list all orders.
+      // Admin has full read/write/list access
       allow read, write, list: if isAdmin();
 
-      // ✅ User: can create an order for themselves, with specific initial data.
+      // User can create their own order if they are signed in and the userId matches.
       allow create: if isSignedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == "Pending"
-        && request.resource.data.paymentStatus == "Pending";
+        && request.resource.data.userId == request.auth.uid;
 
-      // ✅ User: can read their OWN orders.
-      // This rule works for LIST when the client query includes `where("userId", "==", request.auth.uid)`.
-      // Firestore checks this rule against each document returned by the query.
-      allow read: if isOwner(resource.data.userId);
+      // User can read their own order.
+      // This allows a `get` request on a specific order document.
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      // User can list their own orders.
+      // This requires the client to include `where('userId', '==', request.auth.uid)` in the query.
+      allow list: if isSignedIn() && request.query.where.userId == request.auth.uid;
     }
   }
 }
