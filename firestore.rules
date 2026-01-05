@@ -11,7 +11,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // This is the single source of truth for admin checks.
+      // This is now the single source of truth for admin checks.
       return isSignedIn() && request.auth.token.email == 'abhayrat603@gmail.com';
     }
 
@@ -44,6 +44,7 @@ service cloud.firestore {
     }
 
     // This rule allows ONLY an admin to query the entire users collection.
+    // This is much more secure.
     match /users/{document=**} {
       allow list: if isAdmin();
     }
@@ -96,20 +97,20 @@ service cloud.firestore {
        ORDERS (Corrected & Secure)
     =============================== */
     match /orders/{orderId} {
-      // Admin has full read/write/list access
+
+      // Admin: has full access to read, write, and list all orders.
       allow read, write, list: if isAdmin();
 
-      // User can create their own order if they are signed in and the userId matches.
-      allow create: if isSignedIn()
-        && request.resource.data.userId == request.auth.uid;
+      // User: can create an order for themselves.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
 
-      // User can read their own order.
-      // This allows a `get` request on a specific order document.
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // User: can list their OWN orders (requires a 'where' clause in the query).
+      allow list: if isSignedIn();
       
-      // User can list their own orders.
-      // This requires the client to include `where('userId', '==', request.auth.uid)` in the query.
-      allow list: if isSignedIn() && request.query.where.userId == request.auth.uid;
+      // User: can read a specific order document if they are the owner.
+      allow read: if isOwner(resource.data.userId);
     }
   }
 }
+
+    

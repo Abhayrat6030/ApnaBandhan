@@ -17,14 +17,14 @@ export default function OrderHistoryPage() {
     const db = useFirestore();
 
     const ordersQuery = useMemoFirebase(() => {
-        if (!user || isUserLoading || !db) return null;
+        if (!user || !db) return null;
         // Secure query: Only fetch orders where userId matches the current user's UID.
         return query(
             collection(db, 'orders'),
             where('userId', '==', user.uid),
             orderBy('orderDate', 'desc')
         );
-    }, [user, isUserLoading, db]);
+    }, [user, db]);
 
     const { data: userOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
 
@@ -50,6 +50,10 @@ export default function OrderHistoryPage() {
     
     const renderOrderDate = (orderDate: any) => {
         if (!orderDate) return 'N/A';
+        // Firestore server timestamps can be objects before they are written.
+        if (orderDate.toDate) {
+            return orderDate.toDate().toLocaleDateString();
+        }
         if (orderDate instanceof Timestamp) {
             return orderDate.toDate().toLocaleDateString();
         }
@@ -106,3 +110,5 @@ export default function OrderHistoryPage() {
         </div>
     )
 }
+
+    

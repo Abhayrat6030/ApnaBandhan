@@ -218,7 +218,9 @@ export default function OrderFormComponent() {
         return;
     }
 
-    const orderedItem = data.selectedService ? data.selectedService : `Custom: ${data.customRequirement}`;
+    const orderedItem = data.selectedService 
+        ? data.selectedService 
+        : (data.customRequirement ? `Custom: ${data.customRequirement}` : 'No service selected');
 
     const newOrder = {
         userId: user.uid,
@@ -514,3 +516,5 @@ export default function OrderFormComponent() {
     </div>
   );
 }
+
+    
