@@ -8,7 +8,7 @@ import { DollarSign, ShoppingBag, CheckCircle } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Order, Service as ServiceType, Package as PackageType } from '@/lib/types';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit, CollectionReference } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 
 export const dynamic = 'force-dynamic';
@@ -23,16 +23,16 @@ export default function AdminDashboardPage() {
   // Queries are now dependent on isUserLoading being false and isAdmin being true.
   const allOrdersQuery = useMemoFirebase(() => {
     if (isUserLoading || !isAdmin || !db) return null;
-    return collection(db, 'orders');
+    return collection(db, 'orders') as CollectionReference<Order>;
   }, [db, isAdmin, isUserLoading]);
   
   const recentOrdersQuery = useMemoFirebase(() => {
     if (isUserLoading || !isAdmin || !db) return null;
-    return query(collection(db, 'orders'), orderBy('orderDate', 'desc'), limit(5));
+    return query(collection(db, 'orders') as CollectionReference<Order>, orderBy('orderDate', 'desc'), limit(5));
   }, [db, isAdmin, isUserLoading]);
   
-  const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') : null, [db]);
-  const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') : null, [db]);
+  const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') as CollectionReference<ServiceType> : null, [db]);
+  const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') as CollectionReference<PackageType> : null, [db]);
 
   const { data: allOrders, isLoading: areAllOrdersLoading } = useCollection<Order>(allOrdersQuery);
   const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);

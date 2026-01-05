@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { collection, doc, deleteDoc, query } from 'firebase/firestore';
+import { collection, doc, deleteDoc, query, CollectionReference } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useFirestore, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -43,12 +43,12 @@ export default function AdminServicesPage() {
 
   const servicesQuery = useMemoFirebase(() => {
     if (isUserLoading || !isAdmin || !db) return null;
-    return query(collection(db, 'services'));
+    return query(collection(db, 'services') as CollectionReference<Service>);
   }, [db, isAdmin, isUserLoading]);
 
   const packagesQuery = useMemoFirebase(() => {
     if (isUserLoading || !isAdmin || !db) return null;
-    return query(collection(db, 'comboPackages'));
+    return query(collection(db, 'comboPackages') as CollectionReference<Package>);
   }, [db, isAdmin, isUserLoading]);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);

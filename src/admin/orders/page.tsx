@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, CollectionReference } from 'firebase/firestore';
 import { useCollection, useMemoFirebase, useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
@@ -22,11 +22,11 @@ export default function AdminOrdersPage() {
 
   const ordersQuery = useMemoFirebase(() => {
       if (isUserLoading || !isAdmin || !db) return null;
-      return query(collection(db, 'orders'), orderBy('orderDate', 'desc'));
+      return query(collection(db, 'orders') as CollectionReference<Order>, orderBy('orderDate', 'desc'));
   }, [db, isAdmin, isUserLoading]);
 
-  const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') : null, [db]);
-  const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') : null, [db]);
+  const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') as CollectionReference<Service> : null, [db]);
+  const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') as CollectionReference<Package> : null, [db]);
 
   const { data: allOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
