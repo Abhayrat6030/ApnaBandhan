@@ -114,3 +114,5 @@ export type Coupon = {
     currentUses: number;
     maxUses?: number; // Optional: Maximum number of times the coupon can be used
 }
+
+    
