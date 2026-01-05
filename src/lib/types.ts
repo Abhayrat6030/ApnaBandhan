@@ -58,7 +58,7 @@ export type Order = {
     weddingDate: string | Date;
     selectedServiceId: string;
     messageNotes: string;
-    status: 'Pending' | 'Paid' | 'In Progress' | 'Delivered';
+    status: 'Pending' | 'In Progress' | 'Delivered';
     paymentStatus: 'Pending' | 'Advance' | 'Paid';
     orderDate: string | Date;
     couponCode?: string;

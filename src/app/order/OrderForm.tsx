@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { CalendarIcon, Loader2, Tag, X, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState, useEffect, Suspense, useMemo } from 'react';
-import { collection, addDoc, query, where, getDocs, updateDoc, doc, increment } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, updateDoc, doc, increment, getDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -37,6 +37,13 @@ const orderFormSchema = z.object({
 
 type OrderFormValues = z.infer<typeof orderFormSchema>;
 
+interface ServiceListItem {
+  id: string;
+  name: string;
+  price: number;
+}
+
+
 function OrderFormComponent() {
   const searchParams = useSearchParams();
   const serviceId = searchParams.get('service');
@@ -51,20 +58,38 @@ function OrderFormComponent() {
   const [isCouponLoading, setIsCouponLoading] = useState(false);
   const [discount, setDiscount] = useState(0);
 
-  const servicesQuery = useMemoFirebase(() => db ? collection(db, 'services') : null, [db]);
-  const packagesQuery = useMemoFirebase(() => db ? collection(db, 'comboPackages') : null, [db]);
+  // Optimized data fetching for the dropdown
+  const [serviceList, setServiceList] = useState<ServiceListItem[]>([]);
+  const [isServiceListLoading, setIsServiceListLoading] = useState(true);
 
-  const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
-  const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
-  
-  const uniqueServices = useMemo(() => {
-    if (!services || !packages) return [];
-    const allItems = [
-        ...services.map(s => ({ id: s.id, name: s.name, price: s.price })),
-        ...packages.map(p => ({ id: p.id, name: p.name, price: parseFloat(p.price.replace(/[^0-9.]/g, '')) || 0 }))
-    ];
-    return Array.from(new Map(allItems.map(item => [item.id, item])).values());
-  }, [services, packages]);
+  useEffect(() => {
+    async function fetchServiceList() {
+        if (!db) return;
+        setIsServiceListLoading(true);
+        try {
+            const servicesSnapshot = await getDocs(collection(db, 'services'));
+            const packagesSnapshot = await getDocs(collection(db, 'comboPackages'));
+            
+            const services = servicesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Service));
+            const packages = packagesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Package));
+
+            const allItems: ServiceListItem[] = [
+                ...services.map(s => ({ id: s.id, name: s.name, price: s.price })),
+                ...packages.map(p => ({ id: p.id, name: p.name, price: parseFloat(p.price.replace(/[^0-9.]/g, '')) || 0 }))
+            ];
+            
+            const uniqueItems = Array.from(new Map(allItems.map(item => [item.id, item])).values());
+            setServiceList(uniqueItems);
+        } catch (error) {
+            console.error("Failed to fetch service list:", error);
+            toast({ title: 'Error', description: 'Could not load services.', variant: 'destructive' });
+        } finally {
+            setIsServiceListLoading(false);
+        }
+    }
+    fetchServiceList();
+  }, [db, toast]);
+
 
   const form = useForm<OrderFormValues>({
     resolver: zodResolver(orderFormSchema),
@@ -78,11 +103,12 @@ function OrderFormComponent() {
   });
 
   const selectedServiceId = form.watch('selectedService');
+  
   const servicePrice = useMemo(() => {
     if (!selectedServiceId) return 0;
-    const service = uniqueServices.find(s => s.id === selectedServiceId);
+    const service = serviceList.find(s => s.id === selectedServiceId);
     return service?.price || 0;
-  }, [selectedServiceId, uniqueServices]);
+  }, [selectedServiceId, serviceList]);
 
   const finalPrice = useMemo(() => {
     return Math.max(0, servicePrice - discount);
@@ -100,6 +126,12 @@ function OrderFormComponent() {
     }
   }, [user, form, serviceId]);
   
+  useEffect(() => {
+      if (serviceId && serviceList.length > 0) {
+        form.setValue('selectedService', serviceId);
+      }
+  }, [serviceId, serviceList, form]);
+
   useEffect(() => {
       // Recalculate discount if service price changes
       if (appliedCoupon) {
@@ -307,14 +339,14 @@ function OrderFormComponent() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Selected Service</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a service or package" />
+                          <SelectTrigger disabled={isServiceListLoading}>
+                            <SelectValue placeholder={isServiceListLoading ? "Loading..." : "Select a service or package"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {uniqueServices.map(service => (
+                          {serviceList.map(service => (
                             <SelectItem key={service.id} value={service.id}>{service.name}</SelectItem>
                           ))}
                         </SelectContent>

@@ -37,19 +37,19 @@ type CombinedService = (Partial<Service> & Partial<Package>) & { id: string; nam
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export default function AdminServicesPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const isAdmin = user?.email === ADMIN_EMAIL;
   const db = useFirestore();
 
   const servicesQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'services'));
-  }, [db]);
+  }, [db, isAdmin]);
 
   const packagesQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'comboPackages'));
-  }, [db]);
+  }, [db, isAdmin]);
 
   const { data: services, isLoading: areServicesLoading } = useCollection<Service>(servicesQuery);
   const { data: packages, isLoading: arePackagesLoading } = useCollection<Package>(packagesQuery);
@@ -76,7 +76,7 @@ export default function AdminServicesPage() {
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<CombinedService | null>(null);
 
-  const isLoading = areServicesLoading || arePackagesLoading || !isAdmin;
+  const isLoading = areServicesLoading || arePackagesLoading || isUserLoading;
 
   const handleDeleteClick = (item: CombinedService) => {
     setItemToDelete(item);
@@ -158,7 +158,11 @@ export default function AdminServicesPage() {
           <CardDescription>Add, edit, or remove services offered on the website.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-            {isLoading ? renderSkeleton() : (
+            {isLoading ? renderSkeleton() : !isAdmin ? (
+               <div className="p-6 text-center text-destructive-foreground bg-destructive">
+                 <p>You do not have permission to view this page.</p>
+               </div>
+            ) : (
             <>
               {/* Desktop Table */}
               <div className="hidden md:block">
