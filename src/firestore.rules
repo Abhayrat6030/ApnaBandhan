@@ -98,9 +98,8 @@ service cloud.firestore {
     =============================== */
     match /orders/{orderId} {
 
-      // ✅ Admin: has full access to read and write any order.
-      allow read, write: if isAdmin();
-      allow list: if isAdmin();
+      // ✅ Admin: has full access to read, write, and list all orders.
+      allow read, write, list: if isAdmin();
 
       // ✅ User: can create an order for themselves, with specific initial data.
       allow create: if isSignedIn()
