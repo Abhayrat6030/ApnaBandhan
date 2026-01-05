@@ -4,7 +4,7 @@
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp, initializeApp, getApps, getApp } from 'firebase/app';
 import { Firestore, getFirestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, getAuth, signInAnonymously } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged, getAuth, signInAnonymously, sendPasswordResetEmail } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { firebaseConfig } from './config';
 
@@ -125,4 +125,19 @@ export async function initiateAnonymousSignIn(auth: Auth) {
   } catch (error) {
     console.error("Anonymous sign-in failed:", error);
   }
+}
+
+/**
+ * Sends a password reset email to the user.
+ * @param auth The Firebase Auth instance.
+ * @param email The user's email address.
+ */
+export async function initiatePasswordReset(auth: Auth, email: string) {
+    try {
+        await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+        console.error("Password reset failed:", error);
+        // Let the caller handle UI feedback (toast)
+        throw error;
+    }
 }

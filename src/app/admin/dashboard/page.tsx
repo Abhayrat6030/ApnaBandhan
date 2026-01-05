@@ -82,7 +82,7 @@ export default function AdminDashboardPage() {
   }, [recentOrders, allServicesAndPackages]);
 
   // Wait for user auth state and admin check to complete before deciding loading state
-  const isLoading = isUserLoading || areAllOrdersLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
+  const isLoading = isUserLoading || (isAdmin && (areAllOrdersLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading));
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
