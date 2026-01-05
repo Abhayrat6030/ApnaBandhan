@@ -11,7 +11,15 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ service }: ProductCardProps) {
-  const primaryImage = service.samples.find(s => s.type === 'image');
+  // More robustly find the first available image URL from samples.
+  const primaryImageUrl = service.samples && service.samples.length > 0 
+    ? service.samples[0].url
+    : null;
+  
+  const imageHint = service.samples && service.samples.length > 0
+    ? service.samples[0].imageHint
+    : 'wedding invitation';
+
 
   const discount = service.originalPrice && service.originalPrice > service.price
     ? Math.round(((service.originalPrice - service.price) / service.originalPrice) * 100)
@@ -21,15 +29,15 @@ export function ProductCard({ service }: ProductCardProps) {
     <Link href={`/services/${service.slug}`} className="group block animate-fade-in-up">
         <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full rounded-2xl">
             <CardContent className="p-0">
-            {primaryImage && (
+            {primaryImageUrl ? (
                 <div className="relative aspect-[3/4] w-full">
                     <Image 
-                        src={primaryImage.url}
+                        src={primaryImageUrl}
                         alt={service.name}
                         fill
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         className="object-cover rounded-t-2xl"
-                        data-ai-hint={primaryImage.imageHint || 'wedding invitation'}
+                        data-ai-hint={imageHint}
                     />
                      <div className="absolute top-2 left-2 flex flex-col gap-1">
                         {discount > 0 && (
@@ -40,6 +48,10 @@ export function ProductCard({ service }: ProductCardProps) {
                         )}
                     </div>
                 </div>
+            ) : (
+              <div className="relative aspect-[3/4] w-full bg-muted rounded-t-2xl flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground">No Image</p>
+              </div>
             )}
             <div className="p-4">
                 <div className="flex justify-between items-start">
