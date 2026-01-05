@@ -42,6 +42,7 @@ export default function OrderHistoryPage() {
         if (!user || !db) {
           return null;
         }
+        // This is the secure query that works with the updated Firestore rules
         return query(collection(db, 'orders'), where('userId', '==', user.uid), orderBy('orderDate', 'desc'));
     }, [user, db]);
 
