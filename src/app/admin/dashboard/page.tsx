@@ -17,6 +17,7 @@ export default function AdminDashboardPage() {
   const { user, isUserLoading } = useUser();
   const isAdmin = useMemo(() => user?.email === 'abhayrat603@gmail.com', [user]);
 
+  // These queries will only be created if the user is an admin.
   const allOrdersQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
     return collection(db, 'orders');
@@ -80,6 +81,7 @@ export default function AdminDashboardPage() {
     }));
   }, [recentOrders, allServicesAndPackages]);
 
+  // Wait for user auth state and admin check to complete before deciding loading state
   const isLoading = isUserLoading || areAllOrdersLoading || areRecentOrdersLoading || areServicesLoading || arePackagesLoading;
 
   return (

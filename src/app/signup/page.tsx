@@ -115,7 +115,8 @@ function SignupFormComponent() {
             message = 'A permission error occurred while creating your profile. Please check security rules.';
             errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: `users/${auth.currentUser?.uid || 'new-user'}`,
-                operation: 'write',
+                operation: 'create',
+                requestResourceData: { name: values.name, email: values.email }
             }));
         }
         
