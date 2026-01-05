@@ -38,7 +38,7 @@ const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
 export default function AdminServicesPage() {
   const { user, isUserLoading } = useUser();
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const isAdmin = useMemo(() => user?.email === ADMIN_EMAIL, [user]);
   const db = useFirestore();
 
   const servicesQuery = useMemoFirebase(() => {
@@ -76,7 +76,7 @@ export default function AdminServicesPage() {
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<CombinedService | null>(null);
 
-  const isLoading = areServicesLoading || arePackagesLoading || isUserLoading;
+  const isLoading = isUserLoading || (isAdmin && (areServicesLoading || arePackagesLoading));
 
   const handleDeleteClick = (item: CombinedService) => {
     setItemToDelete(item);

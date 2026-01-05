@@ -15,8 +15,8 @@ export const dynamic = 'force-dynamic';
 
 export default function AdminOrdersPage() {
   const db = useFirestore();
-  const { user } = useUser();
-  const isAdmin = user?.email === 'abhayrat603@gmail.com';
+  const { user, isUserLoading } = useUser();
+  const isAdmin = useMemo(() => user?.email === 'abhayrat603@gmail.com', [user]);
 
   const ordersQuery = useMemoFirebase(() => {
       if (!db || !isAdmin) return null;
@@ -45,7 +45,7 @@ export default function AdminOrdersPage() {
     }));
   }, [allOrders, allServicesMap]);
   
-  const isLoading = areOrdersLoading || areServicesLoading || arePackagesLoading || !user;
+  const isLoading = isUserLoading || (isAdmin && (areOrdersLoading || areServicesLoading || arePackagesLoading));
 
   const renderSkeleton = () => (
     <div className="p-4 space-y-4">
