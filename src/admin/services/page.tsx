@@ -32,7 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
-type CombinedService = (Partial<Service> & Partial<Package>) & { id: string; name: string; type: 'Service' | 'Package', slug?: string };
+type CombinedService = (Partial<Service> & Partial<Package>) & { id: string; name: string; type: 'Service' | 'Package', slug?: string, price: number | string };
 
 const ADMIN_EMAIL = 'abhayrat603@gmail.com';
 
@@ -56,7 +56,7 @@ export default function AdminServicesPage() {
   
   const allItems: CombinedService[] = useMemo(() => {
       const items: CombinedService[] = [];
-      if(services) items.push(...services.map(s => ({...s, type: 'Service' } as CombinedService)));
+      if(services) items.push(...services.map(s => ({...s, type: 'Service', price: s.price.toString() } as CombinedService)));
       if(packages) items.push(...packages.map(p => {
         const priceString = p.price || '0';
         const priceNumber = parseFloat(priceString.replace(/[^0-9.-]+/g,""));
@@ -184,7 +184,7 @@ export default function AdminServicesPage() {
                                 {item.category?.replace('-', ' ') || 'Package'}
                             </Badge>
                           </TableCell>
-                          <TableCell>₹{item.price?.toLocaleString('en-IN')}</TableCell>
+                          <TableCell>₹{Number(item.price).toLocaleString('en-IN')}</TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -254,7 +254,7 @@ export default function AdminServicesPage() {
                           <CardContent className="p-4 pt-0">
                                <div className="flex items-center text-lg font-semibold">
                                   <IndianRupee className="h-4 w-4 mr-1" />
-                                  {item.price?.toLocaleString('en-IN')}
+                                  {Number(item.price).toLocaleString('en-IN')}
                                </div>
                           </CardContent>
                       </Card>
