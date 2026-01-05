@@ -49,7 +49,7 @@ export default function ServicePage() {
             samples: [], // combo packages might not have samples in this structure
             inclusions: packageData.features,
             priceType: 'fixed',
-            deliveryTime: 'N/A',
+            deliveryTime: 'N/A', // Packages might have different delivery times
             isFeatured: packageData.isBestValue,
         };
     }
@@ -128,7 +128,7 @@ export default function ServicePage() {
         {/* Details */}
         <div className="lg:sticky top-24 self-start">
           <Badge variant="secondary" className="mb-2 capitalize">{item.category.replace('-', ' ')}</Badge>
-          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight mb-4">{item.name}</h1>
+          <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight mb-2">{item.name}</h1>
           <p className="text-muted-foreground text-lg mb-6">{item.description}</p>
 
           {item.inclusions && item.inclusions.length > 0 && (
@@ -145,7 +145,7 @@ export default function ServicePage() {
             </div>
           )}
           
-          {item.deliveryTime && (
+          {item.deliveryTime && item.deliveryTime !== 'N/A' && (
             <div className="flex items-center text-muted-foreground mb-8">
                 <Clock className="h-5 w-5 mr-2" />
                 <span>Delivery Timeline: {item.deliveryTime}</span>
@@ -154,7 +154,7 @@ export default function ServicePage() {
 
           <div className="bg-secondary/50 p-6 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Price {item.priceType === 'starting' ? 'starts from' : ''}</p>
+              <p className="text-sm text-muted-foreground">{item.priceType === 'starting' ? 'Price starts from' : 'Price'}</p>
               <p className="font-headline text-3xl font-bold">
                 ₹{item.price.toLocaleString('en-IN')}
               </p>
