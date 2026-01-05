@@ -15,47 +15,10 @@ import { packages, services as staticServices } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
-const getStatusVariant = (status: Order['status']) => {
-    switch (status) {
-      case 'Pending': return 'secondary';
-      case 'In Progress': return 'default';
-      case 'Delivered': return 'outline';
-      case 'Paid': return 'default';
-      default: return 'secondary';
-    }
-};
-
-const getPaymentStatusVariant = (status: Order['paymentStatus']) => {
-    switch (status) {
-        case 'Pending': return 'destructive';
-        case 'Advance': return 'secondary';
-        case 'Paid': return 'default';
-        default: return 'secondary';
-    }
-};
-
 export default function OrderHistoryPage() {
     const { user, isUserLoading } = useUser();
-    const db = useFirestore();
-
-    const ordersQuery = useMemoFirebase(() => {
-        if (!user || !db || user.isAnonymous) {
-          return null;
-        }
-        // This is the secure query that works with the updated Firestore rules
-        return query(collection(db, 'orders'), where('userId', '==', user.uid), orderBy('orderDate', 'desc'));
-    }, [user, db]);
-
-    const { data: userOrders, isLoading: areOrdersLoading } = useCollection<Order>(ordersQuery);
-
-    const allServicesMap = useMemo(() => {
-        const map = new Map<string, string>();
-        staticServices.forEach(s => map.set(s.id, s.name));
-        packages.forEach(p => map.set(p.id, p.name));
-        return map;
-    }, []);
-
-    const isLoading = isUserLoading || areOrdersLoading;
+    
+    const isLoading = isUserLoading;
 
     const renderSkeleton = () => (
       <>
@@ -102,64 +65,12 @@ export default function OrderHistoryPage() {
                 </CardHeader>
                 <CardContent>
                     {isLoading ? renderSkeleton() : (
-                        userOrders && userOrders.length > 0 ? (
-                           <>
-                                {/* Desktop Table */}
-                                <div className="hidden md:block">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Order ID</TableHead>
-                                            <TableHead>Service</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Payment</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {userOrders.map((order) => (
-                                            <TableRow key={order.id}>
-                                                <TableCell className="font-medium truncate" style={{maxWidth: 100}}>{order.id}</TableCell>
-                                                <TableCell>{allServicesMap.get(order.selectedServiceId) || order.selectedServiceId}</TableCell>
-                                                <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant={getPaymentStatusVariant(order.paymentStatus)}>{order.paymentStatus}</Badge>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                                </div>
-                                {/* Mobile Cards */}
-                                <div className="md:hidden space-y-4">
-                                     {userOrders.map((order) => (
-                                        <Card key={order.id}>
-                                            <CardHeader className="pb-2">
-                                                <CardTitle className="text-base truncate">{allServicesMap.get(order.selectedServiceId) || order.selectedServiceId}</CardTitle>
-                                                <CardDescription>Order: #{order.id.substring(0, 7)}</CardDescription>
-                                            </CardHeader>
-                                            <CardContent className="text-sm">
-                                                <p>Date: {new Date(order.orderDate).toLocaleDateString()}</p>
-                                            </CardContent>
-                                            <CardFooter className="flex gap-2">
-                                                <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
-                                                <Badge variant={getPaymentStatusVariant(order.paymentStatus)}>{order.paymentStatus}</Badge>
-                                            </CardFooter>
-                                        </Card>
-                                    ))}
-                                </div>
-                           </>
-                        ) : (
-                            <div className="text-center py-12">
-                                <p className="text-muted-foreground mb-4">You haven't placed any orders yet.</p>
-                                <Button asChild>
-                                    <Link href="/services">Browse Services</Link>
-                                </Button>
-                            </div>
-                        )
+                        <div className="text-center py-12">
+                            <p className="text-muted-foreground mb-4">You haven't placed any orders yet.</p>
+                            <Button asChild>
+                                <Link href="/services">Browse Services</Link>
+                            </Button>
+                        </div>
                     )}
                 </CardContent>
             </Card>

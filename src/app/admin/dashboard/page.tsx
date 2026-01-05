@@ -18,67 +18,13 @@ export default function AdminDashboardPage() {
   const { user } = useUser();
   const isAdmin = user?.email === 'abhayrat603@gmail.com';
 
-  const allOrdersQuery = useMemoFirebase(() => {
-    // Only fetch if the user is an admin
-    if (!db || !isAdmin) return null;
-    return query(collection(db, 'orders'));
-  }, [db, isAdmin]);
-  
-  const recentOrdersQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
-    return query(collection(db, 'orders'), orderBy('orderDate', 'desc'), limit(5));
-  }, [db, isAdmin]);
+  const stats = [
+    { title: 'Total Revenue', value: 'N/A', icon: DollarSign },
+    { title: 'Total Orders', value: 'N/A', icon: ShoppingBag },
+    { title: 'Completed Orders', value: 'N/A', icon: CheckCircle },
+  ];
 
-  const { data: allOrders, isLoading: areAllOrdersLoading } = useCollection<Order>(allOrdersQuery);
-  const { data: recentOrders, isLoading: areRecentOrdersLoading } = useCollection<Order>(recentOrdersQuery);
-  
-  const allServicesAndPackages = useMemo(() => {
-    const combined: (ServiceType | PackageType)[] = [...staticServices, ...staticPackages];
-    return new Map(combined.map(item => [item.id, item.name]));
-  }, []);
-
-  const stats = useMemo(() => {
-    if (!allOrders) {
-      return [
-        { title: 'Total Revenue', value: 'N/A', icon: DollarSign },
-        { title: 'Total Orders', value: 'N/A', icon: ShoppingBag },
-        { title: 'Completed Orders', value: 'N/A', icon: CheckCircle },
-      ];
-    }
-    const totalRevenue = allOrders.reduce((acc, order) => {
-        const serviceOrPackage = [...staticServices, ...staticPackages].find(item => item.id === order.selectedServiceId);
-        if (order.paymentStatus === 'Paid' && serviceOrPackage) {
-            let price = 0;
-            if ('price' in serviceOrPackage && typeof serviceOrPackage.price === 'number') {
-                price = serviceOrPackage.price;
-            } else if ('price' in serviceOrPackage && typeof serviceOrPackage.price === 'string') {
-                price = parseFloat(serviceOrPackage.price.replace(/[^0-9.-]+/g,""));
-            }
-            return acc + price;
-        }
-        return acc;
-    }, 0);
-
-    const totalOrders = allOrders.length;
-    const completedOrders = allOrders.filter(o => o.status === 'Delivered').length;
-
-     return [
-        { title: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign },
-        { title: 'Total Orders', value: totalOrders, icon: ShoppingBag },
-        { title: 'Completed Orders', value: completedOrders, icon: CheckCircle },
-      ];
-  }, [allOrders]);
-  
-  const recentOrdersWithServiceNames = useMemo(() => {
-    if (!recentOrders) return [];
-    return recentOrders.map(order => ({
-      ...order,
-      serviceName: allServicesAndPackages.get(order.selectedServiceId) || 'Unknown Service',
-    }));
-  }, [recentOrders, allServicesAndPackages]);
-
-  // isLoading is true if we're waiting for data OR if we haven't confirmed the user is an admin yet.
-  const isLoading = areAllOrdersLoading || areRecentOrdersLoading || !user;
+  const isLoading = !user;
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 animate-fade-in-up">
@@ -92,7 +38,7 @@ export default function AdminDashboardPage() {
               <stat.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {isLoading && !allOrders ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stat.value}</div>}
+              {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stat.value}</div>}
             </CardContent>
           </Card>
         ))}
@@ -104,10 +50,9 @@ export default function AdminDashboardPage() {
         </h2>
         <Card>
           <CardContent className="p-0">
-            {isLoading && !recentOrders ? <div className="p-4"><Skeleton className="h-40 w-full" /></div> :
+            {isLoading ? <div className="p-4"><Skeleton className="h-40 w-full" /></div> :
              !isAdmin ? <div className="p-6 text-center text-destructive-foreground bg-destructive"><p>You do not have permission to view orders.</p></div> :
-             recentOrdersWithServiceNames && recentOrdersWithServiceNames.length > 0 ? <OrderTable orders={recentOrdersWithServiceNames} /> : 
-             <div className="p-6 text-center text-muted-foreground"><p>No recent orders found.</p></div>}
+             <div className="p-6 text-center text-muted-foreground"><p>Recent orders are currently unavailable.</p></div>}
           </CardContent>
         </Card>
       </div>
