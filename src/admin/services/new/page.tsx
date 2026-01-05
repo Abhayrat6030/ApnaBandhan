@@ -119,7 +119,11 @@ export default function NewServicePage() {
                 priceType: values.priceType,
                 deliveryTime: values.deliveryTime,
                 inclusions: values.inclusions?.map(i => i.value).filter(Boolean),
-                samples: [], // Add a default empty samples array
+                samples: [],
+                isFeatured: false,
+                rating: 5,
+                topRated: false,
+                originalPrice: 0,
             });
         } else if (values.itemType === 'package') {
             const slug = values.name.toLowerCase().replace(/\s+/g, '-');
@@ -131,7 +135,7 @@ export default function NewServicePage() {
                 description: values.description,
                 price: values.priceString,
                 features: values.features?.map(f => f.value).filter(Boolean),
-                isBestValue: false, // Default value
+                isBestValue: false,
             });
         }
         toast({
@@ -223,7 +227,8 @@ export default function NewServicePage() {
                         )}/>
                         <FormField control={form.control} name="priceType" render={({ field }) => (
                             <FormItem><FormLabel>Price Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select price type" /></SelectTrigger></FormControl><SelectContent>
-                                <SelectItem value="fixed">Fixed</SelectItem><SelectItem value="starting">Starting From</SelectItem>
+                                <SelectItem value="fixed">Fixed</SelectItem>
+                                <SelectItem value="starting">Starting From</SelectItem>
                             </SelectContent></Select><FormMessage /></FormItem>
                         )}/>
                     </div>

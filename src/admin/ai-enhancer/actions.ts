@@ -1,4 +1,6 @@
+
 'use server';
+import { enhanceWeddingPhotos } from '@/ai/enhance-wedding-photos';
 
 export async function enhanceImage(photoDataUri: string) {
   try {
@@ -7,9 +9,9 @@ export async function enhanceImage(photoDataUri: string) {
         return { success: false, error: 'Invalid image format. Please upload a valid image file.' };
     }
 
-    // Since genkit flow is removed, we return a placeholder or disable the feature.
-    // Here, we'll return an error indicating the feature is temporarily disabled.
-    return { success: false, error: 'The AI enhancement feature is temporarily unavailable.' };
+    const enhancedPhotoDataUri = await enhanceWeddingPhotos({photoDataUri});
+
+    return { success: true, enhancedPhotoDataUri: enhancedPhotoDataUri };
     
   } catch (error: any) {
     console.error('AI enhancement failed:', error);
