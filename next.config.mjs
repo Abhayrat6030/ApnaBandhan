@@ -1,7 +1,5 @@
-import type {NextConfig} from 'next';
-
-// Trigger rebuild
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
